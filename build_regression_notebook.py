@@ -39,7 +39,7 @@ nb.cells.append(nbf.v4.new_markdown_cell("""## 1. Load Data & Analisis Missing V
 Kita load data `clean_daya_beli.csv` yang tersimpan di folder processed."""))
 
 nb.cells.append(nbf.v4.new_code_cell("""# Load dataset
-data_path = os.path.join('datasets', 'processed', 'clean_daya_beli.csv')
+data_path = os.path.join('..', 'datasets', 'processed', 'clean_daya_beli.csv')
 df = pd.read_csv(data_path)
 
 print("Informasi Dataset Awal:")
@@ -340,7 +340,8 @@ plt.show()
 """))
 
 # Simpan notebook
-output_nb_name = 'analisis_daya_beli_regresi.ipynb'
+os.makedirs('notebooks', exist_ok=True)
+output_nb_name = os.path.join('notebooks', 'analisis_daya_beli_regresi.ipynb')
 with open(output_nb_name, 'w') as f:
     nbf.write(nb, f)
 

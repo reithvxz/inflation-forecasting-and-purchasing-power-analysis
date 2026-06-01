@@ -37,7 +37,7 @@ nb.cells.append(nbf.v4.new_markdown_cell("""## 1. Load Data
 Kita menggunakan data `clean_inflasi_ts.csv` yang sebelumnya dibuat."""))
 
 nb.cells.append(nbf.v4.new_code_cell("""import os
-data_path = os.path.join('datasets', 'processed', 'clean_inflasi_ts.csv')
+data_path = os.path.join('..', 'datasets', 'processed', 'clean_inflasi_ts.csv')
 df = pd.read_csv(data_path)
 df['Tanggal'] = pd.to_datetime(df['Tanggal'])
 df = df.sort_values('Tanggal').reset_index(drop=True)
@@ -268,7 +268,9 @@ plt.grid(True)
 plt.show()
 """))
 
-with open('forecasting_inflasi_models.ipynb', 'w') as f:
+os.makedirs('notebooks', exist_ok=True)
+output_path = os.path.join('notebooks', 'forecasting_inflasi_models.ipynb')
+with open(output_path, 'w') as f:
     nbf.write(nb, f)
 
-print("Berhasil membuat forecasting_inflasi_models.ipynb")
+print("Berhasil membuat notebooks/forecasting_inflasi_models.ipynb")
