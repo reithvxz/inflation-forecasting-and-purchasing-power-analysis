@@ -52,21 +52,21 @@ Project-Machine-Learning/
 
 ## 📦 Dataset
 
-| # | Dataset | Sumber | Periode | Digunakan Untuk |
-|---|---------|--------|---------|-----------------|
-| 1 | **Indeks Harga Konsumen (IHK)** | [BPS](https://www.bps.go.id/id/statistics-table/2/MiMy/indeks-harga-konsumen--umum-.html) | 2005–2019 | Model 1 (fitur) |
-| 2 | **Inflasi Bulanan (M-to-M)** | [BPS](https://www.bps.go.id/id/statistics-table/2/MSMy/inflasi--umum-.html) | 2005–2026 | Model 1 (target) |
-| 3 | **Inflasi Tahun Kalender (Y-to-D)** | [BPS](https://www.bps.go.id/id/statistics-table/1/OTE0IzE=/tingkat-inflasi-harga-konsumen-nasional-tahun-kalender--y-to-d---sup-1--sup---2022-100-.html) | Historis | Referensi |
-| 4 | **BI Rate / Data Inflasi** | [Bank Indonesia](https://www.bi.go.id/id/statistik/indikator/data-inflasi.aspx) | 2005–2026 | Model 1 (fitur eksogen) |
-| 5 | **Upah Minimum Provinsi (UMP)** | [BPS Jateng](https://jateng.bps.go.id/id/statistics-table/2/MjgyNCMy/upah-minimum-provinsi-ump-per-bulan-menurut-provinsi-di-indonesia.html) | 2021–2025 | Model 2 (fitur) |
-| 6 | **Rata-rata Pengeluaran per Kapita** | [BPS](https://www.bps.go.id/id/statistics-table/3/V1ZKMWVrSTNOek5ZZUZOcVZEZGFValJvV0hWalFUMDkjMyMwMDAw) | 2017–2025 | Model 2 (target Y) |
-| 7 | **Kurs USD/IDR Historis** | [Investing.com](https://id.investing.com/currencies/usd-idr-historical-data) | 2005–2025 | Model 1 (fitur eksogen) |
-| 8 | **Tingkat Pengangguran Terbuka (Semester)** | [Open Data Jabar](https://opendata.jabarprov.go.id/id/dataset/tingkat-pengangguran-terbuka-berdasarkan-semester-dan-provinsi-di-indonesia) | 2020–2025 | Model 2 (fitur) |
-| 9 | **TPT & TPAK Menurut Provinsi** | [BPS](https://www.bps.go.id/id/statistics-table/3/V2pOVWJWcHJURGg0U2pONFJYaExhVXB0TUhacVFUMDkjMw%3D%3D/tingkat-pengangguran-terbuka--tpt--dan-tingkat-partisipasi-angkatan-kerja--tpak--menurut-provinsi--2019.html) | 2017–2025 | Model 2 (fitur) |
-| 10 | **PDRB Per Kapita (Ribu Rupiah)** | [BPS](https://www.bps.go.id/id/statistics-table/2/Mjg4IzI=/-seri-2010--produk-domestik-regional-bruto-per-kapita--ribu-rupiah-.html) | 2010–2025 | Model 2 (fitur) |
-| 11 | **Persentase Penduduk Miskin per Provinsi** | [Open Data Jabar](https://opendata.jabarprov.go.id/id/dataset/persentase-penduduk-miskin-berdasarkan-provinsi-di-indonesia) | 2010–2024 | Model 2 (fitur) |
-| 12 | **Inflasi Umum, Inti, Harga Diatur, Bergejolak** | [BPS](https://www.bps.go.id/id/statistics-table/1/OTA4IzE=/inflasi-umum--inti--harga-yang-diatur-pemerintah--dan-barang-bergejolak-inflasi-indonesia--2009-2025.html) | 2009–2026 | Model 1 (fitur komponen) |
-| 13 | **Harga Bulanan Minyak Mentah (USD/Barel)** | [IndexMundi](https://www.indexmundi.com/commodities/?commodity=crude-oil&months=300) | 2001–2026 | Model 1 (fitur eksogen) |
+| # | Dataset | Sumber | Periode | Model | Peran |
+|---|---------|--------|---------|-------|-------|
+| 1 | **Indeks Harga Konsumen (IHK)** | [BPS](https://www.bps.go.id/id/statistics-table/2/MiMy/indeks-harga-konsumen--umum-.html) | 2005–2023 | Model 1 (LSTM) | Fitur X |
+| 2 | **Inflasi Bulanan (M-to-M)** | [BPS](https://www.bps.go.id/id/statistics-table/2/MSMy/inflasi--umum-.html) | 2005–2026 | Model 1 (LSTM) | **Target Y** |
+| 3 | **Inflasi Tahun Kalender (Y-to-D)** | [BPS](https://www.bps.go.id/id/statistics-table/1/OTE0IzE=/tingkat-inflasi-harga-konsumen-nasional-tahun-kalender--y-to-d---sup-1--sup---2022-100-.html) | Historis | — | Referensi |
+| 4 | **BI Rate / Data Inflasi** | [Bank Indonesia](https://www.bi.go.id/id/statistik/indikator/data-inflasi.aspx) | 2005–2026 | Model 1 (LSTM) | Fitur X |
+| 5 | **Upah Minimum Provinsi (UMP)** | [BPS Jateng](https://jateng.bps.go.id/id/statistics-table/2/MjgyNCMy/upah-minimum-provinsi-ump-per-bulan-menurut-provinsi-di-indonesia.html) | 2021–2025 | Model 2 (Regresi) | Fitur X |
+| 6 | **Rata-rata Pengeluaran per Kapita** | [BPS](https://www.bps.go.id/id/statistics-table/3/V1ZKMWVrSTNOek5ZZUZOcVZEZGFValJvV0hWalFUMDkjMyMwMDAw) | 2017–2025 | Model 2 (Regresi) | **Target Y** |
+| 7 | **Kurs USD/IDR Historis** | [Investing.com](https://id.investing.com/currencies/usd-idr-historical-data) | 2005–2025 | Model 1 (LSTM) | Fitur X |
+| 8 | **Tingkat Pengangguran Terbuka (Semester)** | [Open Data Jabar](https://opendata.jabarprov.go.id/id/dataset/tingkat-pengangguran-terbuka-berdasarkan-semester-dan-provinsi-di-indonesia) | 2020–2025 | Model 2 (Regresi) | Fitur X |
+| 9 | **TPT & TPAK Menurut Provinsi** | [BPS](https://www.bps.go.id/id/statistics-table/3/V2pOVWJWcHJURGg0U2pONFJYaExhVXB0TUhacVFUMDkjMw%3D%3D/tingkat-pengangguran-terbuka--tpt--dan-tingkat-partisipasi-angkatan-kerja--tpak--menurut-provinsi--2019.html) | 2017–2025 | Model 2 (Regresi) | Fitur X |
+| 10 | **PDRB Per Kapita (Ribu Rupiah)** | [BPS](https://www.bps.go.id/id/statistics-table/2/Mjg4IzI=/-seri-2010--produk-domestik-regional-bruto-per-kapita--ribu-rupiah-.html) | 2010–2025 | Model 2 (Regresi) | Fitur X |
+| 11 | **Persentase Penduduk Miskin per Provinsi** | [Open Data Jabar](https://opendata.jabarprov.go.id/id/dataset/persentase-penduduk-miskin-berdasarkan-provinsi-di-indonesia) | 2010–2024 | Model 2 (Regresi) | Fitur X |
+| 12 | **Inflasi Umum, Inti, Harga Diatur, Bergejolak** | [BPS](https://www.bps.go.id/id/statistics-table/1/OTA4IzE=/inflasi-umum--inti--harga-yang-diatur-pemerintah--dan-barang-bergejolak-inflasi-indonesia--2009-2025.html) | 2009–2026 | Model 1 (LSTM) | Fitur X |
+| 13 | **Harga Bulanan Minyak Mentah (USD/Barel)** | [IndexMundi](https://www.indexmundi.com/commodities/?commodity=crude-oil&months=300) | 2001–2026 | Model 1 (LSTM) | Fitur X |
 
 ---
 
