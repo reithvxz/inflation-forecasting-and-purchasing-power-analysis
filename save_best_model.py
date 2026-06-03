@@ -1,73 +1,96 @@
+"""
+============================================================================
+  SAVE BEST REGRESSION MODEL — v2
+  Proyek: Prediksi Inflasi dan Dampaknya terhadap Daya Beli
+============================================================================
+Script ini melatih model Ridge Regression terbaik menggunakan pipeline v2
+dan menyimpannya ke file .pkl untuk deployment di dashboard.
+
+Fitur numerik: Real_UMP, TPT, PDRB_HargaKonstan, Inflasi_Rata_Tahunan
+Fitur kategorikal: Provinsi (one-hot encoding)
+============================================================================
+"""
+
 import os
-import pandas as pd
-import numpy as np
 import pickle
+import numpy as np
+import pandas as pd
 from sklearn.linear_model import Ridge
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from data_pipeline import get_regression_pipeline_data, get_regression_preprocessor
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+MODELS_DIR = os.path.join(SCRIPT_DIR, "models")
+
 
 def main():
-    # 1. Load Data
-    data_path = os.path.join('datasets', 'processed', 'clean_daya_beli.csv')
-    if not os.path.exists(data_path):
-        print(f"Error: file {data_path} tidak ditemukan!")
-        return
-        
-    df = pd.read_csv(data_path)
-    
-    # 2. Pembersihan & Eliminasi fitur TPAK dan Pct_Penduduk_Miskin
-    df_clean = df.drop(columns=['TPAK', 'Pct_Penduduk_Miskin', 'Pengeluaran_Makanan', 'Pengeluaran_Bukan_Makanan'])
-    
-    # 3. Feature Engineering
-    df_clean['GDP_Deflator'] = df_clean['PDRB_HargaBerlaku'] / df_clean['PDRB_HargaKonstan']
-    df_clean['Real_UMP'] = df_clean['UMP'] / (1 + df_clean['Inflasi_Rata_Tahunan'])
-    df_clean['PDRB_to_UMP'] = df_clean['PDRB_HargaKonstan'] / df_clean['UMP']
-    df_clean['TPT_x_UMP'] = df_clean['TPT'] * df_clean['UMP']
-    
-    # 4. Tentukan target dan fitur
-    target_col = 'Total_Pengeluaran'
-    X = df_clean.drop(columns=[target_col])
-    y = df_clean[target_col]
-    
-    # 5. Pipeline Preprocessing
-    num_features = ['Tahun', 'UMP', 'TPT', 'PDRB_HargaBerlaku', 'PDRB_HargaKonstan', 
-                    'Inflasi_Rata_Tahunan', 'GDP_Deflator', 'Real_UMP', 'PDRB_to_UMP', 'TPT_x_UMP']
-    cat_features = ['Provinsi']
+    os.makedirs(MODELS_DIR, exist_ok=True)
 
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', StandardScaler(), num_features),
-            ('cat', OneHotEncoder(handle_unknown='ignore'), cat_features)
-        ]
-    )
-    
-    # 6. Bangun Pipeline Utuh (Preprocessor + Model Ridge Terbaik)
-    # Kita menggunakan alpha=1.0 yang terbukti memberikan performa terbaik pada pengujian
+    # 1. Load data dari pipeline v2
+    print("Memuat data dari pipeline v2...")
+    X_train, X_test, y_train, y_test, df = \
+        get_regression_pipeline_data(target_col="Total_Pengeluaran")
+
+    # 2. Definisi fitur
+    num_features = ["Real_UMP", "TPT", "PDRB_HargaKonstan", "Inflasi_Rata_Tahunan"]
+    cat_features = ["Provinsi"]
+
+    # 3. Buat preprocessor
+    preprocessor = get_regression_preprocessor(num_features, cat_features)
+
+    # 4. Bangun pipeline Ridge Regression
     best_pipeline = Pipeline([
-        ('preprocessor', preprocessor),
-        ('regressor', Ridge(alpha=1.0))
+        ("preprocessor", preprocessor),
+        ("regressor", Ridge(alpha=1.0))
     ])
-    
-    # 7. Fit model pada SELURUH DATA untuk performa deployment maksimal
-    print("Melatih model Ridge pada seluruh dataset...")
-    best_pipeline.fit(X, y)
-    
-    # 8. Buat direktori models dan ekspor model ke file .pkl
-    models_dir = 'models'
-    os.makedirs(models_dir, exist_ok=True)
-    model_file = os.path.join(models_dir, 'best_daya_beli_ridge.pkl')
-    
-    with open(model_file, 'wb') as f:
-        pickle.dump(best_pipeline, f)
-        
-    print(f"Berhasil mengekspor model terbaik ke: {model_file}")
-    
-    # Test loading model
-    with open(model_file, 'rb') as f:
-        loaded_model = pickle.load(f)
-    print("Test load model: SUCCESS!")
-    print("Contoh prediksi pertama:", loaded_model.predict(X.iloc[[0]]))
 
-if __name__ == '__main__':
+    # 5. Fit model
+    print("\nMelatih Ridge Regression (alpha=1.0)...")
+    best_pipeline.fit(X_train, y_train)
+
+    # 6. Evaluasi
+    y_pred_train = best_pipeline.predict(X_train)
+    y_pred_test = best_pipeline.predict(X_test)
+
+    r2_train = r2_score(y_train, y_pred_train)
+    r2_test = r2_score(y_test, y_pred_test)
+    mae_test = mean_absolute_error(y_test, y_pred_test)
+    rmse_test = np.sqrt(mean_squared_error(y_test, y_pred_test))
+
+    print("-" * 50)
+    print(f"  Train R² : {r2_train:.4f}")
+    print(f"  Test R²  : {r2_test:.4f}")
+    print(f"  Test MAE : {mae_test:.4f}")
+    print(f"  Test RMSE: {rmse_test:.4f}")
+
+    # 7. Simpan pipeline lengkap (preprocessor + model)
+    model_path = os.path.join(MODELS_DIR, "best_daya_beli_ridge.pkl")
+
+    model_bundle = {
+        "pipeline": best_pipeline,
+        "num_features": num_features,
+        "cat_features": cat_features,
+        "train_r2": r2_train,
+        "test_r2": r2_test,
+        "test_mae": mae_test,
+        "test_rmse": rmse_test,
+    }
+
+    with open(model_path, "wb") as f:
+        pickle.dump(model_bundle, f)
+
+    print(f"\n  ✓ Model disimpan → {model_path}")
+
+    # 8. Test loading
+    with open(model_path, "rb") as f:
+        loaded = pickle.load(f)
+
+    loaded_pipeline = loaded["pipeline"]
+    test_pred = loaded_pipeline.predict(X_test.iloc[[0]])
+    print(f"  ✓ Test load model: SUCCESS!")
+    print(f"  ✓ Contoh prediksi pertama: Rp {np.expm1(test_pred[0]):,.2f}")
+
+
+if __name__ == "__main__":
     main()
