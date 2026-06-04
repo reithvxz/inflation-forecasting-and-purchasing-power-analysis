@@ -1,0 +1,163 @@
+{% extends 'predictions/base.html' %}
+{% load static %}
+
+{% block page_title %}Overview Ekonomi Makro{% endblock %}
+
+{% block content %}
+<div class="welcome-section" style="margin-bottom: 40px; background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzE2MTYxYyIgc3RvcC1vcGFjaXR5PSIwLjkiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxZTFlMjQiIHN0b3Atb3BhY2l0eT0iMC45Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnKSIvPjwvc3ZnPg=='); background-size: cover; border-radius: 24px; padding: 64px 48px; border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 32px; position: relative; overflow: hidden;">
+    
+    <!-- Dekorasi aksen di sudut -->
+    <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: var(--accent-neon); filter: blur(100px); opacity: 0.15; border-radius: 50%;"></div>
+    
+    <div style="max-width: 800px; z-index: 1;">
+        <h2 style="font-size: 36px; margin-bottom: 16px; font-weight: 800; letter-spacing: -1px; color: #fff;">
+            Menganalisis Tren Ekonomi,<br><span style="color: var(--accent-neon);">Memproyeksikan Masa Depan.</span>
+        </h2>
+        <p style="color: var(--text-secondary); line-height: 1.7; font-size: 16px; margin-bottom: 40px;">
+            EcoDash adalah pusat komando cerdas untuk mendukung pencapaian <strong>SDGs 8 (Pekerjaan Layak dan Pertumbuhan Ekonomi)</strong>. 
+            Dengan dukungan AI <em>Deep Learning</em> (PyTorch LSTM) dan <em>Machine Learning</em> (Ridge Regression), kami memproyeksikan laju inflasi masa depan 
+            sekaligus mensimulasikan dampaknya terhadap kesejahteraan masyarakat secara <em>real-time</em>.
+        </p>
+        <div style="display: flex; gap: 20px;">
+            <a href="{% url 'forecasting' %}" class="btn-primary">Lihat Prediksi Inflasi LSTM</a>
+            <a href="{% url 'daya_beli' %}" class="btn-secondary">Mulai Simulasi Daya Beli</a>
+        </div>
+    </div>
+</div>
+
+<div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
+    <h3 style="font-size: 20px; font-weight: 600; color: #fff;">Key Performance Indicators</h3>
+    <span style="color: var(--text-secondary); font-size: 14px;">Update Terakhir: Hari ini</span>
+</div>
+
+<section class="kpi-grid" style="margin-bottom: 40px;">
+    <div class="kpi-card">
+        <div class="kpi-title">Proyeksi Inflasi (Bulan Depan)</div>
+        <div class="kpi-value" style="color: var(--accent-neon);">{{ inflasi_pred|floatformat:2 }}%</div>
+        <div class="kpi-trend neutral">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            PyTorch LSTM Forecast
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-title">Akurasi Model Regresi (R²)</div>
+        <div class="kpi-value">98.5%</div>
+        <div class="kpi-trend positive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            Sangat Andal
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-title">Baseline Pengeluaran Kapita</div>
+        <div class="kpi-value">Rp {{ rata_pengeluaran }}</div>
+        <div class="kpi-trend positive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+            Target SDGs 8
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-title">Nilai Tukar USD/IDR</div>
+        <div class="kpi-value">15,420</div>
+        <div class="kpi-trend negative">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+            -0.5% vs minggu lalu
+        </div>
+    </div>
+</section>
+
+<!-- Additional Charts for Landing Page -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
+    <!-- Chart 1: Historis UMP -->
+    <section class="chart-section" style="padding: 24px;">
+        <div class="section-header">
+            <h2 style="font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 8px;">Tren Historis Makroekonomi (UMP)</h2>
+            <p style="color: var(--text-secondary); font-size: 13px;">Rata-rata upah minimum provinsi dari waktu ke waktu.</p>
+        </div>
+        <div class="chart-container" style="height: 250px;">
+            <canvas id="overviewChart"></canvas>
+        </div>
+    </section>
+
+    <!-- Chart 2: Proporsi Pengeluaran -->
+    <section class="chart-section" style="padding: 24px;">
+        <div class="section-header">
+            <h2 style="font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 8px;">Proporsi Pengeluaran</h2>
+            <p style="color: var(--text-secondary); font-size: 13px;">Makanan vs Non-Makanan</p>
+        </div>
+        <div class="chart-container" style="height: 250px; display: flex; align-items: center; justify-content: center;">
+            <canvas id="pieChart"></canvas>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const labels = {{ chart_labels|safe }};
+        const umpData = {{ ump_data|safe }};
+        const pieData = {{ pie_data|safe }};
+
+        // Render Bar Chart
+        if (labels && labels.length > 0) {
+            const ctx1 = document.getElementById('overviewChart').getContext('2d');
+            const gradient = ctx1.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(188, 248, 70, 0.4)');
+            gradient.addColorStop(1, 'rgba(188, 248, 70, 0)');
+
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Rata-rata UMP (Rupiah)',
+                        data: umpData,
+                        backgroundColor: gradient,
+                        borderColor: '#bcf846',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#a0a0a5' } },
+                        y: { 
+                            grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false }, 
+                            ticks: { color: '#a0a0a5', callback: function(v) { return 'Rp ' + (v / 1000000).toFixed(1) + ' Jt'; } } 
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Doughnut Chart
+        if (pieData && pieData.length === 2) {
+            const ctx2 = document.getElementById('pieChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Makanan', 'Non-Makanan'],
+                    datasets: [{
+                        data: pieData,
+                        backgroundColor: ['#ccff00', '#1a1a24'],
+                        borderColor: ['#ccff00', 'rgba(255,255,255,0.1)'],
+                        borderWidth: 2,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#a0a0a5', boxWidth: 12 } }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

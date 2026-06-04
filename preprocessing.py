@@ -1,30 +1,46 @@
 # -*- coding: utf-8 -*-
 """
-=============================================================================
-  PREPROCESSING PIPELINE (v2)
+============================================================================
+  PREPROCESSING PIPELINE (v3)
   Proyek: Prediksi Inflasi dan Dampaknya terhadap Daya Beli
   Kelompok E – Machine Learning SD-A1, Universitas Airlangga
-=============================================================================
+============================================================================
 
-Dataset yang digunakan (13 dataset):
-  1.  Indeks Harga Konsumen (Umum)                    – BPS, 2005–2019
-  2.  Inflasi Bulanan (M-to-M)                        – BPS, 2005–2026
-  3.  Tingkat Inflasi Tahun Kalender (Y-to-D)         – BPS, referensi
-  4.  BI Rate / Data Inflasi BI                       – Bank Indonesia
-  5.  Upah Minimum Provinsi (UMP)                     – BPS Jateng, 2021–2025
-  6.  Rata-rata Pengeluaran per Kapita                 – BPS, 2017–2025
-  7.  Data Historis USD/IDR                           – Investing.com, bulanan
-  8.  Tingkat Pengangguran Terbuka (Semester+Provinsi) – Open Data Jabar
-  9.  TPT & TPAK Menurut Provinsi                     – BPS, 2017–2025
-  10. PDRB Per Kapita (Ribu Rupiah)                   – BPS, 2010–2025
-  11. Persentase Penduduk Miskin per Provinsi          – BPS, 2010–2024
-  12. Inflasi Umum, Inti, Harga Diatur, Bergejolak    – BPS, 2009–2026
-  13. Harga Bulanan Minyak Mentah (USD/Barel)          – IndexMundi, 2001–2026
+Dataset yang digunakan (23 dataset):
+  --- LOKAL (BPS, Bank Indonesia, dll) ---
+   1.  Indeks Harga Konsumen (Umum)                    – BPS, 2005–2023
+   2.  Inflasi Bulanan (M-to-M)                        – BPS, 2005–2026-02
+   3.  Tingkat Inflasi Tahun Kalender (Y-to-D)         – BPS, referensi
+   4.  BI Rate / Data Inflasi BI                       – Bank Indonesia
+   5.  Upah Minimum Provinsi (UMP)                     – BPS Jateng, 2021–2025
+   6.  Rata-rata Pengeluaran per Kapita                 – BPS, 2017–2025
+   7.  Data Historis USD/IDR                           – Investing.com, bulanan
+   8.  Tingkat Pengangguran Terbuka (Semester+Provinsi) – Open Data Jabar
+   9.  TPT & TPAK Menurut Provinsi                     – BPS, 2017–2025
+  10.  PDRB Per Kapita (Ribu Rupiah)                   – BPS, 2010–2025
+  11.  Persentase Penduduk Miskin per Provinsi          – BPS, 2010–2024
+  12.  Inflasi Umum, Inti, Harga Diatur, Bergejolak    – BPS, 2009–2026-05
+  13.  Harga Bulanan Minyak Mentah (USD/Barel)          – IndexMundi, 2001–2026-03
+  14.  USD/IDR Harian (Jan–Mei 2026)                   – Yahoo Finance
+
+  --- INTERNASIONAL (Baru v3) ---
+  15.  Crude Oil Brent (USD/Barel)                      – Yahoo Finance, 2007–2026
+  16.  Indeks Dollar AS (DXY)                           – Yahoo Finance, 2003–2026
+  17.  The Fed Funds Rate (%)                           – FRED, 2003–2026
+  18.  Gold Price (USD/oz)                              – Yahoo Finance, 2003–2026
+  19.  CPO Price (USD/mt)                               – Yahoo Finance, 2010–2026
+  20.  Geopolitical Risk Index (GPR)                    – Caldara & Iacoviello
+  21.  FAO Food Price Index (template, manual)         – FAO
+  22.  Rice Price Thailand 5% (template, manual)        – World Bank Pink Sheet
+
+  --- TODO (perlu download manual dari BPS) ---
+  23.  Indeks Gini per Provinsi                         – BPS
+  24.  IPM per Provinsi                                 – BPS
 
 Output:
   1. datasets/processed/clean_inflasi_ts.csv  → Model 1 (LSTM Forecasting)
   2. datasets/processed/clean_daya_beli.csv   → Model 2 (Regresi Daya Beli)
-=============================================================================
+============================================================================
 """
 
 import os
@@ -318,7 +334,10 @@ def load_inflasi_komponen() -> pd.DataFrame:
 # [13] Harga Minyak Mentah — bulanan USD/barel
 # ---------------------------------------------------------------------------
 def load_harga_minyak() -> pd.DataFrame:
-    """Harga Bulanan Minyak Mentah (USD/Barel) dari IndexMundi."""
+    """Harga Bulanan Minyak Mentah (USD/Barel) dari IndexMundi.
+
+    v3: Append data April–Mei 2026 dari Yahoo Finance (WTI) jika tersedia.
+    """
     print("  [13/13] Harga Minyak Mentah (USD/Barel)...", end=" ")
     folder = "Harga Bulanan Minyak Mentah (minyak bumi) - Dolar AS per Barel"
     files = glob.glob(os.path.join(BASE, folder, "*.csv"))
@@ -327,17 +346,363 @@ def load_harga_minyak() -> pd.DataFrame:
         return pd.DataFrame()
     try:
         df = pd.read_csv(files[0], dtype=str)
-        # Kolom: date, month_label, crude_oil_price_usd_per_barrel, monthly_change_percent
         df["Tanggal"] = pd.to_datetime(df["date"], format="%Y-%m-%d", errors="coerce")
         df["Harga_Minyak_USD"] = df["crude_oil_price_usd_per_barrel"].apply(_to_float_id)
         df = (df.dropna(subset=["Tanggal", "Harga_Minyak_USD"])
               .sort_values("Tanggal")
               .set_index("Tanggal")
               [["Harga_Minyak_USD"]])
-        # Normalize ke awal bulan dan resample
+        # Resample ke awal bulan
         df_monthly = df.resample("MS").mean()
+
+        # Append data April–Mei 2026 dari Yahoo Finance
+        wti_path = os.path.join(BASE, "international", "wti_apr_may_2026.csv")
+        if os.path.exists(wti_path):
+            wti_df = pd.read_csv(wti_path)
+            if "Tanggal" in wti_df.columns and "Harga" in wti_df.columns:
+                wti_df["Tanggal"] = pd.to_datetime(wti_df["Tanggal"], errors="coerce")
+                wti_df = wti_df.dropna(subset=["Tanggal"]).set_index("Tanggal")
+                wti_df = wti_df.rename(columns={"Harga": "Harga_Minyak_USD"})
+                # Concat (append)
+                df_monthly = pd.concat([df_monthly, wti_df[["Harga_Minyak_USD"]]])
+                df_monthly = df_monthly[~df_monthly.index.duplicated(keep="last")].sort_index()
+
         print(f"{len(df_monthly)} bulan ({df_monthly.index.min().year}–{df_monthly.index.max().year})")
         return df_monthly
+    except Exception as e:
+        print(f"GAGAL – {e}")
+        return pd.DataFrame()
+
+
+# ---------------------------------------------------------------------------
+# [14] USD/IDR Harian 2026 (Jan–Mei) — append dari Yahoo Finance
+# ---------------------------------------------------------------------------
+def load_usd_idr_2026() -> pd.DataFrame:
+    """USD/IDR harian 2026 (Jan–Mei) dari Yahoo Finance, di-resample ke bulanan."""
+    path = os.path.join(BASE, "international", "usd_idr_2026.csv")
+    if not os.path.exists(path):
+        print("  (file 2026 belum ada, skip)")
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path)
+        # Rename Date ke Tanggal jika perlu
+        if "Tanggal" not in df.columns and "Date" in df.columns:
+            df = df.rename(columns={"Date": "Tanggal"})
+        if "Tanggal" not in df.columns:
+            print("  GAGAL – kolom 'Tanggal'/'Date' tidak ditemukan")
+            return pd.DataFrame()
+        df["Tanggal"] = pd.to_datetime(df["Tanggal"], errors="coerce")
+        # Cari kolom harga
+        if "Close" in df.columns:
+            price_col = "Close"
+        elif "Terakhir" in df.columns:
+            price_col = "Terakhir"
+        else:
+            print("  GAGAL – kolom harga tidak ditemukan")
+            return pd.DataFrame()
+        df[price_col] = df[price_col].apply(_to_float_id)
+        df = df.dropna(subset=["Tanggal", price_col])
+        # Resample ke bulanan (ambil rata-rata)
+        df_monthly = (df.set_index("Tanggal")[[price_col]]
+                      .resample("MS").mean()
+                      .rename(columns={price_col: "USD_IDR"}))
+        print(f"{len(df_monthly)} bulan ({df_monthly.index.min().year}–{df_monthly.index.max().year})")
+        return df_monthly
+    except Exception as e:
+        print(f"GAGAL – {e}")
+        return pd.DataFrame()
+
+
+# ---------------------------------------------------------------------------
+# [15] Crude Oil Brent — dari Yahoo Finance (BZ=F)
+# ---------------------------------------------------------------------------
+def load_brent_oil() -> pd.DataFrame:
+    """Crude Oil Brent (USD/Barel) dari Yahoo Finance."""
+    path = os.path.join(BASE, "international", "crude_oil_brent.csv")
+    if not os.path.exists(path):
+        print("  (file belum ada, skip)")
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path)
+        if "Tanggal" not in df.columns and "Date" in df.columns:
+            df = df.rename(columns={"Date": "Tanggal"})
+        df["Tanggal"] = pd.to_datetime(df["Tanggal"], errors="coerce")
+        val_col = [c for c in df.columns if c != "Tanggal"][0]
+        df[val_col] = pd.to_numeric(df[val_col], errors="coerce")
+        df = df.dropna(subset=["Tanggal", val_col]).set_index("Tanggal")
+        df = df.rename(columns={val_col: "Brent_USD"})
+        print(f"{len(df)} bulan ({df.index.min().year}–{df.index.max().year})")
+        return df[["Brent_USD"]]
+    except Exception as e:
+        print(f"GAGAL – {e}")
+        return pd.DataFrame()
+
+
+# ---------------------------------------------------------------------------
+# [16] Indeks Dollar AS (DXY) — dari Yahoo Finance (DX-Y.NYB)
+# ---------------------------------------------------------------------------
+def load_dxy() -> pd.DataFrame:
+    """Indeks Dollar AS (DXY) dari Yahoo Finance."""
+    path = os.path.join(BASE, "international", "dxy_dollar_index.csv")
+    if not os.path.exists(path):
+        print("  (file belum ada, skip)")
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path)
+        if "Tanggal" not in df.columns and "Date" in df.columns:
+            df = df.rename(columns={"Date": "Tanggal"})
+        df["Tanggal"] = pd.to_datetime(df["Tanggal"], errors="coerce")
+        val_col = [c for c in df.columns if c != "Tanggal"][0]
+        df[val_col] = pd.to_numeric(df[val_col], errors="coerce")
+        df = df.dropna(subset=["Tanggal", val_col]).set_index("Tanggal")
+        df = df.rename(columns={val_col: "DXY"})
+        print(f"{len(df)} bulan ({df.index.min().year}–{df.index.max().year})")
+        return df[["DXY"]]
+    except Exception as e:
+        print(f"GAGAL – {e}")
+        return pd.DataFrame()
+
+
+# ---------------------------------------------------------------------------
+# [17] The Fed Funds Rate — dari FRED
+# ---------------------------------------------------------------------------
+def load_fed_rate() -> pd.DataFrame:
+    """The Fed Funds Rate (%) dari FRED."""
+    path = os.path.join(BASE, "international", "fed_funds_rate.csv")
+    if not os.path.exists(path):
+        print("  (file belum ada, skip)")
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path)
+        df["Tanggal"] = pd.to_datetime(df["Tanggal"], errors="coerce")
+        val_col = [c for c in df.columns if c != "Tanggal"][0]
+        df[val_col] = pd.to_numeric(df[val_col], errors="coerce")
+        df = df.dropna(subset=["Tanggal", val_col]).set_index("Tanggal")
+        df = df.rename(columns={val_col: "FedRate_Pct"})
+        print(f"{len(df)} bulan ({df.index.min().year}–{df.index.max().year})")
+        return df[["FedRate_Pct"]]
+    except Exception as e:
+        print(f"GAGAL – {e}")
+        return pd.DataFrame()
+
+
+# ---------------------------------------------------------------------------
+# [18] Gold Price — dari Yahoo Finance (GC=F)
+# ---------------------------------------------------------------------------
+def load_gold() -> pd.DataFrame:
+    """Gold Price (USD/oz) dari Yahoo Finance."""
+    path = os.path.join(BASE, "international", "gold_price.csv")
+    if not os.path.exists(path):
+        print("  (file belum ada, skip)")
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path)
+        if "Tanggal" not in df.columns and "Date" in df.columns:
+            df = df.rename(columns={"Date": "Tanggal"})
+        df["Tanggal"] = pd.to_datetime(df["Tanggal"], errors="coerce")
+        val_col = [c for c in df.columns if c != "Tanggal"][0]
+        df[val_col] = pd.to_numeric(df[val_col], errors="coerce")
+        df = df.dropna(subset=["Tanggal", val_col]).set_index("Tanggal")
+        df = df.rename(columns={val_col: "Gold_USD"})
+        print(f"{len(df)} bulan ({df.index.min().year}–{df.index.max().year})")
+        return df[["Gold_USD"]]
+    except Exception as e:
+        print(f"GAGAL – {e}")
+        return pd.DataFrame()
+
+
+# ---------------------------------------------------------------------------
+# [19] CPO Price (Crude Palm Oil) — dari Yahoo Finance (CPO=F)
+# ---------------------------------------------------------------------------
+def load_cpo() -> pd.DataFrame:
+    """CPO Price (USD/mt) dari Yahoo Finance."""
+    path = os.path.join(BASE, "international", "cpo_price.csv")
+    if not os.path.exists(path):
+        print("  (file belum ada, skip)")
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path)
+        if "Tanggal" not in df.columns and "Date" in df.columns:
+            df = df.rename(columns={"Date": "Tanggal"})
+        df["Tanggal"] = pd.to_datetime(df["Tanggal"], errors="coerce")
+        val_col = [c for c in df.columns if c != "Tanggal"][0]
+        df[val_col] = pd.to_numeric(df[val_col], errors="coerce")
+        df = df.dropna(subset=["Tanggal", val_col]).set_index("Tanggal")
+        df = df.rename(columns={val_col: "CPO_USD"})
+        print(f"{len(df)} bulan ({df.index.min().year}–{df.index.max().year})")
+        return df[["CPO_USD"]]
+    except Exception as e:
+        print(f"GAGAL – {e}")
+        return pd.DataFrame()
+
+
+# ---------------------------------------------------------------------------
+# [20] Geopolitical Risk Index (GPR) — Caldara & Iacoviello
+# ---------------------------------------------------------------------------
+def load_gpr() -> pd.DataFrame:
+    """Geopolitical Risk Index (GPR) dari Caldara & Iacoviello (policyuncertainty.com).
+    File CSV dari: https://www.policyuncertainty.com/gpr.html
+    Format: kolom 'month' (m/d/yyyy) dan 'GPR' (nilai indeks).
+    """
+    path = os.path.join(BASE, "international", "data_gpr_export.csv")
+    if not os.path.exists(path):
+        # Fallback ke template
+        path = os.path.join(BASE, "international", "gpr_index.csv")
+        if not os.path.exists(path):
+            print("  (file belum ada, skip)")
+            return pd.DataFrame()
+    try:
+        df = pd.read_csv(path)
+        # Cari kolom tanggal dan GPR
+        date_col = None
+        for c in ["month", "Month", "Date", "Tanggal"]:
+            if c in df.columns:
+                date_col = c
+                break
+        gpr_col = None
+        for c in ["GPR", "gpr", "GPR_Index"]:
+            if c in df.columns:
+                gpr_col = c
+                break
+        if date_col is None or gpr_col is None:
+            print(f"  WARNING – kolom tanggal/GPR tidak ditemukan ({list(df.columns)[:5]})")
+            return pd.DataFrame()
+        df = df[[date_col, gpr_col]].copy()
+        df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
+        df[gpr_col] = pd.to_numeric(df[gpr_col], errors="coerce")
+        df = df.dropna(subset=[date_col, gpr_col])
+        # Set tanggal ke awal bulan
+        df[date_col] = df[date_col].dt.to_period("M").dt.to_timestamp()
+        df = df.drop_duplicates(subset=[date_col], keep="last")
+        df = df.set_index(date_col)
+        df = df.rename(columns={gpr_col: "GPR_Index"})
+        print(f"{len(df)} bulan ({df.index.min().year}–{df.index.max().year})")
+        return df[["GPR_Index"]]
+    except Exception as e:
+        print(f"GAGAL – {e}")
+        return pd.DataFrame()
+
+
+# ---------------------------------------------------------------------------
+# [21] FAO Food Price Index — dari FAO
+# ---------------------------------------------------------------------------
+def load_fao_fpi() -> pd.DataFrame:
+    """FAO Food Price Index dari FAO (ffpi-data-*.xlsx).
+    File Excel dari: https://www.fao.org/worldfoodsituation/foodpricesindex/en/
+    Format: header di row 2, data mulai row 4, kolom 0=Tanggal, kolom 1=Food Price Index.
+    """
+    path = os.path.join(BASE, "international", "ffpi-data-2026-05.xlsx")
+    if not os.path.exists(path):
+        # Fallback ke template CSV
+        path = os.path.join(BASE, "international", "fao_food_price_index.csv")
+        if not os.path.exists(path):
+            print("  (file belum ada, skip)")
+            return pd.DataFrame()
+    try:
+        if path.endswith(".xlsx"):
+            df = pd.read_excel(path, header=2)
+        else:
+            df = pd.read_csv(path, comment="#")
+        # Cari kolom Tanggal dan Food Price Index
+        date_col = None
+        for c in ["Date", "Tanggal", "date", "Month"]:
+            if c in df.columns:
+                date_col = c
+                break
+        fpi_col = None
+        for c in ["Food Price Index", "FAO_Food_Price_Index", "FPI", "Index"]:
+            if c in df.columns:
+                fpi_col = c
+                break
+        if date_col is None or fpi_col is None:
+            print(f"  WARNING – kolom Tanggal/FPI tidak ditemukan ({list(df.columns)[:5]})")
+            return pd.DataFrame()
+        df = df[[date_col, fpi_col]].copy()
+        df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
+        df[fpi_col] = pd.to_numeric(df[fpi_col], errors="coerce")
+        df = df.dropna(subset=[date_col, fpi_col])
+        # Set tanggal ke awal bulan
+        df[date_col] = df[date_col].dt.to_period("M").dt.to_timestamp()
+        df = df.drop_duplicates(subset=[date_col], keep="last")
+        df = df.set_index(date_col)
+        df = df.rename(columns={fpi_col: "FAO_FPI"})
+        print(f"{len(df)} bulan ({df.index.min().year}–{df.index.max().year})")
+        return df[["FAO_FPI"]]
+    except Exception as e:
+        print(f"GAGAL – {e}")
+        return pd.DataFrame()
+
+
+# ---------------------------------------------------------------------------
+# [22] Semua Komoditas World Bank CMO (Palm Oil, Coal, Coffee, Wheat, dll)
+# ---------------------------------------------------------------------------
+# Mapping: nama kolom di CMO -> nama kolom di output
+CMO_COLUMNS = {
+    "Palm oil":                   "CMO_PalmOil_USD",
+    "Coal, Australian":           "CMO_Coal_AU_USD",
+    "Coal, South African **":     "CMO_Coal_SA_USD",
+    "Coffee, Robusta":            "CMO_Coffee_Robusta_USD",
+    "Coffee, Arabica":            "CMO_Coffee_Arabica_USD",
+    "Wheat, US SRW":              "CMO_Wheat_SRW_USD",
+    "Wheat, US HRW":              "CMO_Wheat_HRW_USD",
+    "Soybeans":                   "CMO_Soybeans_USD",
+    "Soybean oil":                "CMO_SoybeanOil_USD",
+    "Sugar, world":               "CMO_Sugar_USD",
+    "Rubber, TSR20 **":           "CMO_Rubber_TSR20_USD",
+    "Rubber, RSS3":               "CMO_Rubber_RSS3_USD",
+    "Cotton, A Index":            "CMO_Cotton_USD",
+    "Rice, Thai 5% ":             "CMO_Rice_Thailand_USD",
+    "Coconut oil":                "CMO_CoconutOil_USD",
+    "Groundnuts":                 "CMO_Groundnuts_USD",
+    "Fish meal":                  "CMO_FishMeal_USD",
+    "Maize":                      "CMO_Maize_USD",
+    "Tin":                        "CMO_Tin_USD",
+    "Nickel":                     "CMO_Nickel_USD",
+    "Copper":                     "CMO_Copper_USD",
+    "Aluminum":                   "CMO_Aluminum_USD",
+    "Iron ore, cfr spot":         "CMO_IronOre_USD",
+    "Natural gas, US":            "CMO_NatGas_USD",
+    "Natural gas, Europe":        "CMO_NatGas_EU_USD",
+    "Liquefied natural gas, Japan": "CMO_LNG_Japan_USD",
+}
+
+
+def load_cmo_commodities() -> pd.DataFrame:
+    """Load semua komoditas World Bank CMO (Commodity Markets) sekaligus.
+    File: CMO-Historical-Data-Monthly.xlsx
+    Sheet: Monthly Prices
+    Format tanggal: '1960M01', dst.
+    Output: DataFrame dengan kolom per komoditas (USD/mt atau satuan World Bank).
+    """
+    path = os.path.join(BASE, "international", "CMO-Historical-Data-Monthly.xlsx")
+    if not os.path.exists(path):
+        print("  (file CMO belum ada, skip)")
+        return pd.DataFrame()
+    try:
+        df = pd.read_excel(path, sheet_name="Monthly Prices", header=4)
+        date_col = df.columns[0]
+
+        # Ambil kolom tanggal
+        result = pd.DataFrame()
+        result["Tanggal"] = pd.to_datetime(df[date_col], format="%YM%m", errors="coerce")
+        result = result.dropna(subset=["Tanggal"]).set_index("Tanggal").sort_index()
+
+        loaded = 0
+        for cmo_col, out_col in CMO_COLUMNS.items():
+            if cmo_col in df.columns:
+                vals = pd.to_numeric(df[cmo_col].values, errors="coerce")
+                # Buat series dengan tanggal yang sama
+                series = pd.Series(vals[:len(result)], index=result.index, name=out_col)
+                result[out_col] = series
+                loaded += 1
+
+        result = result.dropna(how="all")
+        # Forward fill & backward fill untuk setiap kolom
+        for col in result.columns:
+            result[col] = result[col].ffill().bfill()
+
+        print(f"{loaded} komoditas, {len(result)} bulan ({result.index.min().year}–{result.index.max().year})")
+        return result
     except Exception as e:
         print(f"GAGAL – {e}")
         return pd.DataFrame()
@@ -603,21 +968,32 @@ def load_penduduk_miskin() -> pd.DataFrame:
 # ===========================================================================
 
 def build_inflasi_ts(inflasi, ihk, bi_rate, usd_idr,
-                     inflasi_komp, harga_minyak) -> pd.DataFrame:
+                     inflasi_komp, harga_minyak,
+                     usd_idr_2026=None,
+                     brent=None, dxy=None, fed_rate=None,
+                     gold=None, cpo=None, gpr=None,
+                     fao_fpi=None, cmo_all=None) -> pd.DataFrame:
     """
-    Gabungkan semua fitur time-series bulanan:
+    Gabungkan semua fitur time-series bulanan.
+
+    Fitur domestik:
     - Inflasi MoM (backbone, target)
-    - IHK (hanya 2005–2019)
-    - BI Rate
-    - USD/IDR
+    - IHK (2005–2023 lengkap; 2024–2026 diimputasi dari Inflasi MoM)
+    - BI Rate, USD/IDR
     - Inflasi Komponen (Inti, Harga Diatur, Bergejolak)
-    - Harga Minyak Mentah (USD/Barel)
+    - Harga Minyak Mentah (WTI)
+
+    Fitur internasional:
+    - Brent Oil, DXY, Fed Funds Rate, Gold, CPO
+    - Geopolitical Risk Index (GPR)
+    - FAO Food Price Index
+    - 24 komoditas World Bank CMO (Palm Oil, Coal, Coffee, Wheat, dll)
     """
     print("\n▶ Membangun clean_inflasi_ts.csv ...")
 
     ts = inflasi.copy()
 
-    # Merge IHK (hanya 2005–2019, NaN setelah itu)
+    # Merge IHK
     if not ihk.empty:
         ts = ts.join(ihk, how="left")
 
@@ -625,21 +1001,121 @@ def build_inflasi_ts(inflasi, ihk, bi_rate, usd_idr,
     if not bi_rate.empty:
         ts = ts.join(bi_rate, how="left")
 
-    # Merge USD/IDR
+    # Merge USD/IDR (dari Investing.com, sampai 2025-12)
     if not usd_idr.empty:
         ts = ts.join(usd_idr, how="left")
 
-    # Merge Inflasi Komponen (Inti, Harga Diatur, Bergejolak, Umum)
+    # Merge USD/IDR 2026 (dari Yahoo, Jan–Mei 2026) — append/update baris 2026
+    if usd_idr_2026 is not None and not usd_idr_2026.empty:
+        for idx, row in usd_idr_2026.iterrows():
+            if idx in ts.index and "USD_IDR" in ts.columns:
+                ts.loc[idx, "USD_IDR"] = row["USD_IDR"]
+            elif "USD_IDR" in ts.columns:
+                ts.loc[idx, "USD_IDR"] = row["USD_IDR"]
+
+    # Merge Inflasi Komponen
     if not inflasi_komp.empty:
         ts = ts.join(inflasi_komp, how="left")
 
-    # Merge Harga Minyak Mentah
+    # Merge Harga Minyak Mentah (WTI dari IndexMundi)
     if not harga_minyak.empty:
         ts = ts.join(harga_minyak, how="left")
+
+    # Merge fitur internasional
+    for new_df, name in [
+        (brent, "Brent_USD"),
+        (dxy, "DXY"),
+        (fed_rate, "FedRate_Pct"),
+        (gold, "Gold_USD"),
+        (cpo, "CPO_USD"),
+        (gpr, "GPR_Index"),
+        (fao_fpi, "FAO_FPI"),
+    ]:
+        if new_df is not None and not new_df.empty and name in new_df.columns:
+            ts = ts.join(new_df[[name]], how="left")
+
+    # Merge semua komoditas CMO (24 kolom)
+    if cmo_all is not None and not cmo_all.empty:
+        ts = ts.join(cmo_all, how="left")
 
     # Tambahkan fitur waktu (aman dari leakage)
     ts["Bulan"] = ts.index.month
     ts["Tahun"] = ts.index.year
+
+    # --- Imputasi nilai null untuk data 2026 (Maret–Mei) ---
+    # 1. Inflasi_MoM: ambil dari Inflasi_Umum_MoM (mereka identik untuk MoM)
+    if "Inflasi_Umum_MoM" in ts.columns and "Inflasi_MoM" in ts.columns:
+        mask_null = ts["Inflasi_MoM"].isna() & ts["Inflasi_Umum_MoM"].notna()
+        if mask_null.any():
+            ts.loc[mask_null, "Inflasi_MoM"] = ts.loc[mask_null, "Inflasi_Umum_MoM"]
+            print(f"   [IMPUTASI] Inflasi_MoM diisi dari Inflasi_Umum_MoM: {mask_null.sum()} baris")
+
+    # 2. Inflasi Komponen: forward fill (sama dengan nilai bulan lalu)
+    for col in ["Inflasi_Umum_MoM", "Inflasi_Inti_MoM",
+                "Inflasi_HargaDiatur_MoM", "Inflasi_Bergejolak_MoM"]:
+        if col in ts.columns:
+            null_before = ts[col].isna().sum()
+            ts[col] = ts[col].ffill().bfill()
+            null_after = ts[col].isna().sum()
+            if null_after < null_before:
+                print(f"   [IMPUTASI] {col} ffilled: {null_before - null_after} baris")
+
+    # 3. BI Rate: forward fill (BI Rate jarang berubah drastis)
+    if "BI_Rate" in ts.columns:
+        null_before = ts["BI_Rate"].isna().sum()
+        ts["BI_Rate"] = ts["BI_Rate"].ffill().bfill()
+        null_after = ts["BI_Rate"].isna().sum()
+        if null_after < null_before:
+            print(f"   [IMPUTASI] BI_Rate ffilled: {null_before - null_after} baris")
+
+    # 4. IHK: imputasi 2024–2026 pakai rumus IHK_prev × (1 + Inflasi/100)
+    if "IHK" in ts.columns and "Inflasi_MoM" in ts.columns:
+        ihk_null_mask = ts["IHK"].isna()
+        if ihk_null_mask.any():
+            count = 0
+            for idx in ts[ihk_null_mask].index:
+                pos = ts.index.get_loc(idx)
+                if pos > 0 and not np.isnan(ts.iloc[pos - 1]["IHK"]):
+                    inflasi = ts.loc[idx, "Inflasi_MoM"]
+                    if not np.isnan(inflasi):
+                        ts.loc[idx, "IHK"] = ts.iloc[pos - 1]["IHK"] * (1 + inflasi / 100)
+                        count += 1
+            ts["IHK"] = ts["IHK"].ffill().bfill()
+            print(f"   [IMPUTASI] IHK diestimasi dari IHK_prev × (1 + Inflasi): {count} baris")
+
+    # 5. GPR Index: forward fill
+    if "GPR_Index" in ts.columns:
+        null_before = ts["GPR_Index"].isna().sum()
+        ts["GPR_Index"] = ts["GPR_Index"].ffill().bfill()
+        null_after = ts["GPR_Index"].isna().sum()
+        if null_after < null_before:
+            print(f"   [IMPUTASI] GPR_Index ffilled: {null_before - null_after} baris")
+
+    # 6. Brent, CPO, dll: forward fill (mulai data setelah 2005)
+    for col in ["Brent_USD", "DXY", "FedRate_Pct", "Gold_USD", "CPO_USD", "FAO_FPI"]:
+        if col in ts.columns:
+            null_before = ts[col].isna().sum()
+            ts[col] = ts[col].ffill().bfill()
+            null_after = ts[col].isna().sum()
+            if null_after < null_before:
+                print(f"   [IMPUTASI] {col} ffilled: {null_before - null_after} baris")
+
+    # 6b. Semua kolom CMO: forward fill
+    cmo_cols = [c for c in ts.columns if c.startswith("CMO_")]
+    for col in cmo_cols:
+        null_before = ts[col].isna().sum()
+        ts[col] = ts[col].ffill().bfill()
+        null_after = ts[col].isna().sum()
+        if null_after < null_before:
+            print(f"   [IMPUTASI] {col} ffilled: {null_before - null_after} baris")
+
+    # 7. Drop baris dengan Inflasi_MoM null (tidak bisa diimputasi untuk target)
+    if "Inflasi_MoM" in ts.columns:
+        before = len(ts)
+        ts = ts.dropna(subset=["Inflasi_MoM"])
+        dropped = before - len(ts)
+        if dropped > 0:
+            print(f"   [DROP] Baris tanpa Inflasi_MoM: {dropped} (Mei 2026 dst yang belum rilis)")
 
     # Reset index agar Tanggal menjadi kolom biasa
     ts = ts.reset_index()
@@ -786,11 +1262,12 @@ def print_summary(df: pd.DataFrame, name: str):
 
 def main():
     print("=" * 65)
-    print("  PREPROCESSING PIPELINE v2 – Kelompok E ML UNAIR")
+    print("  PREPROCESSING PIPELINE v3 – Kelompok E ML UNAIR")
     print("=" * 65)
     print("\n>> Memuat semua dataset raw...\n")
 
-    # Load semua dataset
+    # --- Lokal (existing) ---
+    print("[LOKAL]")
     inflasi       = load_inflasi_mom()        # [1]
     ihk           = load_ihk()                # [2]
     # [3] Inflasi Y-to-D: referensi saja, tidak dimasukkan ke model
@@ -805,9 +1282,29 @@ def main():
     inflasi_komp  = load_inflasi_komponen()   # [12]
     harga_minyak  = load_harga_minyak()       # [13]
 
+    # --- Lokal (BARU v3) ---
+    print("\n[LOKAL - BARU]")
+    usd_idr_2026  = load_usd_idr_2026()       # [14] USD/IDR Jan–Mei 2026
+
+    # --- Internasional (BARU v3) ---
+    print("\n[INTERNASIONAL - BARU]")
+    brent         = load_brent_oil()          # [15]
+    dxy           = load_dxy()                # [16]
+    fed_rate      = load_fed_rate()           # [17]
+    gold          = load_gold()               # [18]
+    cpo           = load_cpo()                # [19]
+    gpr           = load_gpr()                # [20] Geopolitical Risk Index
+    fao_fpi       = load_fao_fpi()            # [21] FAO Food Price Index
+    cmo_all       = load_cmo_commodities()    # [22] Semua komoditas World Bank CMO
+
     # Build output files
+    print("\n[BUILD]")
     ts    = build_inflasi_ts(inflasi, ihk, bi_rate, usd_idr,
-                              inflasi_komp, harga_minyak)
+                              inflasi_komp, harga_minyak,
+                              usd_idr_2026=usd_idr_2026,
+                              brent=brent, dxy=dxy, fed_rate=fed_rate,
+                              gold=gold, cpo=cpo, gpr=gpr,
+                              fao_fpi=fao_fpi, cmo_all=cmo_all)
     panel = build_daya_beli_panel(inflasi, ump, pengeluaran,
                                    pengangguran_sem, tpt_tpak,
                                    pdrb, penduduk_miskin)

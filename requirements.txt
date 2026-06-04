@@ -4,5 +4,9 @@ matplotlib
 seaborn
 openpyxl
 scikit-learn
-tensorflow
+torch
 django
+yfinance
+fredapi
+wbdata
+pandas-datareader

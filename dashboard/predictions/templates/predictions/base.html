@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoDash - Prediksi Ekonomi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{% static 'predictions/css/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Top Navbar -->
+        <nav class="top-navbar">
+            <div class="nav-left">
+                <div class="logo-area">
+                    <div class="logo-icon"></div>
+                    <h2>EcoDash</h2>
+                </div>
+                
+                <ul class="nav-links">
+                    <li class="{% if request.path == '/' %}active{% endif %}">
+                        <a href="{% url 'landing' %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                            Overview
+                        </a>
+                    </li>
+                    <li class="{% if request.path == '/forecasting/' %}active{% endif %}">
+                        <a href="{% url 'forecasting' %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                            Forecasting
+                        </a>
+                    </li>
+                    <li class="{% if request.path == '/daya-beli/' %}active{% endif %}">
+                        <a href="{% url 'daya_beli' %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                            Daya Beli
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="header-right">
+                <div class="user-profile">
+                    <div class="avatar">PM</div>
+                    <div class="user-info">
+                        <span class="user-name">Pembuat Kebijakan</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-title-area">
+                <h1>{% block page_title %}Prediksi Inflasi & Dampak Daya Beli{% endblock %}</h1>
+            </div>
+            <!-- Content Area -->
+            <div class="content-area">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

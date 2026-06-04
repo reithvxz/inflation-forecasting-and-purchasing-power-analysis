@@ -1,0 +1,114 @@
+{% extends 'predictions/base.html' %}
+{% load static %}
+
+{% block page_title %}Time Series Forecasting (LSTM){% endblock %}
+
+{% block content %}
+<section class="chart-section" style="margin-bottom: 24px;">
+    <div class="section-header">
+        <h2>Prediksi Inflasi - PyTorch LSTM</h2>
+    </div>
+    <div class="chart-container">
+        <canvas id="inflationChart"></canvas>
+    </div>
+</section>
+
+<!-- Kartu Interpretasi -->
+<div class="glass-card" style="padding: 24px; border-left: 4px solid var(--accent-neon); background: rgba(30, 30, 36, 0.9);">
+    <h3 style="color: var(--accent-neon); margin-bottom: 12px; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        Interpretasi Model LSTM
+    </h3>
+    <p style="color: var(--text-secondary); line-height: 1.6; font-size: 14px; margin-bottom: 8px;">
+        Berdasarkan perhitungan jaringan saraf tiruan <strong>Long Short-Term Memory (LSTM)</strong> menggunakan fitur Multivariat (Inflasi MoM, IHK, BI Rate, dan USD/IDR), proyeksi tingkat inflasi bulan depan berada di angka <strong style="color: white; font-size: 16px;">{{ inflasi_pred|floatformat:2 }}%</strong>.
+    </p>
+    <p style="color: var(--text-secondary); line-height: 1.6; font-size: 14px;">
+        {% if inflasi_pred > 1.0 %}
+        <span style="color: #ff5252; font-weight: 600;">Status: Waspada.</span> Angka inflasi diprediksi melonjak tajam melebihi ambang batas aman 1%. Kebijakan moneter kontraktif (seperti peningkatan BI Rate) sangat disarankan untuk menekan laju inflasi ini agar daya beli masyarakat tidak tergerus terlalu dalam.
+        {% elif inflasi_pred < 0 %}
+        <span style="color: #ff5252; font-weight: 600;">Status: Deflasi.</span> Terjadi proyeksi kontraksi harga. Walaupun harga barang murah, deflasi berlebih mengindikasikan lesunya daya beli masyarakat (permintaan agregat turun).
+        {% else %}
+        <span style="color: var(--accent-neon); font-weight: 600;">Status: Terkendali.</span> Inflasi diproyeksikan stabil dan berada dalam batas normal. Daya beli masyarakat diasumsikan masih kuat.
+        {% endif %}
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('inflationChart').getContext('2d');
+        
+        const gradientActual = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientActual.addColorStop(0, 'rgba(160, 160, 165, 0.2)');
+        gradientActual.addColorStop(1, 'rgba(160, 160, 165, 0)');
+        
+        const gradientPred = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPred.addColorStop(0, 'rgba(188, 248, 70, 0.4)');
+        gradientPred.addColorStop(1, 'rgba(188, 248, 70, 0)');
+
+        // Mengambil data real dari backend (views.py mengirim JSON)
+        const labels = {{ labels|safe }};
+        const dataActual = {{ data_actual|safe }};
+        const dataPred = {{ data_pred|safe }};
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Inflasi Aktual',
+                        data: dataActual,
+                        borderColor: '#a0a0a5',
+                        backgroundColor: gradientActual,
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Prediksi LSTM (1 Bulan)',
+                        data: dataPred,
+                        borderColor: '#bcf846',
+                        backgroundColor: gradientPred,
+                        borderWidth: 3,
+                        borderDash: [5, 5],
+                        tension: 0.1,
+                        fill: true,
+                        pointBackgroundColor: '#121212',
+                        pointBorderColor: '#bcf846',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'end',
+                        labels: { color: '#a0a0a5', usePointStyle: true, boxWidth: 8 }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(37, 38, 44, 0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#bcf846',
+                        borderColor: 'rgba(188, 248, 70, 0.3)',
+                        borderWidth: 1,
+                        padding: 12
+                    }
+                },
+                scales: {
+                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false }, ticks: { color: '#a0a0a5' } },
+                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false }, ticks: { color: '#a0a0a5', callback: function(value) { return value + '%'; } } }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

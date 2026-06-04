@@ -37,11 +37,9 @@ staticfiles/
 Thumbs.db
 desktop.ini
 
-# Model files (large binary)
+# Model files (large binary) — kecuali di models/
 *.h5
-*.pkl
 *.joblib
-*.pt
 *.pth
 
 # Misc

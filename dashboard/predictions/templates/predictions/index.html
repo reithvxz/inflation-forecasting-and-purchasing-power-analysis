@@ -1,0 +1,150 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediksi Inflasi & Daya Beli</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'predictions/css/style.css' %}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon"></div>
+                <h2>EcoDash</h2>
+            </div>
+            
+            <div class="menu-section">
+                <span class="menu-label">DASHBOARDS</span>
+                <ul class="nav-links">
+                    <li class="active"><a href="#">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        Overview
+                    </a></li>
+                    <li><a href="#">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        Forecasting (LSTM)
+                    </a></li>
+                    <li><a href="#">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                        Simulasi Regresi
+                    </a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <div class="search-bar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" placeholder="Search...">
+                    </div>
+                </div>
+                <div class="header-center">
+                    <h1>Prediksi Inflasi & Dampak Daya Beli</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-profile">
+                        <div class="avatar">PM</div>
+                        <div class="user-info">
+                            <span class="user-name">Pembuat Kebijakan</span>
+                            <span class="user-role">Administrator</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                
+                <!-- KPI Cards -->
+                <section class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">Prediksi Inflasi (Bulan Depan)</div>
+                        <div class="kpi-value" id="kpi-inflasi">2.14%</div>
+                        <div class="kpi-trend positive">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                            0.12% vs last month
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Akurasi Model LSTM (RMSE)</div>
+                        <div class="kpi-value">0.057</div>
+                        <div class="kpi-trend neutral">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                            Trained just now
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Rata-rata Pengeluaran Kapita</div>
+                        <div class="kpi-value">Rp 1.45M</div>
+                        <div class="kpi-trend positive">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                            Target Baseline
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Nilai Tukar USD/IDR</div>
+                        <div class="kpi-value">15,420</div>
+                        <div class="kpi-trend negative">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+                            -0.5% vs last week
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Chart Section -->
+                <section class="chart-section">
+                    <div class="section-header">
+                        <h2>Time Series Forecasting (LSTM)</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="inflationChart"></canvas>
+                    </div>
+                </section>
+
+                <!-- Interactive Simulator -->
+                <section class="interactive-section">
+                    <div class="glass-card simulation-card">
+                        <div class="sim-left">
+                            <div class="sim-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                            </div>
+                            <div class="sim-content">
+                                <h3>Simulasi Dampak Daya Beli</h3>
+                                <p>Geser slider untuk melihat estimasi penurunan daya beli masyarakat akibat inflasi.</p>
+                                
+                                <div class="slider-container">
+                                    <label for="inflasiSlider">Kenaikan Inflasi: <span id="inflasiVal" class="neon-text">0.5%</span></label>
+                                    <input type="range" id="inflasiSlider" min="0" max="10" step="0.1" value="0.5">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sim-right">
+                            <div class="result-box">
+                                <span class="result-label">Estimasi Pengeluaran Per Kapita</span>
+                                <div class="result-value" id="dayaBeliResult">Rp 1,442,500</div>
+                                <span class="result-desc">Perkiraan merosot tajam jika inflasi meledak.</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="{% static 'predictions/js/script.js' %}"></script>
+</body>
+</html>
