@@ -162,24 +162,21 @@ def load_models():
         inflasi_pred_next = LSTM_SCALER_Y.inverse_transform(pred_scaled_next)[0][0]
         
         # Siapkan data historis untuk grafik
+        # Tampilkan 24 bulan terakhir (termasuk Mei 2026 yang sudah aktual)
         recent_df = df.tail(24).copy()
         recent_df['Bulan_Tahun'] = recent_df.index.strftime('%b %Y')
         
         labels = recent_df['Bulan_Tahun'].tolist()
         data_actual = recent_df['Inflasi_MoM'].tolist()
         
-        # Tambahkan prediksi
-        labels.append("Mei 2026 (Pred)")
-        data_actual.append(None)
-        
+        # Tambahkan prediksi Juni 2026 saja
         labels.append("Jun 2026 (Pred)")
         data_actual.append(None)
         
+        # Garis prediksi: connect dari Mei 2026 aktual ke prediksi Juni
         data_pred = [None] * 24
-        # Sambungkan garis prediksi dari titik aktual terakhir
-        data_pred[-1] = data_actual[-3] # Nilai Apr 2026
-        data_pred.append(float(inflasi_pred))
-        data_pred.append(float(inflasi_pred_next))
+        data_pred[-1] = recent_df['Inflasi_MoM'].iloc[-1]  # Mei 2026 aktual
+        data_pred.append(float(inflasi_pred_next))  # Juni 2026 prediksi
         
         DATA_HISTORIS = {
             'labels': json.dumps(labels),
