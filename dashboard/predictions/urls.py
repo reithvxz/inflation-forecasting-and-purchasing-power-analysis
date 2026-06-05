@@ -16,4 +16,6 @@ urlpatterns = [
     path('api/metrics-latest/', views.api_all_metrics_latest, name='api_metrics_latest'),
     path('api/commodity-prices/', views.api_commodity_prices, name='api_commodity_prices'),
     path('api/usd-idr/', views.api_usd_idr_latest, name='api_usd_idr_latest'),
+    path('api/arima-forecast/', views.api_arima_forecast, name='api_arima_forecast'),
+    path('map/', views.map_page, name='map'),
 ]

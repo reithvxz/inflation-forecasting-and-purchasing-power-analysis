@@ -558,10 +558,25 @@
             const changePercent = data.change_pct || 0;
             const history = data.history || [];
             const isUp = changePercent >= 0;
+            const dataType = data.data_type || 'unknown';
+            const source = data.source || 'Unknown';
+            const dailyRate = data.daily_rate;
+            const dailyDate = data.daily_date;
+            const monthlyRate = data.monthly_rate;
+            const monthlyDate = data.monthly_date;
+
+            // Format date nicely
+            function formatDate(dateStr) {
+                if (!dateStr) return '';
+                try {
+                    const d = new Date(dateStr);
+                    return d.toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
+                } catch { return dateStr; }
+            }
 
             // Update KPI card
             document.getElementById('kpi-usd-value').textContent = rate.toLocaleString('id-ID');
-            document.getElementById('kpi-usd-sub').textContent = (isUp ? '▲' : '▼') + ' ' + Math.abs(changePercent).toFixed(2) + '% vs kemarin';
+            document.getElementById('kpi-usd-sub').textContent = (isUp ? '▲' : '▼') + ' ' + Math.abs(changePercent).toFixed(2) + '% (data ' + (dataType === 'daily' ? 'harian' : 'bulanan') + ')';
             document.getElementById('kpi-usd-badge').innerHTML = '<i class="fas fa-arrow-' + (isUp ? 'up' : 'down') + '" style="font-size: 8px;"></i> ' + (isUp ? 'Naik' : 'Turun');
             document.getElementById('kpi-usd-badge').className = 'kpi-badge ' + (isUp ? 'badge-up' : 'badge-down');
             document.getElementById('kpi-usd-value').style.color = isUp ? 'var(--positive)' : 'var(--negative)';
@@ -569,9 +584,19 @@
             // Update Live section
             document.getElementById('usd-idr-rate').textContent = 'Rp ' + rate.toLocaleString('id-ID');
             document.getElementById('usd-idr-rate').style.color = isUp ? 'var(--positive)' : 'var(--negative)';
-            document.getElementById('usd-idr-change').innerHTML = (isUp ? '<i class="fas fa-arrow-up" style="font-size: 10px;"></i>' : '<i class="fas fa-arrow-down" style="font-size: 10px;"></i>') + ' ' + Math.abs(changePercent).toFixed(2) + '% vs kemarin';
+            document.getElementById('usd-idr-change').innerHTML = (isUp ? '<i class="fas fa-arrow-up" style="font-size: 10px;"></i>' : '<i class="fas fa-arrow-down" style="font-size: 10px;"></i>') + ' ' + Math.abs(changePercent).toFixed(2) + '% (data ' + (dataType === 'daily' ? 'harian' : 'bulanan') + ')';
             document.getElementById('usd-idr-change').className = 'usd-idr-change ' + (isUp ? 'badge-up' : 'badge-down');
-            document.getElementById('usd-last-updated').textContent = 'Last updated: just now';
+            
+            // Show date and source info
+            let dateInfo = '';
+            if (dataType === 'daily' && dailyDate) {
+                dateInfo = 'Kurs harian: Rp ' + rate.toLocaleString('id-ID') + ' per ' + formatDate(dailyDate) + ' | Sumber: ' + source;
+            } else if (monthlyDate) {
+                dateInfo = 'Rata-rata bulanan: Rp ' + rate.toLocaleString('id-ID') + ' per ' + formatDate(monthlyDate) + ' | Sumber: ' + source;
+            } else {
+                dateInfo = 'Last updated: just now | Sumber: ' + source;
+            }
+            document.getElementById('usd-last-updated').textContent = dateInfo;
 
             // Render USD sparklines
             if (history.length > 1) {

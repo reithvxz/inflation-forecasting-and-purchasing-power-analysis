@@ -521,32 +521,124 @@ def api_all_metrics_latest(request):
 
 
 def api_usd_idr_latest(request):
-    """Return latest USD/IDR exchange rate and recent history."""
+    """Return latest USD/IDR exchange rate with daily + monthly data."""
+    import urllib.request
+    import json as json_lib
+    from datetime import datetime
+    
     project_root = os.path.dirname(settings.BASE_DIR)
     path = os.path.join(project_root, 'datasets', 'processed', 'clean_inflasi_ts.csv')
     
-    if not os.path.exists(path):
-        return JsonResponse({'latest': 18050, 'change_pct': 0.5, 'history': []})
-    
+    # 1. Try to fetch daily rate from external API
+    daily_rate = None
+    daily_date = None
     try:
-        df = pd.read_csv(path)
-        if 'USD_IDR' not in df.columns:
-            return JsonResponse({'latest': 18050, 'change_pct': 0.5, 'history': []})
-        
-        df = df.dropna(subset=['USD_IDR'])
-        if len(df) == 0:
-            return JsonResponse({'latest': 18050, 'change_pct': 0.5, 'history': []})
-        
-        latest = float(df['USD_IDR'].iloc[-1])
-        prev = float(df['USD_IDR'].iloc[-2]) if len(df) > 1 else latest
-        change_pct = ((latest - prev) / prev) * 100
-        
-        history = df['USD_IDR'].tail(12).tolist()
-        
+        url = "https://open.er-api.com/v6/latest/USD"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json_lib.loads(resp.read().decode())
+            if data.get('result') == 'success' and 'IDR' in data.get('rates', {}):
+                daily_rate = round(data['rates']['IDR'], 2)
+                daily_date = data.get('time_last_update_utc', datetime.now().strftime('%Y-%m-%d'))
+    except Exception:
+        pass
+    
+    # 2. Load monthly data from processed CSV
+    monthly_rate = None
+    monthly_date = None
+    monthly_history = []
+    try:
+        if os.path.exists(path):
+            df = pd.read_csv(path)
+            if 'USD_IDR' in df.columns and 'Tanggal' in df.columns:
+                df = df.dropna(subset=['USD_IDR'])
+                if len(df) > 0:
+                    monthly_rate = round(float(df['USD_IDR'].iloc[-1]), 2)
+                    monthly_date = str(df['Tanggal'].iloc[-1])
+                    monthly_history = df['USD_IDR'].tail(12).tolist()
+    except Exception:
+        pass
+    
+    # 3. Prepare response
+    # Use daily rate if available, otherwise fallback to monthly
+    latest = daily_rate if daily_rate else (monthly_rate if monthly_rate else 18050)
+    date_str = daily_date if daily_date else (monthly_date if monthly_date else 'N/A')
+    
+    # Calculate change from monthly data
+    change_pct = 0
+    if monthly_history and len(monthly_history) >= 2:
+        prev = monthly_history[-2]
+        if prev > 0:
+            change_pct = ((monthly_history[-1] - prev) / prev) * 100
+    
+    return JsonResponse({
+        'latest': latest,
+        'daily_rate': daily_rate,
+        'daily_date': daily_date,
+        'monthly_rate': monthly_rate,
+        'monthly_date': monthly_date,
+        'change_pct': round(change_pct, 2),
+        'history': monthly_history,
+        'source': 'open.er-api.com' if daily_rate else 'BPS (monthly avg)',
+        'data_type': 'daily' if daily_rate else 'monthly_avg'
+    })
+
+
+# ============================================================
+# ARIMA MODEL
+# ============================================================
+
+ARIMA_MODEL = None
+ARIMA_FORECAST = None
+
+def load_arima():
+    """Load ARIMA model and forecast data."""
+    global ARIMA_MODEL, ARIMA_FORECAST
+    
+    project_root = os.path.dirname(settings.BASE_DIR)
+    models_dir = os.path.join(project_root, 'models')
+    
+    arima_path = os.path.join(models_dir, 'arima_inflasi.pkl')
+    forecast_path = os.path.join(models_dir, 'arima_forecast.pkl')
+    
+    if os.path.exists(arima_path) and ARIMA_MODEL is None:
+        try:
+            with open(arima_path, 'rb') as f:
+                ARIMA_MODEL = pickle.load(f)
+        except Exception:
+            ARIMA_MODEL = None
+    
+    if os.path.exists(forecast_path) and ARIMA_FORECAST is None:
+        try:
+            with open(forecast_path, 'rb') as f:
+                ARIMA_FORECAST = pickle.load(f)
+        except Exception:
+            ARIMA_FORECAST = None
+
+
+def api_arima_forecast(request):
+    """Return ARIMA forecast data."""
+    load_arima()
+    
+    if ARIMA_FORECAST is None:
         return JsonResponse({
-            'latest': round(latest, 2),
-            'change_pct': round(change_pct, 2),
-            'history': history
+            'available': False,
+            'message': 'ARIMA model belum di-train. Jalankan save_arima_model.py terlebih dahulu.'
         })
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({
+        'available': True,
+        'forecast': ARIMA_FORECAST.get('forecast', {}),
+        'order': str(ARIMA_FORECAST.get('order', 'N/A')),
+        'last_date': ARIMA_FORECAST.get('last_date', 'N/A'),
+        'last_value': ARIMA_FORECAST.get('last_value', 0)
+    })
+
+
+# ============================================================
+# MAP PAGE
+# ============================================================
+
+def map_page(request):
+    """Indonesia choropleth map page."""
+    return render(request, 'predictions/map.html')

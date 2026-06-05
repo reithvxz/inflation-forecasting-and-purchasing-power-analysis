@@ -1,0 +1,284 @@
+{% extends 'predictions/base.html' %}
+{% load static %}
+
+{% block page_title %}Peta Indonesia — Economic Data{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+    .map-container { 
+        height: calc(100vh - 200px); 
+        min-height: 500px; 
+        border-radius: 16px; 
+        overflow: hidden;
+        border: 1px solid var(--border-color, #1E293B);
+    }
+    .map-controls {
+        display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;
+    }
+    .metric-select {
+        padding: 10px 16px; border-radius: 10px;
+        background: var(--bg-card, #1E293B); border: 1px solid var(--border-color, #1E293B);
+        color: var(--text-primary, #F1F5F9); font-size: 14px; font-family: 'Inter', sans-serif;
+        cursor: pointer;
+    }
+    .metric-select:focus { border-color: var(--accent-primary, #0EA5E9); outline: none; }
+    .map-legend {
+        background: var(--bg-panel, #111827); padding: 12px 16px; border-radius: 10px;
+        border: 1px solid var(--border-color, #1E293B); font-size: 12px; color: var(--text-secondary, #94A3B8);
+    }
+    .legend-title { font-weight: 600; margin-bottom: 8px; color: var(--text-primary, #F1F5F9); }
+    .legend-scale { display: flex; gap: 4px; margin-bottom: 4px; }
+    .legend-scale div { height: 12px; flex: 1; }
+    .legend-labels { display: flex; justify-content: space-between; }
+    
+    .leaflet-popup-content-wrapper {
+        background: var(--bg-panel, #111827) !important;
+        border: 1px solid var(--border-color, #1E293B) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+    }
+    .leaflet-popup-content { color: var(--text-primary, #F1F5F9) !important; margin: 12px 16px !important; }
+    .leaflet-popup-tip { background: var(--bg-panel, #111827) !important; }
+    
+    .popup-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .popup-value { font-size: 24px; font-weight: 800; color: var(--accent-primary, #0EA5E9); }
+    .popup-metric { font-size: 12px; color: var(--text-secondary, #94A3B8); margin-top: 4px; }
+
+    .custom-tooltip {
+        background: var(--bg-panel, #111827) !important;
+        border: 1px solid var(--border-color, #1E293B) !important;
+        color: var(--text-primary, #F1F5F9) !important;
+        border-radius: 8px !important;
+        padding: 6px 10px !important;
+        font-size: 13px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+    }
+    .custom-tooltip::before {
+        border-top-color: var(--border-color, #1E293B) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="map-controls">
+    <select id="mapMetric" class="metric-select" onchange="updateMap()">
+        <option value="Total_Pengeluaran">Daya Beli (Total Pengeluaran)</option>
+        <option value="UMP">Upah Minimum Provinsi</option>
+        <option value="PDRB_HargaKonstan">PDRB Per Kapita</option>
+        <option value="TPT">Tingkat Pengangguran (TPT)</option>
+        <option value="IPM">Indeks Pembangunan Manusia</option>
+        <option value="Gini_Rasio">Gini Ratio</option>
+        <option value="Pct_Penduduk_Miskin">% Penduduk Miskin</option>
+        <option value="Inflasi_Rata_Tahunan">Inflasi Rata-rata</option>
+    </select>
+    <div id="mapLegend" class="map-legend">
+        <div class="legend-title">Loading...</div>
+    </div>
+    <span style="color: var(--text-secondary, #94A3B8); font-size: 13px; margin-left: auto;">
+        <i class="fas fa-info-circle"></i> Klik provinsi untuk detail. Gunakan scroll untuk zoom.
+    </span>
+</div>
+
+<div id="map" class="map-container"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const PROVINCE_COORDS = {
+    "Aceh": [4.7, 95.3],
+    "Bali": [-8.4, 115.2],
+    "Banten": [-6.4, 106.1],
+    "Bengkulu": [-3.8, 102.3],
+    "DI Yogyakarta": [-7.8, 110.4],
+    "DKI Jakarta": [-6.2, 106.8],
+    "Gorontalo": [0.5, 122.4],
+    "Jambi": [-1.6, 103.6],
+    "Jawa Barat": [-6.9, 107.6],
+    "Jawa Tengah": [-7.2, 110.4],
+    "Jawa Timur": [-7.5, 112.8],
+    "Kalimantan Barat": [0.0, 109.3],
+    "Kalimantan Selatan": [-3.3, 114.6],
+    "Kalimantan Tengah": [-1.5, 113.9],
+    "Kalimantan Timur": [0.5, 116.8],
+    "Kalimantan Utara": [2.8, 116.8],
+    "Kepulauan Bangka Belitung": [-2.7, 106.4],
+    "Kepulauan Riau": [1.0, 104.5],
+    "Lampung": [-5.4, 105.3],
+    "Maluku": [-3.2, 128.1],
+    "Maluku Utara": [1.6, 127.8],
+    "Nusa Tenggara Barat": [-8.6, 116.1],
+    "Nusa Tenggara Timur": [-8.7, 121.1],
+    "Papua": [-4.3, 138.1],
+    "Papua Barat": [-1.4, 132.9],
+    "Papua Barat Daya": [-0.9, 131.5],
+    "Papua Pegunungan": [-4.1, 139.2],
+    "Papua Selatan": [-6.5, 139.5],
+    "Papua Tengah": [-3.8, 136.5],
+    "Riau": [1.7, 102.1],
+    "Sulawesi Barat": [-2.8, 119.0],
+    "Sulawesi Selatan": [-3.7, 119.9],
+    "Sulawesi Tengah": [-1.4, 121.4],
+    "Sulawesi Tenggara": [-4.0, 122.2],
+    "Sulawesi Utara": [0.6, 124.8],
+    "Sumatera Barat": [-0.7, 100.6],
+    "Sumatera Selatan": [-3.3, 104.8],
+    "Sumatera Utara": [2.5, 98.7]
+};
+
+const METRIC_INFO = {
+    'Total_Pengeluaran': { label: 'Daya Beli', unit: 'Rp', format: 'currency' },
+    'UMP': { label: 'UMP', unit: 'Rp', format: 'currency' },
+    'PDRB_HargaKonstan': { label: 'PDRB/Kapita', unit: 'Rp', format: 'currency' },
+    'TPT': { label: 'TPT', unit: '%', format: 'percent' },
+    'IPM': { label: 'IPM', unit: '', format: 'number' },
+    'Gini_Rasio': { label: 'Gini', unit: '', format: 'number' },
+    'Pct_Penduduk_Miskin': { label: '% Miskin', unit: '%', format: 'percent' },
+    'Inflasi_Rata_Tahunan': { label: 'Inflasi', unit: '%', format: 'percent' }
+};
+
+let map, markers = {}, provinceData = {};
+
+map = L.map('map', {
+    center: [-2.5, 118],
+    zoom: 5,
+    zoomControl: true,
+    attributionControl: true
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
+}).addTo(map);
+
+function formatVal(val, metric) {
+    const info = METRIC_INFO[metric];
+    if (!info) return val.toFixed(2);
+    if (info.format === 'currency') {
+        if (val >= 1000000000) return 'Rp ' + (val / 1000000000).toFixed(2) + ' Miliar';
+        if (val >= 1000000) return 'Rp ' + (val / 1000000).toFixed(2) + ' Juta';
+        if (val >= 1000) return 'Rp ' + (val / 1000).toFixed(0) + ' Ribu';
+        return 'Rp ' + val.toFixed(0);
+    }
+    if (info.format === 'percent') return val.toFixed(2) + '%';
+    return val.toFixed(2);
+}
+
+function getColor(val, min, max) {
+    if (max === min) return '#0EA5E9';
+    const ratio = (val - min) / (max - min);
+    if (ratio < 0.2) return '#0369A1';
+    if (ratio < 0.4) return '#0284C7';
+    if (ratio < 0.6) return '#0EA5E9';
+    if (ratio < 0.8) return '#38BDF8';
+    return '#7DD3FC';
+}
+
+function getRadius(val, min, max) {
+    if (max === min) return 10;
+    const ratio = (val - min) / (max - min);
+    return 8 + ratio * 22;
+}
+
+async function initMap() {
+    try {
+        const resp = await fetch('/api/metrics-latest/');
+        if (!resp.ok) throw new Error('API returned ' + resp.status);
+        const data = await resp.json();
+        provinceData = data.provinces || data;
+        updateMap();
+    } catch (err) {
+        console.error('Failed to load map data:', err);
+        document.getElementById('mapLegend').innerHTML = 
+            '<div class="legend-title" style="color:#EF4444">Gagal memuat data</div>';
+    }
+}
+
+function updateMap() {
+    const metric = document.getElementById('mapMetric').value;
+    
+    Object.values(markers).forEach(m => map.removeLayer(m));
+    markers = {};
+    
+    const values = [];
+    for (const [prov, data] of Object.entries(provinceData)) {
+        if (data[metric] !== undefined && data[metric] !== null) {
+            values.push(data[metric]);
+        }
+    }
+    
+    if (values.length === 0) {
+        document.getElementById('mapLegend').innerHTML = 
+            '<div class="legend-title">Tidak ada data untuk metrik ini</div>';
+        return;
+    }
+    
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    
+    for (const [prov, data] of Object.entries(provinceData)) {
+        const val = data[metric];
+        if (val === undefined || val === null) continue;
+        
+        const coords = PROVINCE_COORDS[prov];
+        if (!coords) continue;
+        
+        const color = getColor(val, minVal, maxVal);
+        const radius = getRadius(val, minVal, maxVal);
+        
+        const marker = L.circleMarker(coords, {
+            radius: radius,
+            fillColor: color,
+            color: '#ffffff',
+            weight: 2,
+            opacity: 0.9,
+            fillOpacity: 0.75
+        }).addTo(map);
+        
+        const info = METRIC_INFO[metric];
+        marker.bindPopup(
+            '<div class="popup-title">' + prov + '</div>' +
+            '<div class="popup-value">' + formatVal(val, metric) + '</div>' +
+            '<div class="popup-metric">' + (info ? info.label : metric) + '</div>'
+        );
+        
+        marker.bindTooltip(prov + ': ' + formatVal(val, metric), {
+            className: 'custom-tooltip',
+            direction: 'top',
+            offset: [0, -radius]
+        });
+        
+        markers[prov] = marker;
+    }
+    
+    updateLegend(metric, minVal, maxVal);
+}
+
+function updateLegend(metric, min, max) {
+    const info = METRIC_INFO[metric];
+    const legendEl = document.getElementById('mapLegend');
+    if (!legendEl) return;
+    
+    const steps = 5;
+    let scaleHtml = '';
+    let labelsHtml = '';
+    
+    for (let i = 0; i < steps; i++) {
+        const val = min + (max - min) * (i / (steps - 1));
+        scaleHtml += '<div style="background:' + getColor(val, min, max) + '"></div>';
+    }
+    
+    legendEl.innerHTML = 
+        '<div class="legend-title">' + (info ? info.label : metric) + '</div>' +
+        '<div class="legend-scale">' + scaleHtml + '</div>' +
+        '<div class="legend-labels">' +
+            '<span>' + formatVal(min, metric) + '</span>' +
+            '<span>' + formatVal(max, metric) + '</span>' +
+        '</div>';
+}
+
+document.addEventListener('DOMContentLoaded', initMap);
+</script>
+{% endblock %}

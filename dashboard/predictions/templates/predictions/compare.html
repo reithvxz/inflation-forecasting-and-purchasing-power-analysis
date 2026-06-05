@@ -1,35 +1,199 @@
 {% extends 'predictions/base.html' %}
 {% load static %}
 
-{% block page_title %}Perbandingan Provinsi{% endblock %}
+{% block page_title %}Analisis Perbandingan Provinsi{% endblock %}
 
 {% block extra_head %}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <style>
-    .compare-header { text-align: center; margin-bottom: 32px; }
-    .compare-header p { color: var(--text-secondary); font-size: 15px; margin-top: 8px; }
-    .compare-controls { display: flex; gap: 20px; margin-bottom: 32px; flex-wrap: wrap; align-items: end; }
-    .control-group { display: flex; flex-direction: column; gap: 8px; }
-    .control-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
-    .control-group select { padding: 12px 16px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); font-size: 14px; font-family: 'Inter', sans-serif; min-width: 200px; cursor: pointer; }
-    .control-group select:focus { border-color: #0EA5E9; outline: none; box-shadow: 0 0 0 3px rgba(14,165,233,0.1); }
-    .btn-compare { padding: 12px 28px; border-radius: 12px; background: #0EA5E9; color: #fff; border: none; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; }
-    .btn-compare:hover { box-shadow: 0 6px 20px rgba(14,165,233,0.4); transform: translateY(-2px); }
-    .btn-reset { padding: 12px 24px; border-radius: 12px; background: transparent; color: #94A3B8; border: 1px solid var(--border-color); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; }
-    .btn-reset:hover { border-color: #EF4444; color: #EF4444; }
-    .compare-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px; }
-    .chart-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 32px; }
-    .chart-panel h3 { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--text-primary); }
-    .chart-box { height: 400px; position: relative; }
-    .radar-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 32px; margin-bottom: 24px; }
-    .radar-panel h3 { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--text-primary); }
-    .radar-box { height: 450px; position: relative; max-width: 600px; margin: 0 auto; }
-    .ranking-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 32px; }
-    .ranking-panel h3 { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--text-primary); }
-    .ranking-list { display: flex; flex-direction: column; gap: 12px; }
-    .rank-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border-color); transition: all 0.2s; }
-    .rank-item:hover { border-color: rgba(14,165,233,0.2); background: rgba(14,165,233,0.03); }
-    .rank-num { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; }
+    .compare-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+    .compare-header h1 {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+    .compare-header p {
+        color: var(--text-secondary);
+        font-size: 15px;
+        max-width: 640px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+    .compare-controls {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        align-items: end;
+    }
+    .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .control-group label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .control-group select {
+        padding: 12px 16px;
+        border-radius: 12px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        font-size: 14px;
+        font-family: 'Inter', sans-serif;
+        min-width: 200px;
+        cursor: pointer;
+    }
+    .control-group select:focus {
+        border-color: #0EA5E9;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(14,165,233,0.1);
+    }
+    .btn-compare {
+        padding: 12px 28px;
+        border-radius: 12px;
+        background: #0EA5E9;
+        color: #fff;
+        border: none;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-family: 'Inter', sans-serif;
+    }
+    .btn-compare:hover {
+        box-shadow: 0 6px 20px rgba(14,165,233,0.4);
+        transform: translateY(-2px);
+    }
+    .btn-reset {
+        padding: 12px 24px;
+        border-radius: 12px;
+        background: transparent;
+        color: #94A3B8;
+        border: 1px solid var(--border-color);
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-family: 'Inter', sans-serif;
+    }
+    .btn-reset:hover {
+        border-color: #EF4444;
+        color: #EF4444;
+    }
+
+    .metric-context-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-left: 4px solid #0EA5E9;
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        display: none;
+    }
+    .metric-context-card .mcc-label {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0EA5E9;
+        margin-bottom: 4px;
+    }
+    .metric-context-card .mcc-desc {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+    .compare-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+    .chart-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        padding: 32px;
+    }
+    .chart-panel h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: var(--text-primary);
+    }
+    .chart-box {
+        height: 400px;
+        position: relative;
+    }
+    .radar-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        padding: 32px;
+        margin-bottom: 24px;
+    }
+    .radar-panel h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: var(--text-primary);
+    }
+    .radar-box {
+        height: 450px;
+        position: relative;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .ranking-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        padding: 32px;
+    }
+    .ranking-panel h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: var(--text-primary);
+    }
+    .ranking-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .rank-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        background: rgba(255,255,255,0.02);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        transition: all 0.2s;
+    }
+    .rank-item:hover {
+        border-color: rgba(14,165,233,0.2);
+        background: rgba(14,165,233,0.03);
+    }
+    .rank-num {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 800;
+    }
     .rank-num.gold { background: rgba(255,215,0,0.15); color: #ffd700; }
     .rank-num.silver { background: rgba(192,192,192,0.15); color: #c0c0c0; }
     .rank-num.bronze { background: rgba(205,127,50,0.15); color: #cd7f32; }
@@ -43,12 +207,58 @@
     .loading-state i { font-size: 32px; margin-bottom: 12px; animation: spin 1s linear infinite; color: #0EA5E9; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
     .error-state { text-align: center; padding: 60px 20px; color: #EF4444; }
+
+    .insight-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        padding: 32px;
+        margin-bottom: 24px;
+        display: none;
+    }
+    .insight-section h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: var(--text-primary);
+    }
+    .insight-section h3 i { color: #facc15; }
+    .insight-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .insight-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 18px;
+        background: rgba(255,255,255,0.02);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+    .insight-item i {
+        color: #facc15;
+        margin-top: 3px;
+        flex-shrink: 0;
+    }
+    .insight-item strong { color: var(--text-primary); }
+
+    @media (max-width: 900px) {
+        .compare-grid { grid-template-columns: 1fr; }
+        .compare-controls { flex-direction: column; }
+        .control-group select { min-width: 100%; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="compare-header">
-    <p>Bandingkan metrik ekonomi antar provinsi Indonesia secara visual.</p>
+    <h1><i class="fas fa-balance-scale" style="color:#0EA5E9"></i> Analisis Perbandingan Provinsi</h1>
+    <p>Bandingkan indikator ekonomi makro antar provinsi Indonesia. Pilih provinsi dan metrik untuk melihat tren, ranking, dan profil multi-dimensi.</p>
 </div>
 
 <div class="compare-controls">
@@ -95,6 +305,11 @@
     </div>
 </div>
 
+<div id="metricContext" class="metric-context-card">
+    <div class="mcc-label" id="metricContextLabel"></div>
+    <div class="mcc-desc" id="metricContextDesc"></div>
+</div>
+
 <div class="compare-grid">
     <div class="chart-panel">
         <h3><i class="fas fa-chart-line" style="color:#0EA5E9"></i> Tren Perbandingan</h3>
@@ -111,8 +326,14 @@
     </div>
 </div>
 
+<div id="insightSection" class="insight-section">
+    <h3><i class="fas fa-lightbulb"></i> Insight</h3>
+    <div class="insight-list" id="insightText"></div>
+</div>
+
 <div class="radar-panel">
     <h3><i class="fas fa-bullseye" style="color:#0EA5E9"></i> Profil Multi-Dimensi (Radar)</h3>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;margin-top:-12px;">Skor dinormalisasi 0-100 per dimensi agar bisa dibandingkan dalam satu grafik.</p>
     <div class="radar-box"><canvas id="radarChart"></canvas></div>
 </div>
 {% endblock %}
@@ -124,32 +345,115 @@ const PROVINCE_SELECTS = ['prov1','prov2','prov3','prov4','prov5'];
 let lineChart = null;
 let radarChart = null;
 
-// Metric formatting fallback
 const METRIC_INFO = {
-    'Total_Pengeluaran': { label: 'Daya Beli (Total Pengeluaran)', unit: 'Rp', format: 'currency' },
-    'UMP': { label: 'Upah Minimum Provinsi', unit: 'Rp', format: 'currency' },
-    'PDRB_HargaKonstan': { label: 'PDRB Per Kapita', unit: 'Rp', format: 'currency' },
-    'TPT': { label: 'Tingkat Pengangguran Terbuka', unit: '%', format: 'percent' },
-    'IPM': { label: 'Indeks Pembangunan Manusia', unit: '', format: 'number' },
-    'Gini_Rasio': { label: 'Gini Ratio', unit: '', format: 'number' },
-    'Garis_Kemiskinan': { label: 'Garis Kemiskinan', unit: 'Rp', format: 'currency' },
-    'Pct_Penduduk_Miskin': { label: '% Penduduk Miskin', unit: '%', format: 'percent' },
-    'Jumlah_Penduduk': { label: 'Jumlah Penduduk', unit: '', format: 'number' },
+    'Total_Pengeluaran': {
+        label: 'Daya Beli (Total Pengeluaran)',
+        unit: 'Rp', format: 'currency',
+        desc: 'Rata-rata total pengeluaran per kapita per bulan (makanan + bukan makanan) dalam Rupiah. Semakin tinggi = semakin kuat daya beli masyarakat.'
+    },
+    'UMP': {
+        label: 'Upah Minimum Provinsi',
+        unit: 'Rp', format: 'currency',
+        desc: 'Upah Minimum Provinsi per bulan dalam Rupiah. Dasar penghitungan upah buruh/pekerja di setiap provinsi.'
+    },
+    'PDRB_HargaKonstan': {
+        label: 'PDRB Per Kapita',
+        unit: 'Rp', format: 'currency',
+        desc: 'Produk Domestik Regional Bruto per kapita harga konstan (Ribu Rupiah). Indikator pertumbuhan ekonomi daerah.'
+    },
+    'TPT': {
+        label: 'Tingkat Pengangguran Terbuka',
+        unit: '%', format: 'percent',
+        desc: 'Persentase angkatan kerja yang tidak memiliki pekerjaan. Semakin rendah = semakin baik.'
+    },
+    'IPM': {
+        label: 'Indeks Pembangunan Manusia',
+        unit: '', format: 'number',
+        desc: 'Indeks Pembangunan Manusia (skala 0-100). Gabungan dari harapan hidup, pendidikan, dan penghasilan.'
+    },
+    'Gini_Rasio': {
+        label: 'Gini Ratio',
+        unit: '', format: 'number',
+        desc: 'Rasio ketimpangan pendapatan (skala 0-1). Semakin rendah = semakin merata distribusi pendapatan.'
+    },
+    'Garis_Kemiskinan': {
+        label: 'Garis Kemiskinan',
+        unit: 'Rp', format: 'currency',
+        desc: 'Batas pengeluaran minimum per kapita per bulan (Rupiah) untuk kebutuhan dasar.'
+    },
+    'Pct_Penduduk_Miskin': {
+        label: '% Penduduk Miskin',
+        unit: '%', format: 'percent',
+        desc: 'Persentase penduduk yang pengeluarannya di bawah garis kemiskinan.'
+    },
+    'Jumlah_Penduduk': {
+        label: 'Jumlah Penduduk',
+        unit: 'Ribu Jiwa', format: 'number',
+        desc: 'Total jumlah penduduk (ribu jiwa).'
+    }
 };
 
-function formatValue(value, format, unit) {
-    if (value === null || value === undefined || isNaN(value)) return '-';
-    const num = Number(value);
-    if (format === 'currency') {
-        return 'Rp ' + num.toLocaleString('id-ID', {maximumFractionDigits: 0});
-    } else if (format === 'percent') {
-        return num.toLocaleString('id-ID', {maximumFractionDigits: 2}) + '%';
-    } else {
-        return num.toLocaleString('id-ID', {maximumFractionDigits: 2});
+function formatValue(val, metric) {
+    if (val === null || val === undefined || isNaN(val)) return '-';
+    const num = Number(val);
+    const info = typeof metric === 'string' ? METRIC_INFO[metric] : metric;
+    const fmt = info ? info.format : 'number';
+
+    if (fmt === 'currency') {
+        if (num >= 1000000) return 'Rp ' + (num / 1000000).toFixed(2).replace('.', ',') + ' Juta';
+        if (num >= 1000) return 'Rp ' + (num / 1000).toFixed(0) + ' Ribu';
+        return 'Rp ' + num.toFixed(0);
     }
+    if (fmt === 'percent') return num.toFixed(2).replace('.', ',') + '%';
+    return num.toFixed(2).replace('.', ',');
 }
 
-// Populate dropdowns on load
+function showMetricContext(metric) {
+    const card = document.getElementById('metricContext');
+    const info = METRIC_INFO[metric];
+    if (!info) { card.style.display = 'none'; return; }
+    document.getElementById('metricContextLabel').textContent = info.label;
+    document.getElementById('metricContextDesc').textContent = info.desc;
+    card.style.display = 'block';
+}
+
+function generateInsight(provs, data, metric, info) {
+    const section = document.getElementById('insightSection');
+    const container = document.getElementById('insightText');
+    const items = [];
+
+    const ranked = provs.map(prov => {
+        const pd = data[prov] || { years: [], values: [] };
+        const lastIdx = pd.values.length - 1;
+        return { name: prov, value: lastIdx >= 0 ? pd.values[lastIdx] : null, year: lastIdx >= 0 ? pd.years[lastIdx] : null };
+    }).filter(r => r.value !== null).sort((a, b) => b.value - a.value);
+
+    if (ranked.length === 0) { section.style.display = 'none'; return; }
+
+    const best = ranked[0];
+    const worst = ranked[ranked.length - 1];
+    const vals = ranked.map(r => r.value);
+    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+
+    items.push(`<div class="insight-item"><i class="fas fa-crown"></i><div><strong>${best.name}</strong> memiliki <strong>${info.label}</strong> tertinggi di angka <strong>${formatValue(best.value, metric)}</strong>${best.year ? ' (' + best.year + ')' : ''}.</div></div>`);
+
+    if (ranked.length >= 2) {
+        const diff = best.value - worst.value;
+        const pct = worst.value !== 0 ? ((diff / Math.abs(worst.value)) * 100) : 0;
+        items.push(`<div class="insight-item"><i class="fas fa-arrows-alt-h"></i><div>Selisih terbesar antara <strong>${best.name}</strong> dan <strong>${worst.name}</strong>: <strong>${formatValue(diff, metric)}</strong> (${pct.toFixed(1).replace('.', ',')}%).</div></div>`);
+    }
+
+    items.push(`<div class="insight-item"><i class="fas fa-calculator"></i><div>Rata-rata dari ${ranked.length} provinsi yang dipilih: <strong>${formatValue(avg, metric)}</strong>.</div></div>`);
+
+    if (ranked.length >= 3) {
+        const mid = ranked[Math.floor(ranked.length / 2)];
+        items.push(`<div class="insight-item"><i class="fas fa-chart-bar"></i><div>Posisi tengah ditempati oleh <strong>${mid.name}</strong> dengan nilai <strong>${formatValue(mid.value, metric)}</strong>.</div></div>`);
+    }
+
+    container.innerHTML = items.join('');
+    section.style.display = 'block';
+}
+
 async function loadProvinces() {
     try {
         const resp = await fetch('/api/provinces/');
@@ -157,7 +461,7 @@ async function loadProvinces() {
         const provinces = json.provinces || [];
         PROVINCE_SELECTS.forEach(id => {
             const sel = document.getElementById(id);
-            sel.innerHTML = sel.options[0].outerHTML; // keep placeholder
+            sel.innerHTML = sel.options[0].outerHTML;
             provinces.forEach(p => {
                 const o = document.createElement('option');
                 o.value = p;
@@ -171,6 +475,10 @@ async function loadProvinces() {
 }
 
 loadProvinces();
+
+document.getElementById('metric').addEventListener('change', function() {
+    showMetricContext(this.value);
+});
 
 function getSelectedProvinces() {
     return PROVINCE_SELECTS.map(id => document.getElementById(id).value).filter(Boolean);
@@ -205,6 +513,7 @@ async function runCompare() {
     const metric = document.getElementById('metric').value;
     if (provs.length === 0) { alert('Pilih minimal 1 provinsi'); return; }
 
+    showMetricContext(metric);
     setLoading('rankingList', 'Memuat data...');
 
     try {
@@ -215,9 +524,8 @@ async function runCompare() {
         if (!resp.ok) throw new Error('API error ' + resp.status);
         const json = await resp.json();
         const data = json.data || {};
-        const info = json.metric_info || METRIC_INFO[metric] || {label: metric, unit: '', format: 'number'};
+        const info = json.metric_info || METRIC_INFO[metric] || { label: metric, unit: '', format: 'number' };
 
-        // Build line chart datasets
         const datasets = provs.map((prov, i) => {
             const provData = data[prov] || { years: [], values: [] };
             return {
@@ -232,7 +540,6 @@ async function runCompare() {
             };
         });
 
-        // Determine labels (years) - use first province with data
         let labels = [];
         for (const prov of provs) {
             if (data[prov] && data[prov].years && data[prov].years.length) {
@@ -259,21 +566,20 @@ async function runCompare() {
                         borderWidth: 1,
                         callbacks: {
                             label: function(context) {
-                                return context.dataset.label + ': ' + formatValue(context.parsed.y, info.format, info.unit);
+                                return context.dataset.label + ': ' + formatValue(context.parsed.y, metric);
                             }
                         }
                     }
                 },
                 scales: {
                     x: { ticks: { color: '#94A3B8' }, grid: { color: 'rgba(255,255,255,0.04)' } },
-                    y: { ticks: { color: '#94A3B8', callback: v => formatValue(v, info.format, info.unit) }, grid: { color: 'rgba(255,255,255,0.04)' } }
+                    y: { ticks: { color: '#94A3B8', callback: v => formatValue(v, metric) }, grid: { color: 'rgba(255,255,255,0.04)' } }
                 },
                 interaction: { intersect: false, mode: 'index' }
             }
         });
 
-        // Build ranking from last available year for each province
-        const ranked = provs.map((prov) => {
+        const ranked = provs.map(prov => {
             const provData = data[prov] || { years: [], values: [] };
             const lastIdx = provData.values.length - 1;
             const value = lastIdx >= 0 ? provData.values[lastIdx] : null;
@@ -288,16 +594,17 @@ async function runCompare() {
         const list = document.getElementById('rankingList');
         list.innerHTML = ranked.map((r, i) => {
             const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal';
-            const valStr = formatValue(r.value, info.format, info.unit);
+            const valStr = formatValue(r.value, metric);
             return `<div class="rank-item"><div class="rank-num ${cls}">${i + 1}</div><div class="rank-name">${r.name}</div><div class="rank-val">${valStr}</div></div>`;
         }).join('');
 
-        // Load radar chart
+        generateInsight(provs, data, metric, info);
         await loadRadarChart(provs);
 
     } catch (e) {
         console.error(e);
         setError('rankingList', 'Gagal memuat data. Silakan coba lagi.');
+        document.getElementById('insightSection').style.display = 'none';
     }
 }
 
@@ -312,13 +619,12 @@ async function loadRadarChart(provs) {
         const json = await resp.json();
         const allProvData = json.provinces || {};
 
-        // Radar dimensions
         const dimensionMap = {
             'IPM': { label: 'IPM', format: 'number' },
-            'PDRB_HargaKonstan': { label: 'PDRB Per Kapita', format: 'currency' },
+            'PDRB_HargaKonstan': { label: 'PDRB/Kapita', format: 'currency' },
             'UMP': { label: 'UMP', format: 'currency' },
             'TPT': { label: 'TPT', format: 'percent' },
-            'Gini_Rasio': { label: 'Gini Ratio', format: 'number' },
+            'Gini_Rasio': { label: 'Gini', format: 'number' },
             'Total_Pengeluaran': { label: 'Daya Beli', format: 'currency' }
         };
         const dims = Object.keys(dimensionMap).filter(k => {
@@ -327,7 +633,6 @@ async function loadRadarChart(provs) {
 
         if (dims.length === 0) return;
 
-        // Normalize each dimension to 0-100 across selected provinces
         const datasets = provs.map((prov, i) => {
             const provData = allProvData[prov] || {};
             const data = dims.map(dim => {
@@ -382,7 +687,7 @@ async function loadRadarChart(provs) {
                                 const dimKey = dims[context.dataIndex];
                                 const rawVal = allProvData[context.dataset.label] ? allProvData[context.dataset.label][dimKey] : null;
                                 const dimInfo = dimensionMap[dimKey];
-                                const rawStr = formatValue(rawVal, dimInfo.format, '');
+                                const rawStr = formatValue(rawVal, dimInfo.format);
                                 return context.dataset.label + ': ' + rawStr + ' (skor: ' + Math.round(context.raw) + ')';
                             }
                         }
@@ -412,6 +717,8 @@ function resetCompare() {
     if (lineChart) { lineChart.destroy(); lineChart = null; }
     if (radarChart) { radarChart.destroy(); radarChart = null; }
     setEmpty('rankingList', 'Pilih provinsi dan metrik, lalu klik "Bandingkan"');
+    document.getElementById('metricContext').style.display = 'none';
+    document.getElementById('insightSection').style.display = 'none';
 }
 </script>
 {% endblock %}
