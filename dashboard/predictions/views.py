@@ -114,6 +114,11 @@ def load_models():
         else:
             feature_cols = LSTM_FEATURES
 
+        # Pastikan semua kolom fitur ada (imputasi 0 untuk kolom yang hilang)
+        for col in feature_cols:
+            if col not in df.columns:
+                df[col] = 0.0
+
         df_lstm = df[feature_cols].copy()
         
         # Ambil sequence terakhir untuk prediksi
@@ -227,12 +232,69 @@ def landing_page(request):
 
 
 def forecasting_page(request):
-    inflasi_pred, hist_data, _ = load_models()
+    inflasi_pred, _, _ = load_models()
+    load_ensemble()
+    
+    project_root = os.path.dirname(settings.BASE_DIR)
+    data_path = os.path.join(project_root, 'datasets', 'processed', 'clean_inflasi_ts.csv')
+    
+    # Load full historical data
+    df = pd.read_csv(data_path, parse_dates=['Tanggal'])
+    df = df.sort_values('Tanggal').reset_index(drop=True)
+    
+    # Default range: last 5 years
+    default_start_year = max(df['Tanggal'].dt.year.min(), df['Tanggal'].dt.year.max() - 4)
+    default_end_year = df['Tanggal'].dt.year.max()
+    
+    # Build full history JSON
+    history = {
+        'labels': df['Tanggal'].dt.strftime('%Y-%m').tolist(),
+        'data_mom': [round(float(v), 2) if not pd.isna(v) else None for v in df['Inflasi_MoM']],
+        'data_yoy': [round(float(v), 2) if not pd.isna(v) else None for v in df['Inflasi_YoY']],
+    }
+    
+    # Year range options
+    year_min = int(df['Tanggal'].dt.year.min())
+    year_max = int(df['Tanggal'].dt.year.max())
+    
+    # Get next-month prediction
+    last_date = df['Tanggal'].iloc[-1]
+    next_date = (last_date + pd.DateOffset(months=1)).strftime('%Y-%m')
+    last_value = float(df['Inflasi_MoM'].iloc[-1])
+    
+    # Get ensemble forecast (1 month)
+    ensemble_pred = float(inflasi_pred) if inflasi_pred else 0.0
+    
+    # Get other model predictions
+    model_preds = {
+        'lstm': ensemble_pred,
+    }
+    if ENSEMBLE_FORECAST is not None:
+        # Format ensemble_forecast.pkl: flat keys 'lstm_forecast', 'arima_forecast', etc.
+        lstm_fc = ENSEMBLE_FORECAST.get('lstm_forecast', [])
+        arima_fc = ENSEMBLE_FORECAST.get('arima_forecast', [])
+        prophet_fc = ENSEMBLE_FORECAST.get('prophet_forecast', [])
+        ensemble_fc = ENSEMBLE_FORECAST.get('ensemble_forecast', [])
+        if lstm_fc and len(lstm_fc) > 0:
+            model_preds['lstm'] = float(lstm_fc[0])
+        if arima_fc and len(arima_fc) > 0:
+            model_preds['arima'] = float(arima_fc[0])
+        if prophet_fc and len(prophet_fc) > 0:
+            model_preds['prophet'] = float(prophet_fc[0])
+        if ensemble_fc and len(ensemble_fc) > 0:
+            model_preds['ensemble'] = float(ensemble_fc[0])
+    
     context = {
-        'inflasi_pred': float(inflasi_pred) if inflasi_pred else 0.0,
-        'labels': hist_data['labels'] if hist_data else '[]',
-        'data_actual': hist_data['data_actual'] if hist_data else '[]',
-        'data_pred': hist_data['data_pred'] if hist_data else '[]',
+        'inflasi_pred': ensemble_pred,
+        'last_value': last_value,
+        'last_date': last_date.strftime('%Y-%m'),
+        'next_date': next_date,
+        'history': json.dumps(history),
+        'model_preds': json.dumps(model_preds),
+        'year_min': year_min,
+        'year_max': year_max,
+        'default_start_year': int(default_start_year),
+        'default_end_year': int(default_end_year),
     }
     return render(request, 'predictions/forecasting.html', context)
 
@@ -242,18 +304,18 @@ def get_regression_dummy_data(inflasi_val):
     Bangun dummy input untuk Ridge model.
     Menggunakan metadata dari model bundle jika tersedia, agar otomatis support fitur baru.
     """
-    # Default base values
+    # Default base values (disesuaikan dengan range training data)
     base_values = {
         'Real_UMP': 3000000.0 / (1 + inflasi_val),
         'TPT': 5.5,
-        'PDRB_HargaKonstan': 500000.0,
+        'PDRB_HargaKonstan': 40000.0,  # Rata-rata nasional (range training: 14K-212K Ribu Rp)
         'Inflasi_Rata_Tahunan': inflasi_val,
-        'Provinsi': 'JAWA TIMUR',
-        # World Bank features (nasional, gunakan nilai default tengah)
-        'Inflasi_WB_Annual': 3.5,  # ~inflasi normal Indonesia
-        'GDP_PerCapita_PPP': 13000.0,  # PDB per kapita tengah
-        'Pct_Unemployment_WB': 5.0,  # pengangguran normal
-        'Poverty_Headcount_Pct': 10.0,  # kemiskinan rata-rata
+        'Provinsi': 'Jawa Timur',  # Harus sesuai format training data (Title Case)
+        # World Bank features (rata-rata training data)
+        'Inflasi_WB_Annual': 2.7,
+        'GDP_PerCapita_PPP': 13800.0,
+        'Pct_Unemployment_WB': 3.4,
+        'Poverty_Headcount_Pct': 9.4,
     }
     
     # Jika model bundle punya info fitur, tambahkan default values untuk fitur lain
@@ -262,16 +324,16 @@ def get_regression_dummy_data(inflasi_val):
             num_features = RIDGE_MODEL_BUNDLE.get('num_features', [])
             for feat in num_features:
                 if feat not in base_values:
-                    # Default values untuk fitur yang belum ter-handle
+                    # Default values = rata-rata training data (clean_daya_beli.csv)
                     defaults_map = {
-                        'Gini_Rasio': 0.35,
-                        'IPM': 72.0,
-                        'Garis_Kemiskinan': 500000.0,
-                        'Jumlah_Penduduk': 5000000.0,
-                        'Pct_Populasi': 2.5,  # % share of total population
-                        'Pct_Akses_Air_Bersih': 80.0,
-                        'Protein_gram_per_hari': 60.0,
-                        'Jumlah_Rumah_Tangga': 1500000.0,
+                        'Gini_Rasio': 0.30,
+                        'IPM': 72.4,
+                        'Garis_Kemiskinan': 609000.0,
+                        'Jumlah_Penduduk': 8000.0,  # dalam ribuan (training mean ~8,073)
+                        'Pct_Populasi': 2.8,
+                        'Pct_Akses_Air_Bersih': 87.7,
+                        'Protein_gram_per_hari': 62.3,
+                        'Jumlah_Rumah_Tangga': 2000.0,  # dalam ribuan
                     }
                     base_values[feat] = defaults_map.get(feat, 0.0)
         except Exception:

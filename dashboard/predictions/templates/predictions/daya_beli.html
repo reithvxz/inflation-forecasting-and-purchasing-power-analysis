@@ -4,11 +4,19 @@
 {% block page_title %}Simulasi Kesejahteraan & Daya Beli{% endblock %}
 
 {% block content %}
-<div class="glass-card" style="margin-bottom: 40px; background: var(--bg-card); padding: 32px 40px; border-left: 4px solid var(--accent-primary);">
+<div class="glass-card" style="margin-bottom: 24px; background: var(--bg-card); padding: 32px 40px; border-left: 4px solid var(--accent-primary);">
     <h3 style="color: var(--text-primary); margin-bottom: 12px; font-size: 18px; font-weight: 600;">Model Ridge Regression Terintegrasi</h3>
     <p style="color: var(--text-secondary); font-size: 15px; line-height: 1.7; max-width: 900px;">
-        Simulasi di bawah ini 100% menggunakan <strong>Ridge Regression ML Pipeline</strong>. Kalkulasi matematis dari model telah diekstrak secara eksak. Saat Anda menggeser <em>slider</em> inflasi, sistem memproses dampaknya terhadap 10 variabel makro secara <em>real-time</em> di dalam peramban Anda dengan latensi 0 detik, memberikan hasil yang sama akuratnya dengan perhitungan *server* secara instan.
+        Simulasi di bawah ini 100% menggunakan <strong>Ridge Regression ML Pipeline</strong> dengan 15 fitur panel data (TPT, PDRB, IPM, Gini Ratio, UMP, dll). Model memprediksi <strong>Rata-rata Pengeluaran Per Kapita per Bulan</strong> berdasarkan kondisi makro ekonomi saat ini.
     </p>
+</div>
+
+<!-- Info Box -->
+<div style="background: rgba(41, 98, 255, 0.06); border: 1px solid rgba(41, 98, 255, 0.15); border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; display: flex; gap: 12px; align-items: flex-start;">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2962FF" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+    <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+        <strong style="color: var(--text-primary);">Cara membaca:</strong> Angka yang ditampilkan adalah <strong>estimasi pengeluaran per kapita per bulan</strong> (dalam Rupiah). Misalnya Rp 1.400.000 berarti rata-rata setiap orang menghabiskan Rp 1,4 juta per bulan untuk konsumsi makanan dan non-makanan. Semakin tinggi angka, semakin kuat daya beli masyarakat.
+    </div>
 </div>
 
 <!-- Interactive Simulator -->
@@ -20,26 +28,60 @@
             </div>
             <div class="sim-content">
                 <h3>Simulasi Dampak Inflasi</h3>
-                <p>Geser slider untuk melihat estimasi seberapa jauh daya beli masyarakat (Pengeluaran Per Kapita) akan tergerus jika inflasi meroket.</p>
+                <p>Geser slider untuk melihat estimasi seberapa jauh daya beli masyarakat (Pengeluaran Per Kapita Per Bulan) akan tergerus jika inflasi naik atau turun.</p>
                 
                 <div class="slider-container">
                     <label for="inflasiSlider">
                         <span>Kenaikan Inflasi</span>
-                        <span id="inflasiVal" class="neon-text">2.5%</span>
+                        <span id="inflasiVal" class="neon-text">0.0%</span>
                     </label>
-                    <input type="range" id="inflasiSlider" min="-2.0" max="15.0" step="0.1" value="2.5">
+                    <input type="range" id="inflasiSlider" min="-2.0" max="15.0" step="0.1" value="0.0">
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-tertiary); margin-top: 4px;">
+                    <span>-2.0% (Deflasi)</span>
+                    <span>0.0% (Stabil)</span>
+                    <span>+15.0% (Hyperinflasi)</span>
                 </div>
             </div>
         </div>
         <div class="sim-right">
             <div class="result-box">
-                <span class="result-label">Estimasi Pengeluaran Kapita</span>
+                <span class="result-label">Estimasi Pengeluaran Per Kapita Per Bulan</span>
                 <div class="result-value" id="dayaBeliResult">Loading...</div>
-                <span class="result-desc">Prediksi Instan Ridge Regression</span>
+                <div style="display: flex; gap: 12px; justify-content: center; margin-top: 12px; font-size: 11px;">
+                    <span style="color: var(--text-tertiary);">
+                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-primary); margin-right: 4px;"></span>
+                        Kondisi Saat Ini
+                    </span>
+                    <span id="statusIndicator" style="font-weight: 600; padding: 2px 8px; border-radius: 3px;"></span>
+                </div>
+                <span class="result-desc" style="margin-top: 8px;">Prediksi Instan Ridge Regression (15 fitur)</span>
             </div>
         </div>
     </div>
 </section>
+
+<!-- Penjelasan Tambahan -->
+<div class="glass-card" style="margin-top: 24px; padding: 24px; background: var(--bg-card);">
+    <h4 style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">Interpretasi Angka</h4>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+        <div style="padding: 16px; background: var(--bg-panel); border-radius: 8px;">
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px;">Normal</div>
+            <div style="font-size: 15px; font-weight: 700; color: var(--positive); margin-bottom: 4px;">Rp 1.4 - 1.5 juta/bulan</div>
+            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">Daya beli masyarakat dalam kondisi stabil. Pengeluaran per kapita sesuai tren normal.</p>
+        </div>
+        <div style="padding: 16px; background: var(--bg-panel); border-radius: 8px;">
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px;">Inflasi Tinggi</div>
+            <div style="font-size: 15px; font-weight: 700; color: var(--negative); margin-bottom: 4px;">Di bawah Rp 1.4 juta/bulan</div>
+            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">Daya beli tergerus. Masyarakat mengurangi konsumsi karena harga naik.</p>
+        </div>
+        <div style="padding: 16px; background: var(--bg-panel); border-radius: 8px;">
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px;">Deflasi</div>
+            <div style="font-size: 15px; font-weight: 700; color: var(--accent-info); margin-bottom: 4px;">Di atas Rp 1.5 juta/bulan</div>
+            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">Harga turun, daya beli naik. Namun deflasi berlebih bisa indikasi lesunya permintaan.</p>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -48,6 +90,7 @@
         const slider = document.getElementById('inflasiSlider');
         const inflasiVal = document.getElementById('inflasiVal');
         const dayaBeliResult = document.getElementById('dayaBeliResult');
+        const statusIndicator = document.getElementById('statusIndicator');
         
         // Data dari backend
         const slopePerPercent = {{ slope }};
@@ -60,27 +103,31 @@
         };
 
         function updatePrediction(inflasi) {
-            // Kalkulasi real-time tanpa delay (menggunakan slope exact dari model regresi)
             const estimasi = baseValue + (inflasi * slopePerPercent);
-            
             dayaBeliResult.textContent = formatIDR(estimasi);
             
-            // Indikator bahaya (contoh jika pengeluaran merosot)
             if (estimasi < 1400000) {
                 dayaBeliResult.style.color = 'var(--negative)';
-                dayaBeliResult.style.textShadow = 'none';
+                statusIndicator.textContent = 'Merosot';
+                statusIndicator.style.color = 'var(--negative)';
+                statusIndicator.style.background = 'rgba(239, 83, 80, 0.1)';
+            } else if (estimasi > 1500000) {
+                dayaBeliResult.style.color = 'var(--accent-info)';
+                statusIndicator.textContent = 'Meningkat';
+                statusIndicator.style.color = 'var(--accent-info)';
+                statusIndicator.style.background = 'rgba(0, 188, 212, 0.1)';
             } else {
-                dayaBeliResult.style.color = 'var(--text-primary)';
-                dayaBeliResult.style.textShadow = 'none';
+                dayaBeliResult.style.color = 'var(--positive)';
+                statusIndicator.textContent = 'Stabil';
+                statusIndicator.style.color = 'var(--positive)';
+                statusIndicator.style.background = 'rgba(38, 166, 154, 0.1)';
             }
         }
 
-        // Initial setup
         const initVal = parseFloat(slider.value);
         inflasiVal.textContent = initVal.toFixed(1) + '%';
         updatePrediction(initVal);
 
-        // Instant update on drag
         slider.addEventListener('input', function(e) {
             const val = parseFloat(e.target.value);
             inflasiVal.textContent = val.toFixed(1) + '%';

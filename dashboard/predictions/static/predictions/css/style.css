@@ -160,20 +160,33 @@ body {
 .main-content { flex: 1; display: flex; flex-direction: column; background: var(--bg-panel); }
 
 .page-title-area {
-    padding: 24px 32px 0 32px;
+    padding: 20px 32px 14px 32px;
     background: #FFFFFF;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 18px;
+    max-width: 100%;
+    overflow: hidden;
 }
 .page-title-area h1 {
-    font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+    font-size: 18px; font-weight: 700; letter-spacing: -0.3px;
     color: var(--text-primary);
     display: flex; align-items: center; gap: 10px;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .page-title-area h1::before {
-    content: ''; width: 4px; height: 22px;
+    content: ''; width: 4px; height: 18px;
     background: linear-gradient(180deg, #2962FF, #00BCD4);
     border-radius: 2px;
+    flex-shrink: 0;
+}
+.page-title-area h1 svg {
+    width: 16px; height: 16px;
+    flex-shrink: 0;
 }
 
 .content-area { padding: 24px 32px; flex: 1; }
@@ -323,6 +336,111 @@ tr:hover { background: var(--bg-hover); }
 @keyframes countUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
 .fade-in { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* =================================================================
+   INFLASI OVERVIEW (M-to-M, Y-o-Y, Y-to-D)
+   ================================================================= */
+.inflasi-overview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.inflasi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    transition: all 0.15s;
+    min-width: 0;
+}
+.inflasi-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+.inflasi-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+}
+.inflasi-body {
+    flex: 1;
+    min-width: 0;
+}
+.inflasi-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.tooltip-trigger {
+    cursor: help;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+}
+.tooltip-trigger:hover { opacity: 1; }
+.inflasi-value {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text-primary);
+    line-height: 1.1;
+    margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+}
+.inflasi-change {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.inflasi-change.up { color: var(--positive); }
+.inflasi-change.down { color: var(--negative); }
+.inflasi-meta {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-top: 6px;
+    letter-spacing: 0.2px;
+}
+.inflasi-status {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+.inflasi-status.positive { color: var(--positive); background: rgba(38, 166, 154, 0.1); }
+.inflasi-status.warning { color: var(--warning); background: rgba(255, 179, 0, 0.1); }
+.inflasi-status.negative { color: var(--negative); background: rgba(239, 83, 80, 0.1); }
+.inflasi-status.neutral { color: var(--text-secondary); background: var(--bg-elevated); }
+
+@media (max-width: 768px) {
+    .inflasi-overview { grid-template-columns: 1fr; }
+}
 
 /* =================================================================
    SIMULATION CARD (Daya Beli Slider)
