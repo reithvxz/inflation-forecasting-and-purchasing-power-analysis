@@ -6,6 +6,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <style>
     .map-container { 
         height: calc(100vh - 200px); 
@@ -27,11 +28,20 @@
     .map-legend {
         background: var(--bg-panel, #111827); padding: 12px 16px; border-radius: 10px;
         border: 1px solid var(--border-color, #1E293B); font-size: 12px; color: var(--text-secondary, #94A3B8);
+        min-width: 280px;
     }
-    .legend-title { font-weight: 600; margin-bottom: 8px; color: var(--text-primary, #F1F5F9); }
-    .legend-scale { display: flex; gap: 4px; margin-bottom: 4px; }
-    .legend-scale div { height: 12px; flex: 1; }
-    .legend-labels { display: flex; justify-content: space-between; }
+    .legend-title { font-weight: 600; margin-bottom: 8px; color: var(--text-primary, #F1F5F9); display: flex; align-items: center; gap: 6px; }
+    .legend-title i { color: #F97316; }
+    .legend-scale { 
+        display: flex; 
+        gap: 0; 
+        margin-bottom: 4px; 
+        border-radius: 6px; 
+        overflow: hidden;
+        height: 14px;
+    }
+    .legend-scale div { flex: 1; height: 100%; }
+    .legend-labels { display: flex; justify-content: space-between; font-size: 11px; }
     
     .leaflet-popup-content-wrapper {
         background: var(--bg-panel, #111827) !important;
@@ -45,6 +55,7 @@
     .popup-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
     .popup-value { font-size: 24px; font-weight: 800; color: var(--accent-primary, #0EA5E9); }
     .popup-metric { font-size: 12px; color: var(--text-secondary, #94A3B8); margin-top: 4px; }
+    .popup-rank { display: inline-block; margin-top: 6px; padding: 2px 8px; border-radius: 4px; background: rgba(239, 68, 68, 0.15); color: #FCA5A5; font-size: 11px; font-weight: 600; }
 
     .custom-tooltip {
         background: var(--bg-panel, #111827) !important;
@@ -58,6 +69,8 @@
     .custom-tooltip::before {
         border-top-color: var(--border-color, #1E293B) !important;
     }
+
+    .leaflet-heatmap-layer { pointer-events: none; }
 </style>
 {% endblock %}
 
@@ -138,7 +151,19 @@ const METRIC_INFO = {
     'Inflasi_Rata_Tahunan': { label: 'Inflasi', unit: '%', format: 'percent' }
 };
 
-let map, markers = {}, provinceData = {};
+const HEAT_GRADIENT = {
+    0.0: '#1E3A8A',
+    0.2: '#3B82F6',
+    0.4: '#06B6D4',
+    0.6: '#10B981',
+    0.7: '#F59E0B',
+    0.8: '#F97316',
+    1.0: '#EF4444'
+};
+
+const LEGEND_STOPS = [0.0, 0.2, 0.4, 0.6, 0.7, 0.8, 1.0];
+
+let map, heatLayer, markers = {}, provinceData = {};
 
 map = L.map('map', {
     center: [-2.5, 118],
@@ -166,20 +191,9 @@ function formatVal(val, metric) {
     return val.toFixed(2);
 }
 
-function getColor(val, min, max) {
-    if (max === min) return '#0EA5E9';
-    const ratio = (val - min) / (max - min);
-    if (ratio < 0.2) return '#0369A1';
-    if (ratio < 0.4) return '#0284C7';
-    if (ratio < 0.6) return '#0EA5E9';
-    if (ratio < 0.8) return '#38BDF8';
-    return '#7DD3FC';
-}
-
-function getRadius(val, min, max) {
-    if (max === min) return 10;
-    const ratio = (val - min) / (max - min);
-    return 8 + ratio * 22;
+function normalize(val, min, max) {
+    if (max === min) return 0.5;
+    return (val - min) / (max - min);
 }
 
 async function initMap() {
@@ -192,20 +206,24 @@ async function initMap() {
     } catch (err) {
         console.error('Failed to load map data:', err);
         document.getElementById('mapLegend').innerHTML = 
-            '<div class="legend-title" style="color:#EF4444">Gagal memuat data</div>';
+            '<div class="legend-title" style="color:#EF4444"><i class="fas fa-exclamation-triangle"></i> Gagal memuat data</div>';
     }
 }
 
 function updateMap() {
     const metric = document.getElementById('mapMetric').value;
     
+    if (heatLayer) {
+        map.removeLayer(heatLayer);
+        heatLayer = null;
+    }
     Object.values(markers).forEach(m => map.removeLayer(m));
     markers = {};
     
     const values = [];
     for (const [prov, data] of Object.entries(provinceData)) {
         if (data[metric] !== undefined && data[metric] !== null) {
-            values.push(data[metric]);
+            values.push({ prov, val: data[metric] });
         }
     }
     
@@ -215,39 +233,58 @@ function updateMap() {
         return;
     }
     
-    const minVal = Math.min(...values);
-    const maxVal = Math.max(...values);
+    const numericVals = values.map(v => v.val);
+    const minVal = Math.min(...numericVals);
+    const maxVal = Math.max(...numericVals);
     
-    for (const [prov, data] of Object.entries(provinceData)) {
-        const val = data[metric];
-        if (val === undefined || val === null) continue;
-        
+    const sortedDesc = [...values].sort((a, b) => b.val - a.val);
+    const rankMap = {};
+    sortedDesc.forEach((v, idx) => { rankMap[v.prov] = idx + 1; });
+    
+    const heatPoints = values.map(v => {
+        const coords = PROVINCE_COORDS[v.prov];
+        if (!coords) return null;
+        const intensity = normalize(v.val, minVal, maxVal);
+        return [coords[0], coords[1], intensity];
+    }).filter(p => p !== null);
+    
+    heatLayer = L.heatLayer(heatPoints, {
+        radius: 35,
+        blur: 50,
+        maxZoom: 10,
+        max: 1.0,
+        minOpacity: 0.35,
+        gradient: HEAT_GRADIENT
+    }).addTo(map);
+    
+    for (const v of values) {
+        const prov = v.prov;
+        const val = v.val;
         const coords = PROVINCE_COORDS[prov];
         if (!coords) continue;
         
-        const color = getColor(val, minVal, maxVal);
-        const radius = getRadius(val, minVal, maxVal);
-        
         const marker = L.circleMarker(coords, {
-            radius: radius,
-            fillColor: color,
+            radius: 5,
+            fillColor: 'transparent',
             color: '#ffffff',
-            weight: 2,
+            weight: 1.5,
             opacity: 0.9,
-            fillOpacity: 0.75
+            fillOpacity: 0
         }).addTo(map);
         
         const info = METRIC_INFO[metric];
+        const rank = rankMap[prov];
         marker.bindPopup(
             '<div class="popup-title">' + prov + '</div>' +
             '<div class="popup-value">' + formatVal(val, metric) + '</div>' +
-            '<div class="popup-metric">' + (info ? info.label : metric) + '</div>'
+            '<div class="popup-metric">' + (info ? info.label : metric) + '</div>' +
+            '<div class="popup-rank">#' + rank + ' dari ' + values.length + '</div>'
         );
         
         marker.bindTooltip(prov + ': ' + formatVal(val, metric), {
             className: 'custom-tooltip',
             direction: 'top',
-            offset: [0, -radius]
+            offset: [0, -6]
         });
         
         markers[prov] = marker;
@@ -261,20 +298,17 @@ function updateLegend(metric, min, max) {
     const legendEl = document.getElementById('mapLegend');
     if (!legendEl) return;
     
-    const steps = 5;
     let scaleHtml = '';
-    let labelsHtml = '';
-    
-    for (let i = 0; i < steps; i++) {
-        const val = min + (max - min) * (i / (steps - 1));
-        scaleHtml += '<div style="background:' + getColor(val, min, max) + '"></div>';
+    for (const stop of LEGEND_STOPS) {
+        scaleHtml += '<div style="background:' + HEAT_GRADIENT[stop] + '"></div>';
     }
     
     legendEl.innerHTML = 
-        '<div class="legend-title">' + (info ? info.label : metric) + '</div>' +
+        '<div class="legend-title"><i class="fas fa-fire"></i> ' + (info ? info.label : metric) + '</div>' +
         '<div class="legend-scale">' + scaleHtml + '</div>' +
         '<div class="legend-labels">' +
             '<span>' + formatVal(min, metric) + '</span>' +
+            '<span>' + formatVal((min + max) / 2, metric) + '</span>' +
             '<span>' + formatVal(max, metric) + '</span>' +
         '</div>';
 }

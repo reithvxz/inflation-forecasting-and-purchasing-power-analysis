@@ -43,9 +43,9 @@
         letter-spacing: 0.5px;
     }
     .control-group select {
-        padding: 12px 16px;
-        border-radius: 12px;
-        background: var(--bg-card);
+        padding: 10px 14px;
+        border-radius: 6px;
+        background: var(--bg-elevated);
         border: 1px solid var(--border-color);
         color: var(--text-primary);
         font-size: 14px;
@@ -54,48 +54,50 @@
         cursor: pointer;
     }
     .control-group select:focus {
-        border-color: #0EA5E9;
+        border-color: var(--accent-primary);
         outline: none;
-        box-shadow: 0 0 0 3px rgba(14,165,233,0.1);
+        box-shadow: 0 0 0 3px var(--accent-primary-dim);
     }
     .btn-compare {
-        padding: 12px 28px;
-        border-radius: 12px;
-        background: #0EA5E9;
+        padding: 10px 22px;
+        border-radius: 6px;
+        background: var(--accent-primary);
         color: #fff;
         border: none;
-        font-weight: 700;
+        font-weight: 600;
         font-size: 14px;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: all 0.15s ease;
         font-family: 'Inter', sans-serif;
     }
     .btn-compare:hover {
-        box-shadow: 0 6px 20px rgba(14,165,233,0.4);
-        transform: translateY(-2px);
+        background: var(--accent-primary-hover);
+        box-shadow: 0 4px 12px var(--accent-primary-glow);
+        transform: translateY(-1px);
     }
     .btn-reset {
-        padding: 12px 24px;
-        border-radius: 12px;
+        padding: 10px 18px;
+        border-radius: 6px;
         background: transparent;
-        color: #94A3B8;
+        color: var(--text-secondary);
         border: 1px solid var(--border-color);
         font-weight: 600;
         font-size: 14px;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: all 0.15s ease;
         font-family: 'Inter', sans-serif;
     }
     .btn-reset:hover {
-        border-color: #EF4444;
-        color: #EF4444;
+        border-color: var(--negative);
+        color: var(--negative);
+        background: var(--negative-dim);
     }
 
     .metric-context-card {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-left: 4px solid #0EA5E9;
-        border-radius: 16px;
+        border-left: 4px solid var(--accent-primary);
+        border-radius: 8px;
         padding: 20px 24px;
         margin-bottom: 24px;
         display: none;
@@ -103,7 +105,7 @@
     .metric-context-card .mcc-label {
         font-size: 16px;
         font-weight: 700;
-        color: #0EA5E9;
+        color: var(--accent-primary);
         margin-bottom: 4px;
     }
     .metric-context-card .mcc-desc {
@@ -115,19 +117,19 @@
     .compare-grid {
         display: grid;
         grid-template-columns: 2fr 1fr;
-        gap: 24px;
-        margin-bottom: 24px;
+        gap: 16px;
+        margin-bottom: 16px;
     }
     .chart-panel {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 24px;
-        padding: 32px;
+        border-radius: 8px;
+        padding: 20px;
     }
     .chart-panel h3 {
-        font-size: 18px;
+        font-size: 15px;
         font-weight: 600;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         color: var(--text-primary);
     }
     .chart-box {
@@ -137,14 +139,14 @@
     .radar-panel {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 24px;
-        padding: 32px;
-        margin-bottom: 24px;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
     }
     .radar-panel h3 {
-        font-size: 18px;
+        font-size: 15px;
         font-weight: 600;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         color: var(--text-primary);
     }
     .radar-box {
@@ -156,93 +158,93 @@
     .ranking-panel {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 24px;
-        padding: 32px;
+        border-radius: 8px;
+        padding: 20px;
     }
     .ranking-panel h3 {
-        font-size: 18px;
+        font-size: 15px;
         font-weight: 600;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         color: var(--text-primary);
     }
     .ranking-list {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
     }
     .rank-item {
         display: flex;
         align-items: center;
         gap: 14px;
-        padding: 14px 16px;
-        background: rgba(255,255,255,0.02);
-        border-radius: 12px;
+        padding: 12px 14px;
+        background: var(--bg-elevated);
+        border-radius: 6px;
         border: 1px solid var(--border-color);
-        transition: all 0.2s;
+        transition: all 0.15s ease;
     }
     .rank-item:hover {
-        border-color: rgba(14,165,233,0.2);
-        background: rgba(14,165,233,0.03);
+        border-color: var(--accent-primary);
+        background: var(--bg-hover);
     }
     .rank-num {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
-        font-weight: 800;
+        font-size: 13px;
+        font-weight: 700;
     }
-    .rank-num.gold { background: rgba(255,215,0,0.15); color: #ffd700; }
+    .rank-num.gold { background: var(--warning-dim); color: var(--accent-warning); }
     .rank-num.silver { background: rgba(192,192,192,0.15); color: #c0c0c0; }
     .rank-num.bronze { background: rgba(205,127,50,0.15); color: #cd7f32; }
-    .rank-num.normal { background: rgba(255,255,255,0.04); color: #94A3B8; }
+    .rank-num.normal { background: var(--bg-elevated); color: var(--text-secondary); }
     .rank-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--text-primary); }
-    .rank-val { font-size: 16px; font-weight: 800; color: #0EA5E9; }
-    .empty-state { text-align: center; padding: 80px 20px; color: #94A3B8; }
-    .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.3; color: #94A3B8; }
-    .empty-state p { font-size: 15px; color: #94A3B8; }
-    .loading-state { text-align: center; padding: 60px 20px; color: #94A3B8; }
-    .loading-state i { font-size: 32px; margin-bottom: 12px; animation: spin 1s linear infinite; color: #0EA5E9; }
+    .rank-val { font-size: 15px; font-weight: 700; color: var(--accent-primary); font-variant-numeric: tabular-nums; }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+    .empty-state i { font-size: 36px; margin-bottom: 12px; opacity: 0.4; color: var(--text-secondary); }
+    .empty-state p { font-size: 13px; color: var(--text-secondary); }
+    .loading-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+    .loading-state i { font-size: 24px; margin-bottom: 8px; animation: spin 1s linear infinite; color: var(--accent-primary); }
     @keyframes spin { 100% { transform: rotate(360deg); } }
-    .error-state { text-align: center; padding: 60px 20px; color: #EF4444; }
+    .error-state { text-align: center; padding: 40px 20px; color: var(--negative); }
 
     .insight-section {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 24px;
-        padding: 32px;
-        margin-bottom: 24px;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
         display: none;
     }
     .insight-section h3 {
-        font-size: 18px;
+        font-size: 15px;
         font-weight: 600;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         color: var(--text-primary);
     }
-    .insight-section h3 i { color: #facc15; }
+    .insight-section h3 i { color: var(--accent-warning); }
     .insight-list {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
     }
     .insight-item {
         display: flex;
         align-items: flex-start;
         gap: 12px;
-        padding: 14px 18px;
-        background: rgba(255,255,255,0.02);
-        border-radius: 12px;
+        padding: 12px 14px;
+        background: var(--bg-elevated);
+        border-radius: 6px;
         border: 1px solid var(--border-color);
-        font-size: 14px;
+        font-size: 13px;
         color: var(--text-secondary);
         line-height: 1.6;
     }
     .insight-item i {
-        color: #facc15;
-        margin-top: 3px;
+        color: var(--accent-warning);
+        margin-top: 2px;
         flex-shrink: 0;
     }
     .insight-item strong { color: var(--text-primary); }
@@ -257,7 +259,7 @@
 
 {% block content %}
 <div class="compare-header">
-    <h1><i class="fas fa-balance-scale" style="color:#0EA5E9"></i> Analisis Perbandingan Provinsi</h1>
+    <h1><i class="fas fa-balance-scale" style="color:var(--accent-primary)"></i> Analisis Perbandingan Provinsi</h1>
     <p>Bandingkan indikator ekonomi makro antar provinsi Indonesia. Pilih provinsi dan metrik untuk melihat tren, ranking, dan profil multi-dimensi.</p>
 </div>
 
@@ -312,11 +314,11 @@
 
 <div class="compare-grid">
     <div class="chart-panel">
-        <h3><i class="fas fa-chart-line" style="color:#0EA5E9"></i> Tren Perbandingan</h3>
+        <h3><i class="fas fa-chart-line" style="color:var(--accent-primary)"></i> Tren Perbandingan</h3>
         <div class="chart-box"><canvas id="compareChart"></canvas></div>
     </div>
     <div class="ranking-panel">
-        <h3><i class="fas fa-trophy" style="color:#ffd700"></i> Ranking</h3>
+        <h3><i class="fas fa-trophy" style="color:var(--accent-warning)"></i> Ranking</h3>
         <div class="ranking-list" id="rankingList">
             <div class="empty-state">
                 <i class="fas fa-arrow-up"></i>
@@ -332,7 +334,7 @@
 </div>
 
 <div class="radar-panel">
-    <h3><i class="fas fa-bullseye" style="color:#0EA5E9"></i> Profil Multi-Dimensi (Radar)</h3>
+    <h3><i class="fas fa-bullseye" style="color:var(--accent-primary)"></i> Profil Multi-Dimensi (Radar)</h3>
     <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;margin-top:-12px;">Skor dinormalisasi 0-100 per dimensi agar bisa dibandingkan dalam satu grafik.</p>
     <div class="radar-box"><canvas id="radarChart"></canvas></div>
 </div>
@@ -340,7 +342,7 @@
 
 {% block extra_js %}
 <script>
-const COLORS = ['#0EA5E9','#3b82f6','#a855f7','#f97316','#ec4899'];
+const COLORS = ['#2962FF','#26A69A','#FFB300','#AB47BC','#00BCD4'];
 const PROVINCE_SELECTS = ['prov1','prov2','prov3','prov4','prov5'];
 let lineChart = null;
 let radarChart = null;
@@ -557,12 +559,12 @@ async function runCompare() {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { labels: { color: '#94A3B8', font: { weight: 600 } } },
+                    legend: { labels: { color: '#868993', font: { weight: 600, size: 12 } } },
                     tooltip: {
-                        backgroundColor: 'rgba(15,23,42,0.9)',
-                        titleColor: '#fff',
-                        bodyColor: '#94A3B8',
-                        borderColor: 'rgba(255,255,255,0.1)',
+                        backgroundColor: 'rgba(30,34,45,0.95)',
+                        titleColor: '#D1D4DC',
+                        bodyColor: '#868993',
+                        borderColor: '#2A2E39',
                         borderWidth: 1,
                         callbacks: {
                             label: function(context) {
@@ -572,8 +574,8 @@ async function runCompare() {
                     }
                 },
                 scales: {
-                    x: { ticks: { color: '#94A3B8' }, grid: { color: 'rgba(255,255,255,0.04)' } },
-                    y: { ticks: { color: '#94A3B8', callback: v => formatValue(v, metric) }, grid: { color: 'rgba(255,255,255,0.04)' } }
+                    x: { ticks: { color: '#868993' }, grid: { color: '#2A2E39' } },
+                    y: { ticks: { color: '#868993', callback: v => formatValue(v, metric) }, grid: { color: '#2A2E39' } }
                 },
                 interaction: { intersect: false, mode: 'index' }
             }
@@ -675,12 +677,12 @@ async function loadRadarChart(provs) {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { labels: { color: '#94A3B8', font: { weight: 600 } } },
+                    legend: { labels: { color: '#868993', font: { weight: 600, size: 12 } } },
                     tooltip: {
-                        backgroundColor: 'rgba(15,23,42,0.9)',
-                        titleColor: '#fff',
-                        bodyColor: '#94A3B8',
-                        borderColor: 'rgba(255,255,255,0.1)',
+                        backgroundColor: 'rgba(30,34,45,0.95)',
+                        titleColor: '#D1D4DC',
+                        bodyColor: '#868993',
+                        borderColor: '#2A2E39',
                         borderWidth: 1,
                         callbacks: {
                             label: function(context) {
@@ -695,10 +697,10 @@ async function loadRadarChart(provs) {
                 },
                 scales: {
                     r: {
-                        angleLines: { color: 'rgba(255,255,255,0.08)' },
-                        grid: { color: 'rgba(255,255,255,0.08)' },
-                        pointLabels: { color: '#94A3B8', font: { weight: 600, size: 12 } },
-                        ticks: { color: '#94A3B8', backdropColor: 'transparent' }
+                        angleLines: { color: '#2A2E39' },
+                        grid: { color: '#2A2E39' },
+                        pointLabels: { color: '#868993', font: { weight: 600, size: 12 } },
+                        ticks: { color: '#868993', backdropColor: 'transparent' }
                     }
                 }
             }

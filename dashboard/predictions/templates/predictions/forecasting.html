@@ -24,9 +24,9 @@
     </p>
     <p style="color: var(--text-secondary); line-height: 1.6; font-size: 14px;">
         {% if inflasi_pred > 1.0 %}
-        <span style="color: #ff5252; font-weight: 600;">Status: Waspada.</span> Angka inflasi diprediksi melonjak tajam melebihi ambang batas aman 1%. Kebijakan moneter kontraktif (seperti peningkatan BI Rate) sangat disarankan untuk menekan laju inflasi ini agar daya beli masyarakat tidak tergerus terlalu dalam.
+        <span style="color: #EF5350; font-weight: 600;">Status: Waspada.</span> Angka inflasi diprediksi melonjak tajam melebihi ambang batas aman 1%. Kebijakan moneter kontraktif (seperti peningkatan BI Rate) sangat disarankan untuk menekan laju inflasi ini agar daya beli masyarakat tidak tergerus terlalu dalam.
         {% elif inflasi_pred < 0 %}
-        <span style="color: #ff5252; font-weight: 600;">Status: Deflasi.</span> Terjadi proyeksi kontraksi harga. Walaupun harga barang murah, deflasi berlebih mengindikasikan lesunya daya beli masyarakat (permintaan agregat turun).
+        <span style="color: #EF5350; font-weight: 600;">Status: Deflasi.</span> Terjadi proyeksi kontraksi harga. Walaupun harga barang murah, deflasi berlebih mengindikasikan lesunya daya beli masyarakat (permintaan agregat turun).
         {% else %}
         <span style="color: var(--accent-primary); font-weight: 600;">Status: Terkendali.</span> Inflasi diproyeksikan stabil dan berada dalam batas normal. Daya beli masyarakat diasumsikan masih kuat.
         {% endif %}
@@ -44,8 +44,8 @@
         gradientActual.addColorStop(1, 'rgba(160, 160, 165, 0)');
         
         const gradientPred = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientPred.addColorStop(0, 'rgba(188, 248, 70, 0.4)');
-        gradientPred.addColorStop(1, 'rgba(188, 248, 70, 0)');
+        gradientPred.addColorStop(0, 'rgba(41, 98, 255, 0.4)');
+        gradientPred.addColorStop(1, 'rgba(41, 98, 255, 0)');
 
         // Mengambil data real dari backend (views.py mengirim JSON)
         const labels = {{ labels|safe }};
@@ -71,14 +71,14 @@
                     {
                         label: 'Prediksi LSTM (1 Bulan)',
                         data: dataPred,
-                        borderColor: '#bcf846',
+                        borderColor: '#2962FF',
                         backgroundColor: gradientPred,
                         borderWidth: 3,
                         borderDash: [5, 5],
                         tension: 0.1,
                         fill: true,
-                        pointBackgroundColor: '#121212',
-                        pointBorderColor: '#bcf846',
+                        pointBackgroundColor: '#131722',
+                        pointBorderColor: '#2962FF',
                         pointBorderWidth: 2,
                         pointRadius: 6,
                         pointHoverRadius: 8
@@ -92,20 +92,20 @@
                     legend: {
                         position: 'top',
                         align: 'end',
-                        labels: { color: '#a0a0a5', usePointStyle: true, boxWidth: 8 }
+                        labels: { color: '#868993', usePointStyle: true, boxWidth: 8 }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(37, 38, 44, 0.9)',
+                        backgroundColor: 'rgba(30, 34, 45, 0.95)',
                         titleColor: '#fff',
-                        bodyColor: '#bcf846',
-                        borderColor: 'rgba(188, 248, 70, 0.3)',
+                        bodyColor: '#2962FF',
+                        borderColor: 'rgba(41, 98, 255, 0.3)',
                         borderWidth: 1,
                         padding: 12
                     }
                 },
                 scales: {
-                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false }, ticks: { color: '#a0a0a5' } },
-                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false }, ticks: { color: '#a0a0a5', callback: function(value) { return value + '%'; } } }
+                    x: { grid: { color: 'rgba(54, 58, 69, 0.5)', drawBorder: false }, ticks: { color: '#868993' } },
+                    y: { grid: { color: 'rgba(54, 58, 69, 0.5)', drawBorder: false }, ticks: { color: '#868993', callback: function(value) { return value + '%'; } } }
                 }
             }
         });
