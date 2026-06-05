@@ -1,15 +1,101 @@
 {% extends 'predictions/base.html' %}
 {% load static %}
 
-{% block page_title %}Time Series Forecasting (LSTM){% endblock %}
+{% block page_title %}Forecasting — LSTM + ARIMA + Prophet Ensemble{% endblock %}
 
 {% block content %}
+<!-- INFLASI OVERVIEW: M-to-M, Y-o-Y, Y-to-D -->
+<section class="inflasi-overview-forecasting">
+    <div class="inflasi-card-mini">
+        <div class="inflasi-label">Inflasi M-to-M</div>
+        <div class="inflasi-value" id="mom-value-fc">—</div>
+        <div class="inflasi-meta">Bulan terakhir</div>
+    </div>
+    <div class="inflasi-card-mini primary">
+        <div class="inflasi-label">Inflasi Y-o-Y ⓘ</div>
+        <div class="inflasi-value" id="yoy-value-fc">—</div>
+        <div class="inflasi-status-mini" id="yoy-status-fc">—</div>
+    </div>
+    <div class="inflasi-card-mini">
+        <div class="inflasi-label">Inflasi Y-to-D</div>
+        <div class="inflasi-value" id="ytd-value-fc">—</div>
+        <div class="inflasi-meta">vs Januari tahun ini</div>
+    </div>
+</section>
+
+<!-- Model Performance Comparison -->
+<section class="chart-section" style="margin-bottom: 24px;">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+            <h2>Perbandingan Model (Walk-Forward Backtest)</h2>
+            <p>Akurasi 4 model pada 12-24 bulan terakhir — lower is better</p>
+        </div>
+        <div style="display: flex; gap: 16px; font-size: 11px; color: var(--text-tertiary);">
+            <span><strong style="color: var(--text-primary);">MAE</strong> = Mean Absolute Error</span>
+            <span><strong style="color: var(--text-primary);">sMAPE</strong> = Symmetric MAPE</span>
+        </div>
+    </div>
+    <div id="modelComparisonCards" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px;">
+        <div class="model-card" data-model="naive">
+            <div class="model-name">Naive Baseline</div>
+            <div class="model-icon" style="background: var(--bg-elevated); color: var(--text-tertiary);">⏸</div>
+            <div class="model-metrics">
+                <div class="model-metric"><span>MAE</span><strong>—</strong></div>
+                <div class="model-metric"><span>RMSE</span><strong>—</strong></div>
+                <div class="model-metric"><span>sMAPE</span><strong>—</strong></div>
+            </div>
+        </div>
+        <div class="model-card" data-model="arima">
+            <div class="model-name">ARIMA(0,0,1)</div>
+            <div class="model-icon" style="background: rgba(255, 179, 0, 0.1); color: var(--warning);">📊</div>
+            <div class="model-metrics">
+                <div class="model-metric"><span>MAE</span><strong>—</strong></div>
+                <div class="model-metric"><span>RMSE</span><strong>—</strong></div>
+                <div class="model-metric"><span>sMAPE</span><strong>—</strong></div>
+            </div>
+        </div>
+        <div class="model-card" data-model="lstm">
+            <div class="model-name">LSTM (44 fitur)</div>
+            <div class="model-icon" style="background: rgba(41, 98, 255, 0.1); color: var(--accent-primary);">🧠</div>
+            <div class="model-metrics">
+                <div class="model-metric"><span>MAE</span><strong>—</strong></div>
+                <div class="model-metric"><span>RMSE</span><strong>—</strong></div>
+                <div class="model-metric"><span>sMAPE</span><strong>—</strong></div>
+            </div>
+        </div>
+        <div class="model-card" data-model="prophet">
+            <div class="model-name">Prophet</div>
+            <div class="model-icon" style="background: rgba(0, 188, 212, 0.1); color: var(--accent-info);">📈</div>
+            <div class="model-metrics">
+                <div class="model-metric"><span>MAE</span><strong>—</strong></div>
+                <div class="model-metric"><span>RMSE</span><strong>—</strong></div>
+                <div class="model-metric"><span>sMAPE</span><strong>—</strong></div>
+            </div>
+        </div>
+        <div class="model-card best" data-model="ensemble">
+            <div class="model-badge">★ BEST</div>
+            <div class="model-name">Ensemble</div>
+            <div class="model-icon" style="background: rgba(38, 166, 154, 0.1); color: var(--positive);">🎯</div>
+            <div class="model-metrics">
+                <div class="model-metric"><span>MAE</span><strong>—</strong></div>
+                <div class="model-metric"><span>RMSE</span><strong>—</strong></div>
+                <div class="model-metric"><span>sMAPE</span><strong>—</strong></div>
+            </div>
+        </div>
+    </div>
+    <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; padding: 12px 16px; background: var(--bg-panel); border-radius: 6px; border-left: 3px solid var(--accent-primary);">
+        <strong>💡 Catatan Backtest:</strong> Setiap model diuji pada data historis dengan metode walk-forward (prediksi bulan demi bulan, update training di setiap step). Ensemble menggunakan weighted average: <strong>Prophet 0.50 + ARIMA 0.30 + LSTM 0.20</strong>. Bobot di-tuning berdasarkan akurasi backtest individual.
+    </p>
+</section>
+
+<!-- Forecast Chart -->
 <section class="chart-section" style="margin-bottom: 24px;">
     <div class="section-header">
-        <h2>Prediksi Inflasi - PyTorch LSTM</h2>
+        <h2>Prediksi 3 Bulan ke Depan (M-to-M)</h2>
+        <p>Perbandingan prediksi dari 4 model — ensemble menggabungkan ketiganya</p>
     </div>
-    <div class="chart-container">
-        <canvas id="inflationChart"></canvas>
+    <div class="chart-container" style="height: 380px;">
+        <canvas id="forecastChart"></canvas>
     </div>
 </section>
 
@@ -17,98 +103,281 @@
 <div class="glass-card" style="padding: 24px; border-left: 4px solid var(--accent-primary); background: var(--bg-card);">
     <h3 style="color: var(--accent-primary); margin-bottom: 12px; font-size: 16px; display: flex; align-items: center; gap: 8px;">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-        Interpretasi Model LSTM
+        Interpretasi Ensemble Forecast
     </h3>
     <p style="color: var(--text-secondary); line-height: 1.6; font-size: 14px; margin-bottom: 8px;">
-        Berdasarkan perhitungan jaringan saraf tiruan <strong>Long Short-Term Memory (LSTM)</strong> menggunakan fitur Multivariat (Inflasi MoM, IHK, BI Rate, dan USD/IDR), proyeksi tingkat inflasi bulan depan berada di angka <strong style="color: var(--text-primary); font-size: 16px;">{{ inflasi_pred|floatformat:2 }}%</strong>.
+        Berdasarkan <strong>ensemble weighted average</strong> dari LSTM, ARIMA, dan Prophet, proyeksi inflasi M-to-M untuk bulan depan adalah <strong id="ensemble-next" style="color: var(--text-primary); font-size: 16px;">—</strong>.
+        Dalam basis Y-o-Y (standar rilis BPS), proyeksi ini berkorelasi dengan inflasi tahunan yang lebih mudah dipahami masyarakat umum.
     </p>
-    <p style="color: var(--text-secondary); line-height: 1.6; font-size: 14px;">
-        {% if inflasi_pred > 1.0 %}
-        <span style="color: var(--negative); font-weight: 600;">Status: Waspada.</span> Angka inflasi diprediksi melonjak tajam melebihi ambang batas aman 1%. Kebijakan moneter kontraktif (seperti peningkatan BI Rate) sangat disarankan untuk menekan laju inflasi ini agar daya beli masyarakat tidak tergerus terlalu dalam.
-        {% elif inflasi_pred < 0 %}
-        <span style="color: var(--negative); font-weight: 600;">Status: Deflasi.</span> Terjadi proyeksi kontraksi harga. Walaupun harga barang murah, deflasi berlebih mengindikasikan lesunya daya beli masyarakat (permintaan agregat turun).
-        {% else %}
-        <span style="color: var(--accent-primary); font-weight: 600;">Status: Terkendali.</span> Inflasi diproyeksikan stabil dan berada dalam batas normal. Daya beli masyarakat diasumsikan masih kuat.
-        {% endif %}
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;">
+        <div style="padding: 12px; background: var(--bg-panel); border-radius: 6px;">
+            <div style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px;">LSTM Forecast</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--accent-primary);" id="lstm-next">—</div>
+        </div>
+        <div style="padding: 12px; background: var(--bg-panel); border-radius: 6px;">
+            <div style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px;">ARIMA Forecast</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--warning);" id="arima-next">—</div>
+        </div>
+        <div style="padding: 12px; background: var(--bg-panel); border-radius: 6px;">
+            <div style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px;">Prophet Forecast</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--accent-info);" id="prophet-next">—</div>
+        </div>
+    </div>
+    <p id="forecast-status" style="color: var(--text-secondary); line-height: 1.6; font-size: 14px; margin-top: 16px;">
+        Memuat...
     </p>
 </div>
+
+<style>
+.inflasi-overview-forecasting {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 20px;
+}
+.inflasi-card-mini {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: 8px; padding: 14px 18px;
+}
+.inflasi-card-mini.primary {
+    border-left: 3px solid var(--accent-primary);
+}
+.inflasi-card-mini .inflasi-label {
+    font-size: 10px; font-weight: 600; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px;
+}
+.inflasi-card-mini .inflasi-value {
+    font-size: 22px; font-weight: 800; color: var(--text-primary);
+    letter-spacing: -0.5px; margin-bottom: 4px; font-variant-numeric: tabular-nums;
+}
+.inflasi-card-mini .inflasi-meta {
+    font-size: 10px; color: var(--text-tertiary);
+}
+.inflasi-status-mini {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.4px;
+}
+.inflasi-status-mini.positive { color: var(--positive); background: rgba(38, 166, 154, 0.1); }
+.inflasi-status-mini.warning { color: var(--warning); background: rgba(255, 179, 0, 0.1); }
+.inflasi-status-mini.negative { color: var(--negative); background: rgba(239, 83, 80, 0.1); }
+
+.model-card {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: 8px; padding: 16px; position: relative;
+    transition: all 0.15s;
+}
+.model-card:hover { border-color: var(--border-hover); box-shadow: var(--shadow-md); }
+.model-card.best {
+    background: linear-gradient(135deg, rgba(38, 166, 154, 0.05) 0%, var(--bg-card) 50%);
+    border-color: var(--positive);
+}
+.model-badge {
+    position: absolute; top: -8px; right: 12px;
+    background: var(--positive); color: white;
+    font-size: 9px; font-weight: 700; padding: 3px 8px;
+    border-radius: 3px; letter-spacing: 0.4px;
+}
+.model-name {
+    font-size: 12px; font-weight: 600; color: var(--text-primary);
+    margin-bottom: 12px;
+}
+.model-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-bottom: 12px;
+}
+.model-metrics {
+    display: flex; flex-direction: column; gap: 4px;
+}
+.model-metric {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px;
+}
+.model-metric span { color: var(--text-secondary); }
+.model-metric strong {
+    font-weight: 700; color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1024px) {
+    .inflasi-overview-forecasting, #modelComparisonCards { grid-template-columns: 1fr; }
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('inflationChart').getContext('2d');
+    document.addEventListener('DOMContentLoaded', async function() {
+        const ctx = document.getElementById('forecastChart').getContext('2d');
         
-        const gradientActual = ctx.createLinearGradient(0, 0, 0, 300);
+        const gradientActual = ctx.createLinearGradient(0, 0, 0, 380);
         gradientActual.addColorStop(0, 'rgba(93, 96, 107, 0.08)');
         gradientActual.addColorStop(1, 'rgba(93, 96, 107, 0)');
         
-        const gradientPred = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientPred.addColorStop(0, 'rgba(41, 98, 255, 0.15)');
-        gradientPred.addColorStop(1, 'rgba(41, 98, 255, 0.02)');
-
-        // Mengambil data real dari backend (views.py mengirim JSON)
+        // Load ensemble data
+        let ensembleData = null;
+        try {
+            const r = await fetch('/api/ensemble-forecast/');
+            if (r.ok) ensembleData = await r.json();
+        } catch (e) { console.error('Ensemble API error:', e); }
+        
+        // Load historical data (existing)
         const labels = {{ labels|safe }};
         const dataActual = {{ data_actual|safe }};
         const dataPred = {{ data_pred|safe }};
-
+        
+        // Build datasets
+        const datasets = [
+            {
+                label: 'Inflasi Aktual',
+                data: dataActual,
+                borderColor: '#5D606B',
+                backgroundColor: gradientActual,
+                borderWidth: 2,
+                tension: 0.1,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                spanGaps: false
+            }
+        ];
+        
+        // Add forecast labels
+        const fcLabels = ['Jun 2026 (Pred)', 'Jul 2026 (Pred)', 'Aug 2026 (Pred)'];
+        const allLabels = labels.concat(fcLabels);
+        
+        if (ensembleData && ensembleData.available) {
+            const fc = ensembleData.forecast;
+            const w = ensembleData.weights;
+            
+            // LSTM prediction: dataPred from existing + extended
+            const lstmFc = [dataPred[dataPred.length - 1], ...fc.lstm];
+            const arimaFc = [dataPred[dataPred.length - 1], ...fc.arima];
+            const prophetFc = [dataPred[dataPred.length - 1], ...fc.prophet];
+            const ensembleFc = [dataPred[dataPred.length - 1], ...fc.ensemble];
+            
+            datasets.push({
+                label: `LSTM (w=${w.lstm})`,
+                data: lstmFc,
+                borderColor: '#2962FF',
+                backgroundColor: 'rgba(41, 98, 255, 0.05)',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                tension: 0.1,
+                pointRadius: 4,
+                pointBackgroundColor: '#FFFFFF',
+                pointBorderColor: '#2962FF',
+                pointBorderWidth: 2
+            });
+            datasets.push({
+                label: `ARIMA (w=${w.arima})`,
+                data: arimaFc,
+                borderColor: '#FFB300',
+                backgroundColor: 'rgba(255, 179, 0, 0.05)',
+                borderWidth: 2,
+                borderDash: [2, 4],
+                tension: 0.1,
+                pointRadius: 4,
+                pointBackgroundColor: '#FFFFFF',
+                pointBorderColor: '#FFB300',
+                pointBorderWidth: 2
+            });
+            datasets.push({
+                label: `Prophet (w=${w.prophet})`,
+                data: prophetFc,
+                borderColor: '#00BCD4',
+                backgroundColor: 'rgba(0, 188, 212, 0.05)',
+                borderWidth: 2,
+                borderDash: [8, 4],
+                tension: 0.1,
+                pointRadius: 4,
+                pointBackgroundColor: '#FFFFFF',
+                pointBorderColor: '#00BCD4',
+                pointBorderWidth: 2
+            });
+            datasets.push({
+                label: '★ Ensemble (Weighted Avg)',
+                data: ensembleFc,
+                borderColor: '#26A69A',
+                backgroundColor: 'rgba(38, 166, 154, 0.1)',
+                borderWidth: 3.5,
+                tension: 0.1,
+                fill: false,
+                pointRadius: 6,
+                pointBackgroundColor: '#FFFFFF',
+                pointBorderColor: '#26A69A',
+                pointBorderWidth: 2.5
+            });
+            
+            // Populate side cards
+            document.getElementById('lstm-next').textContent = fc.lstm[0].toFixed(2) + '%';
+            document.getElementById('arima-next').textContent = fc.arima[0].toFixed(2) + '%';
+            document.getElementById('prophet-next').textContent = fc.prophet[0].toFixed(2) + '%';
+            document.getElementById('ensemble-next').textContent = fc.ensemble[0].toFixed(2) + '%';
+            
+            // Status
+            const ens = fc.ensemble[0];
+            const statusEl = document.getElementById('forecast-status');
+            if (ens < 0) {
+                statusEl.innerHTML = '<span style="color: var(--negative); font-weight: 600;">⚠ Status: Deflasi.</span> Terjadi kontraksi harga. Deflasi berlebih bisa mengindikasikan lesunya daya beli.';
+            } else if (ens < 0.5) {
+                statusEl.innerHTML = '<span style="color: var(--positive); font-weight: 600;">✓ Status: Terkendali.</span> Inflasi diproyeksikan stabil. Daya beli masyarakat diasumsikan masih kuat.';
+            } else if (ens < 1.0) {
+                statusEl.innerHTML = '<span style="color: var(--warning); font-weight: 600;">⚡ Status: Waspada.</span> Inflasi sedikit di atas rata-rata normal. BI Rate perlu perhatian.';
+            } else {
+                statusEl.innerHTML = '<span style="color: var(--negative); font-weight: 600;">🔴 Status: Tinggi.</span> Inflasi diproyeksikan melonjak. Kebijakan moneter kontraktif sangat disarankan.';
+            }
+            
+            // Populate model comparison cards
+            if (ensembleData.comparison) {
+                for (const [model, metrics] of Object.entries(ensembleData.comparison)) {
+                    const card = document.querySelector(`.model-card[data-model="${model}"]`);
+                    if (!card) continue;
+                    const cells = card.querySelectorAll('.model-metric strong');
+                    if (cells.length >= 3) {
+                        cells[0].textContent = metrics.mae.toFixed(4);
+                        cells[1].textContent = metrics.rmse.toFixed(4);
+                        cells[2].textContent = metrics.smape.toFixed(2) + '%';
+                    }
+                }
+            }
+        }
+        
         new Chart(ctx, {
             type: 'line',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Inflasi Aktual',
-                        data: dataActual,
-                        borderColor: '#5D606B',
-                        backgroundColor: gradientActual,
-                        borderWidth: 2,
-                        tension: 0.1,
-                        fill: true,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    },
-                    {
-                        label: 'Prediksi LSTM (1 Bulan)',
-                        data: dataPred,
-                        borderColor: '#2962FF',
-                        backgroundColor: gradientPred,
-                        borderWidth: 3,
-                        borderDash: [5, 5],
-                        tension: 0.1,
-                        fill: true,
-                        pointBackgroundColor: '#FFFFFF',
-                        pointBorderColor: '#2962FF',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 8
-                    }
-                ]
-            },
+            data: { labels: allLabels, datasets: datasets },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'top',
-                        align: 'end',
-                        labels: { color: '#5D606B', usePointStyle: true, boxWidth: 8 }
+                        position: 'top', align: 'end',
+                        labels: { color: '#5D606B', usePointStyle: true, boxWidth: 8, font: { size: 11 } }
                     },
                     tooltip: {
-                        backgroundColor: '#FFFFFF',
-                        titleColor: '#131722',
-                        bodyColor: '#2962FF',
-                        borderColor: '#E0E3EB',
-                        borderWidth: 1,
-                        padding: 12
+                        backgroundColor: '#FFFFFF', titleColor: '#131722', bodyColor: '#5D606B',
+                        borderColor: '#E0E3EB', borderWidth: 1, padding: 12,
+                        callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + (ctx.parsed.y !== null ? ctx.parsed.y.toFixed(2) + '%' : '—'); } }
                     }
                 },
                 scales: {
-                    x: { grid: { color: 'rgba(224, 227, 235, 0.8)', drawBorder: false }, ticks: { color: '#868993' } },
+                    x: { grid: { color: 'rgba(224, 227, 235, 0.5)', drawBorder: false }, ticks: { color: '#868993', maxRotation: 45 } },
                     y: { grid: { color: 'rgba(224, 227, 235, 0.8)', drawBorder: false }, ticks: { color: '#868993', callback: function(value) { return value + '%'; } } }
                 }
             }
         });
+        
+        // Load Inflasi Summary
+        fetch('/api/inflasi-summary/')
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) return;
+                document.getElementById('mom-value-fc').textContent = data.mom.value.toFixed(2) + '%';
+                document.getElementById('yoy-value-fc').textContent = data.yoy.value.toFixed(2) + '%';
+                document.getElementById('ytd-value-fc').textContent = data.ytd.value.toFixed(2) + '%';
+                const statusEl = document.getElementById('yoy-status-fc');
+                statusEl.textContent = data.status;
+                statusEl.className = 'inflasi-status-mini ' + data.status_color;
+            })
+            .catch(err => console.error(err));
     });
 </script>
 {% endblock %}

@@ -1613,6 +1613,26 @@ def build_inflasi_ts(inflasi, ihk, bi_rate, usd_idr,
         if dropped > 0:
             print(f"   [DROP] Baris tanpa Inflasi_MoM: {dropped} (Mei 2026 dst yang belum rilis)")
 
+    # 8. Hitung Inflasi Y-o-Y (Year-on-Year) dan Y-to-D (Year-to-Date)
+    #    Y-o-Y(t) = ((IHK(t) - IHK(t-12)) / IHK(t-12)) * 100
+    #    Y-to-D(tahun, bulan) = ((IHK(tahun, bulan) - IHK(tahun, Jan)) / IHK(tahun, Jan)) * 100
+    if "IHK" in ts.columns and len(ts) >= 13:
+        # Y-o-Y: butuh 12 bulan data sebelumnya
+        ts["IHK_lag12"] = ts["IHK"].shift(12)
+        ts["Inflasi_YoY"] = ((ts["IHK"] - ts["IHK_lag12"]) / ts["IHK_lag12"]) * 100
+        ts.drop(columns=["IHK_lag12"], inplace=True)
+
+        # Y-to-D: bandingkan dengan IHK bulan Januari di tahun yang sama
+        ihk_januari_per_tahun = ts.groupby(ts["Tahun"])["IHK"].first()
+        ts["IHK_jan"] = ts["Tahun"].map(ihk_januari_per_tahun)
+        ts["Inflasi_YtD"] = ((ts["IHK"] - ts["IHK_jan"]) / ts["IHK_jan"]) * 100
+        ts.drop(columns=["IHK_jan"], inplace=True)
+
+        n_yoy = ts["Inflasi_YoY"].notna().sum()
+        n_ytd = ts["Inflasi_YtD"].notna().sum()
+        print(f"   [+] Inflasi_YoY: {n_yoy} baris (Y-o-Y vs 12 bulan lalu)")
+        print(f"   [+] Inflasi_YtD: {n_ytd} baris (Y-to-D vs Januari tahun ini)")
+
     # Reset index agar Tanggal menjadi kolom biasa
     ts = ts.reset_index()
 
@@ -1653,13 +1673,25 @@ def build_daya_beli_panel(inflasi, ump, pengeluaran,
     """
     print("\n▶ Membangun clean_daya_beli.csv ...")
 
-    # --- Inflasi → rata-rata tahunan ---
-    inflasi_tahunan = (inflasi.reset_index()
-                       .assign(Tahun=lambda x: x["Tanggal"].dt.year)
-                       .groupby("Tahun")["Inflasi_MoM"]
-                       .mean()
-                       .reset_index()
-                       .rename(columns={"Inflasi_MoM": "Inflasi_Rata_Tahunan"}))
+    # --- Inflasi → Y-o-Y tahunan (lebih bermakna dibanding rata-rata M-to-M) ---
+    # Hitung IHK Y-o-Y per tahun: rata-rata IHK_YoY bulanan
+    if "IHK" in inflasi.columns and "Inflasi_YoY" in inflasi.columns:
+        # Pakai Inflasi_YoY yang sudah dihitung di build_inflasi_ts
+        inflasi_tahunan = (inflasi.reset_index()
+                           .assign(Tahun=lambda x: x["Tanggal"].dt.year)
+                           .groupby("Tahun")["Inflasi_YoY"]
+                           .mean()
+                           .reset_index()
+                           .rename(columns={"Inflasi_YoY": "Inflasi_Rata_Tahunan"}))
+        print(f"   [+] Inflasi_Rata_Tahunan dihitung dari Inflasi_YoY (lebih informatif)")
+    else:
+        # Fallback ke rata-rata M-to-M
+        inflasi_tahunan = (inflasi.reset_index()
+                           .assign(Tahun=lambda x: x["Tanggal"].dt.year)
+                           .groupby("Tahun")["Inflasi_MoM"]
+                           .mean()
+                           .reset_index()
+                           .rename(columns={"Inflasi_MoM": "Inflasi_Rata_Tahunan"}))
 
     # --- Normalisasi nama provinsi di semua dataset ---
     def norm_prov(df, col="Provinsi"):

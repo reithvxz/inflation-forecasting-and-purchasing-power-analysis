@@ -2,7 +2,19 @@
 
 > **Kelompok E – Machine Learning SD-A1, Universitas Airlangga**
 
-Proyek ini membangun dua model machine learning: (1) **Forecasting inflasi bulanan** menggunakan LSTM dengan 44 fitur time-series, dan (2) **Regresi daya beli per kapita** per provinsi menggunakan Ridge Regression dengan 15 fitur panel data.
+Proyek ini membangun dua model machine learning: (1) **Forecasting inflasi bulanan** menggunakan **Ensemble LSTM + ARIMA + Prophet** dengan 44 fitur time-series, dan (2) **Regresi daya beli per kapita** per provinsi menggunakan Ridge Regression dengan 15 fitur panel data.
+
+---
+
+## Tim Pengembang
+
+| Nama | NIM | Role |
+|------|-----|------|
+| Muhammad Rajif Al Farikhi | 162112133008 | Backend |
+| Sahrul Adicandra Effendy | 164231013 | Backend + Data Scrapper |
+| Semaya David Petroes Putra | 164231048 | Modelling |
+| Adrina Firda Marwah | 164231087 | Modelling |
+| Okan Athallah Maredith | 164231088 | Frontend |
 
 ---
 
@@ -198,6 +210,35 @@ Temuan ekonomi dari Panel FE:
 
 ---
 
+## Performa Model (Walk-Forward Backtest)
+
+| Model | MAE | RMSE | sMAPE | Test Window |
+|-------|-----|------|-------|-------------|
+| **Naive baseline** (last value) | 0.4538 | 0.6797 | 122.01% | 24 bulan |
+| **ARIMA(0,0,1)** | 0.3876 | 0.5211 | 108.97% | 24 bulan |
+| **LSTM (44 fitur)** | 0.7237 | 0.7685 | 119.84% | 12 bulan |
+| **Prophet** | 0.1962 | 0.2865 | 85.21% | 12 bulan |
+| **Ensemble** (LSTM 0.2 + ARIMA 0.3 + Prophet 0.5) | **0.2590** | **0.3118** | **79.98%** | 12 bulan |
+
+**Catatan:**
+- Data time series: 257 bulan (Jan 2005 – Mei 2026), `Inflasi_MoM` BPS
+- Backtest menggunakan **walk-forward** (prediksi bulan demi bulan, update training setiap step)
+- **sMAPE** lebih robust dari MAPE untuk data inflasi yang mengandung nilai deflasi
+- Prophet menjadi model terbaik individual karena menangkap pola musiman (yearly seasonality)
+- Ensemble lebih robust karena merata-ratakan error antar model
+
+### Perbedaan "0.28%" vs "2-3%" di Berita
+
+Dataset kita menggunakan **M-to-M (Month-to-Month)**: perubahan dari bulan lalu → selalu kecil (0-1%).
+Berita/TradingView/BPS pakai **Y-o-Y (Year-on-Year)**: dibanding 12 bulan lalu → biasanya 2-3%.
+
+Contoh data Mei 2026:
+- M-to-M: **+0.28%** (perubahan dari April 2026)
+- Y-o-Y: **+3.10%** (perubahan dari Mei 2025)
+- Y-to-D: **+1.51%** (akumulasi sejak Januari 2026)
+
+Dashboard menampilkan **ketiganya** agar user tidak bingung.
+
 ## Cara Menjalankan
 
 ```bash
@@ -224,10 +265,10 @@ cd dashboard && python manage.py runserver
 
 ## Anggota Kelompok E
 
-| Nama | NIM |
-|------|-----|
-| Muhammad Rajif Al Farikhi | 162112133008 |
-| Sahrul Adicandra Effendy | 164231013 |
-| Semaya David Petroes Putra | 164231048 |
-| Adrina Firda Marwah | 164231087 |
-| Okan Athallah Maredith | 164231088 |
+| Nama | NIM | Role |
+|------|-----|-----|
+| Muhammad Rajif Al Farikhi | 162112133008 | Backend |
+| Sahrul Adicandra Effendy | 164231013 | Backend + Data Scrapper | 
+| Semaya David Petroes Putra | 164231048 | Modelling |
+| Adrina Firda Marwah | 164231087 | Modelling |
+| Okan Athallah Maredith | 164231088 | Frontend |

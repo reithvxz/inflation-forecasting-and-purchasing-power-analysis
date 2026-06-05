@@ -30,6 +30,64 @@
         background-image:
             linear-gradient(rgba(41,98,233,0.04) 1px, transparent 1px),
             linear-gradient(90deg, rgba(41,98,233,0.04) 1px, transparent 1px);
+    
+    /* ===== INFLASI OVERVIEW (M-to-M, Y-o-Y, Y-to-D) ===== */
+    .inflasi-overview {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        gap: 12px; margin-bottom: 16px;
+    }
+    .inflasi-card {
+        background: var(--bg-card); border: 1px solid var(--border-color);
+        border-radius: 8px; padding: 16px;
+        display: flex; gap: 14px; align-items: flex-start;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        position: relative; transition: all 0.15s;
+    }
+    .inflasi-card:hover { border-color: var(--border-hover); box-shadow: 0 4px 12px rgba(0,0,0,0.06); transform: translateY(-1px); }
+    .inflasi-icon {
+        width: 42px; height: 42px; border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; font-size: 16px;
+    }
+    .inflasi-body { flex: 1; min-width: 0; }
+    .inflasi-label {
+        font-size: 11px; font-weight: 600; color: var(--text-secondary);
+        text-transform: uppercase; letter-spacing: 0.4px;
+        margin-bottom: 4px; display: flex; align-items: center; gap: 4px;
+    }
+    .tooltip-trigger {
+        cursor: help; color: var(--text-tertiary); font-size: 11px;
+        opacity: 0.7; transition: opacity 0.15s;
+    }
+    .tooltip-trigger:hover { opacity: 1; }
+    .inflasi-value {
+        font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
+        color: var(--text-primary); line-height: 1.1; margin-bottom: 4px;
+        font-variant-numeric: tabular-nums;
+    }
+    .inflasi-change {
+        font-size: 11px; font-weight: 600; color: var(--text-secondary);
+        display: flex; align-items: center; gap: 4px;
+    }
+    .inflasi-change.up { color: var(--positive); }
+    .inflasi-change.down { color: var(--negative); }
+    .inflasi-meta {
+        font-size: 10px; color: var(--text-tertiary);
+        margin-top: 6px; letter-spacing: 0.2px;
+    }
+    .inflasi-status {
+        position: absolute; top: 12px; right: 12px;
+        font-size: 10px; font-weight: 700; padding: 3px 8px;
+        border-radius: 4px; text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .inflasi-status.positive { color: var(--positive); background: rgba(38, 166, 154, 0.1); }
+    .inflasi-status.warning { color: var(--warning); background: rgba(255, 179, 0, 0.1); }
+    .inflasi-status.negative { color: var(--negative); background: rgba(239, 83, 80, 0.1); }
+    .inflasi-status.neutral { color: var(--text-secondary); background: var(--bg-elevated); }
+    
+    @media (max-width: 768px) {
+        .inflasi-overview { grid-template-columns: 1fr; }
+    }
         background-size: 40px 40px;
     }
 
@@ -265,6 +323,44 @@
 </section>
 
 <div class="section-title"><i class="fas fa-chart-line"></i> Key Performance Indicators</div>
+
+<!-- INFLASI OVERVIEW: M-to-M, Y-o-Y, Y-to-D -->
+<section class="inflasi-overview">
+    <div class="inflasi-card" id="inflasi-mom">
+        <div class="inflasi-icon" style="background: var(--accent-primary-dim); color: var(--accent-primary);">
+            <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="inflasi-body">
+            <div class="inflasi-label">Inflasi M-to-M <span class="tooltip-trigger" data-tooltip="Month-to-Month: perubahan dari bulan lalu">ⓘ</span></div>
+            <div class="inflasi-value" id="mom-value">—</div>
+            <div class="inflasi-change" id="mom-change">—</div>
+            <div class="inflasi-meta">Bulan terakhir: <span id="mom-date">—</span></div>
+        </div>
+    </div>
+    <div class="inflasi-card" id="inflasi-yoy">
+        <div class="inflasi-icon" style="background: rgba(38, 166, 154, 0.1); color: var(--positive);">
+            <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div class="inflasi-body">
+            <div class="inflasi-label">Inflasi Y-o-Y <span class="tooltip-trigger" data-tooltip="Year-on-Year: dibanding 12 bulan lalu. Standar rilis BPS/berita">ⓘ</span></div>
+            <div class="inflasi-value" id="yoy-value">—</div>
+            <div class="inflasi-change" id="yoy-change">—</div>
+            <div class="inflasi-meta">Setahun lalu: <span id="yoy-year-ago">—</span></div>
+        </div>
+        <div class="inflasi-status" id="yoy-status">—</div>
+    </div>
+    <div class="inflasi-card" id="inflasi-ytd">
+        <div class="inflasi-icon" style="background: rgba(0, 188, 212, 0.1); color: var(--accent-info);">
+            <i class="fas fa-calendar"></i>
+        </div>
+        <div class="inflasi-body">
+            <div class="inflasi-label">Inflasi Y-to-D <span class="tooltip-trigger" data-tooltip="Year-to-Date: dibanding Januari tahun ini">ⓘ</span></div>
+            <div class="inflasi-value" id="ytd-value">—</div>
+            <div class="inflasi-change">vs Januari <span id="ytd-year">—</span></div>
+            <div class="inflasi-meta">Akumulasi tahun ini</div>
+        </div>
+    </div>
+</section>
 
 <!-- KPI Grid -->
 <section class="terminal-kpi-grid">
@@ -626,5 +722,41 @@
         renderSparkline('spark-r2', [85, 87, 88, 90, 89, 91, 90.8], true);
         renderSparkline('spark-baseline', [1400000, 1410000, 1420000, 1430000, 1440000, 1445000, 1450000], true);
     });
+
+    // Load Inflasi Summary (M-to-M, Y-o-Y, Y-to-D)
+    fetch('/api/inflasi-summary/')
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) return;
+            
+            // M-to-M
+            const mom = data.mom;
+            document.getElementById('mom-value').textContent = mom.value.toFixed(2) + '%';
+            document.getElementById('mom-change').textContent = 
+                (mom.change >= 0 ? '▲ +' : '▼ ') + mom.change.toFixed(2) + ' dari bulan lalu';
+            document.getElementById('mom-change').className = 'inflasi-change ' + (mom.change >= 0 ? 'up' : 'down');
+            document.getElementById('mom-date').textContent = data.as_of;
+            
+            // Y-o-Y
+            const yoy = data.yoy;
+            document.getElementById('yoy-value').textContent = yoy.value.toFixed(2) + '%';
+            const yoyChange = yoy.change;
+            document.getElementById('yoy-change').textContent = 
+                (yoyChange >= 0 ? '▲ +' : '▼ ') + yoyChange.toFixed(2) + ' dari bulan lalu';
+            document.getElementById('yoy-change').className = 'inflasi-change ' + (yoyChange >= 0 ? 'up' : 'down');
+            document.getElementById('yoy-year-ago').textContent = 
+                yoy.year_ago !== null ? yoy.year_ago.toFixed(2) + '%' : '—';
+            
+            // Status Y-o-Y
+            const statusEl = document.getElementById('yoy-status');
+            statusEl.textContent = data.status;
+            statusEl.className = 'inflasi-status ' + data.status_color;
+            
+            // Y-to-D
+            const ytd = data.ytd;
+            document.getElementById('ytd-value').textContent = ytd.value.toFixed(2) + '%';
+            document.getElementById('ytd-year').textContent = new Date(data.as_of).getFullYear();
+        })
+        .catch(err => console.error('Failed to load inflasi summary:', err));
 </script>
 {% endblock %}

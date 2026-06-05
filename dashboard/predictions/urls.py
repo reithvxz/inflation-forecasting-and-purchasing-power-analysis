@@ -17,5 +17,7 @@ urlpatterns = [
     path('api/commodity-prices/', views.api_commodity_prices, name='api_commodity_prices'),
     path('api/usd-idr/', views.api_usd_idr_latest, name='api_usd_idr_latest'),
     path('api/arima-forecast/', views.api_arima_forecast, name='api_arima_forecast'),
+    path('api/ensemble-forecast/', views.api_ensemble_forecast, name='api_ensemble_forecast'),
+    path('api/inflasi-summary/', views.api_inflasi_summary, name='api_inflasi_summary'),
     path('map/', views.map_page, name='map'),
 ]

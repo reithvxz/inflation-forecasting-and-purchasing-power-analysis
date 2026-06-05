@@ -636,6 +636,186 @@ def api_arima_forecast(request):
 
 
 # ============================================================
+# ENSEMBLE FORECAST API (LSTM + ARIMA + Prophet)
+# ============================================================
+ENSEMBLE_FORECAST = None
+ENSEMBLE_METRICS = None
+
+def load_ensemble():
+    """Load ensemble forecast & metrics."""
+    global ENSEMBLE_FORECAST, ENSEMBLE_METRICS
+    project_root = os.path.dirname(settings.BASE_DIR)
+    models_dir = os.path.join(project_root, 'models')
+    
+    forecast_path = os.path.join(models_dir, 'ensemble_forecast.pkl')
+    metrics_path = os.path.join(models_dir, 'ensemble_metrics.pkl')
+    
+    if os.path.exists(forecast_path) and ENSEMBLE_FORECAST is None:
+        try:
+            with open(forecast_path, 'rb') as f:
+                ENSEMBLE_FORECAST = pickle.load(f)
+        except Exception:
+            ENSEMBLE_FORECAST = None
+    
+    if os.path.exists(metrics_path) and ENSEMBLE_METRICS is None:
+        try:
+            with open(metrics_path, 'rb') as f:
+                ENSEMBLE_METRICS = pickle.load(f)
+        except Exception:
+            ENSEMBLE_METRICS = None
+
+
+def api_ensemble_forecast(request):
+    """Return ensemble forecast (LSTM + ARIMA + Prophet) + comparison metrics."""
+    load_ensemble()
+    
+    if ENSEMBLE_FORECAST is None:
+        return JsonResponse({
+            'available': False,
+            'message': 'Ensemble model belum di-train. Jalankan train_ensemble.py terlebih dahulu.'
+        })
+    
+    # Build comparison
+    comparison = {}
+    if ENSEMBLE_METRICS is not None:
+        for m in ['naive', 'arima', 'lstm', 'prophet', 'ensemble']:
+            if m in ENSEMBLE_METRICS:
+                r = ENSEMBLE_METRICS[m]
+                comparison[m] = {
+                    'mae': round(r.get('mae', 0), 4),
+                    'rmse': round(r.get('rmse', 0), 4),
+                    'smape': round(r.get('smape', 0), 2),
+                    'n_test': r.get('n_test', 0)
+                }
+    
+    return JsonResponse({
+        'available': True,
+        'forecast': {
+            'lstm': ENSEMBLE_FORECAST.get('lstm_forecast', []),
+            'arima': ENSEMBLE_FORECAST.get('arima_forecast', []),
+            'prophet': ENSEMBLE_FORECAST.get('prophet_forecast', []),
+            'ensemble': ENSEMBLE_FORECAST.get('ensemble_forecast', [])
+        },
+        'weights': ENSEMBLE_FORECAST.get('weights', {}),
+        'last_date': ENSEMBLE_FORECAST.get('last_date', 'N/A'),
+        'last_value': ENSEMBLE_FORECAST.get('last_value', 0),
+        'comparison': comparison,
+        'best_model': 'ensemble' if comparison.get('ensemble', {}).get('mae', 99) < min(
+            [comparison.get(m, {}).get('mae', 99) for m in ['arima', 'lstm', 'prophet']]
+        ) else 'individual'
+    })
+
+
+# ============================================================
+# INFLASI SUMMARY API (M-to-M, Y-o-Y, Y-to-D)
+# ============================================================
+
+INFLASI_SUMMARY_CACHE = None
+
+def api_inflasi_summary(request):
+    """Return ringkasan inflasi: M-to-M, Y-o-Y, Y-to-D, dan histori 24 bulan."""
+    global INFLASI_SUMMARY_CACHE
+    
+    if INFLASI_SUMMARY_CACHE is not None:
+        return JsonResponse(INFLASI_SUMMARY_CACHE)
+    
+    project_root = os.path.dirname(settings.BASE_DIR)
+    data_path = os.path.join(project_root, 'datasets', 'processed', 'clean_inflasi_ts.csv')
+    
+    if not os.path.exists(data_path):
+        return JsonResponse({'error': 'Data file not found'}, status=404)
+    
+    try:
+        df = pd.read_csv(data_path, parse_dates=['Tanggal'])
+        df = df.sort_values('Tanggal').reset_index(drop=True)
+        
+        # Data bulan terakhir
+        latest = df.iloc[-1]
+        last_date = latest['Tanggal'].strftime('%Y-%m-%d')
+        
+        # M-to-M: perubahan dari bulan lalu
+        prev = df.iloc[-2]
+        mom_change = float(latest['Inflasi_MoM'] - prev['Inflasi_MoM'])
+        
+        # Y-o-Y: sudah di-preprocess sebagai kolom Inflasi_YoY
+        yoy = float(latest.get('Inflasi_YoY', 0)) if not pd.isna(latest.get('Inflasi_YoY')) else None
+        ytd = float(latest.get('Inflasi_YtD', 0)) if not pd.isna(latest.get('Inflasi_YtD')) else None
+        
+        # Y-o-Y bulan lalu untuk perbandingan
+        yoy_prev = float(prev.get('Inflasi_YoY', 0)) if not pd.isna(prev.get('Inflasi_YoY')) else None
+        yoy_change = (yoy - yoy_prev) if (yoy is not None and yoy_prev is not None) else None
+        
+        # Y-o-Y setahun lalu (12 bulan lalu) untuk konteks
+        if len(df) >= 13:
+            year_ago = df.iloc[-13]
+            yoy_year_ago = float(year_ago.get('Inflasi_YoY', 0)) if not pd.isna(year_ago.get('Inflasi_YoY')) else None
+        else:
+            yoy_year_ago = None
+        
+        # Histori 24 bulan terakhir
+        recent = df.tail(24).copy()
+        history = {
+            'labels': recent['Tanggal'].dt.strftime('%b %Y').tolist(),
+            'mom': recent['Inflasi_MoM'].round(2).tolist(),
+            'yoy': [round(float(v), 2) if not pd.isna(v) else None 
+                    for v in recent.get('Inflasi_YoY', [None]*len(recent))],
+            'ytd': [round(float(v), 2) if not pd.isna(v) else None 
+                    for v in recent.get('Inflasi_YtD', [None]*len(recent))]
+        }
+        
+        # Statistik ringkasan
+        full_yoy = df['Inflasi_YoY'].dropna()
+        stats = {
+            'yoy_mean_12m': round(float(full_yoy.tail(12).mean()), 2) if len(full_yoy) >= 12 else None,
+            'yoy_min_12m': round(float(full_yoy.tail(12).min()), 2) if len(full_yoy) >= 12 else None,
+            'yoy_max_12m': round(float(full_yoy.tail(12).max()), 2) if len(full_yoy) >= 12 else None
+        }
+        
+        # Status klasifikasi
+        if yoy is not None:
+            if yoy < 2.5:
+                status = 'Terkendali'
+                status_color = 'positive'
+            elif yoy < 4.0:
+                status = 'Waspada'
+                status_color = 'warning'
+            else:
+                status = 'Tinggi'
+                status_color = 'negative'
+        else:
+            status = 'Tidak tersedia'
+            status_color = 'neutral'
+        
+        INFLASI_SUMMARY_CACHE = {
+            'as_of': last_date,
+            'mom': {
+                'value': round(float(latest['Inflasi_MoM']), 2),
+                'change': round(mom_change, 2),
+                'description': 'Month-to-Month (bulanan)'
+            },
+            'yoy': {
+                'value': round(yoy, 2) if yoy is not None else None,
+                'change': round(yoy_change, 2) if yoy_change is not None else None,
+                'year_ago': round(yoy_year_ago, 2) if yoy_year_ago is not None else None,
+                'description': 'Year-on-Year (vs 12 bulan lalu)'
+            },
+            'ytd': {
+                'value': round(ytd, 2) if ytd is not None else None,
+                'description': 'Year-to-Date (vs Januari tahun ini)'
+            },
+            'status': status,
+            'status_color': status_color,
+            'stats': stats,
+            'history': history
+        }
+        
+        return JsonResponse(INFLASI_SUMMARY_CACHE)
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# ============================================================
 # MAP PAGE
 # ============================================================
 
