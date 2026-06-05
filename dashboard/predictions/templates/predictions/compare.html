@@ -622,12 +622,12 @@ async function loadRadarChart(provs) {
         const allProvData = json.provinces || {};
 
         const dimensionMap = {
-            'IPM': { label: 'IPM', format: 'number' },
-            'PDRB_HargaKonstan': { label: 'PDRB/Kapita', format: 'currency' },
-            'UMP': { label: 'UMP', format: 'currency' },
-            'TPT': { label: 'TPT', format: 'percent' },
-            'Gini_Rasio': { label: 'Gini', format: 'number' },
-            'Total_Pengeluaran': { label: 'Daya Beli', format: 'currency' }
+            'IPM': { label: 'IPM', format: 'number', invert: false },
+            'PDRB_HargaKonstan': { label: 'PDRB/Kapita', format: 'currency', invert: false },
+            'UMP': { label: 'UMP', format: 'currency', invert: false },
+            'TPT': { label: 'TPT', format: 'percent', invert: true },  // lower = better
+            'Gini_Rasio': { label: 'Gini', format: 'number', invert: true },  // lower = better
+            'Total_Pengeluaran': { label: 'Daya Beli', format: 'currency', invert: false }
         };
         const dims = Object.keys(dimensionMap).filter(k => {
             return provs.some(p => allProvData[p] && k in allProvData[p]);
@@ -635,22 +635,32 @@ async function loadRadarChart(provs) {
 
         if (dims.length === 0) return;
 
+        // Hitung min/max dari SEMUA provinsi (bukan cuma yang dipilih) agar skala konsisten
+        const dimStats = {};
+        dims.forEach(dim => {
+            let min = Infinity, max = -Infinity;
+            Object.values(allProvData).forEach(pd => {
+                const v = pd[dim];
+                if (v !== null && v !== undefined && !isNaN(v)) {
+                    if (v < min) min = v;
+                    if (v > max) max = v;
+                }
+            });
+            dimStats[dim] = { min, max };
+        });
+
         const datasets = provs.map((prov, i) => {
             const provData = allProvData[prov] || {};
             const data = dims.map(dim => {
                 const val = provData[dim];
                 if (val === undefined || val === null || isNaN(val)) return 0;
-                let min = Infinity, max = -Infinity;
-                provs.forEach(p => {
-                    const v = allProvData[p] ? allProvData[p][dim] : null;
-                    if (v !== null && v !== undefined && !isNaN(v)) {
-                        if (v < min) min = v;
-                        if (v > max) max = v;
-                    }
-                });
+                const { min, max } = dimStats[dim];
                 if (min === Infinity || max === -Infinity) return 0;
                 if (max === min) return 50;
-                return ((val - min) / (max - min)) * 100;
+                const invert = dimensionMap[dim] && dimensionMap[dim].invert;
+                return invert
+                    ? ((max - val) / (max - min)) * 100  // lower is better
+                    : ((val - min) / (max - min)) * 100; // higher is better
             });
             return {
                 label: prov,

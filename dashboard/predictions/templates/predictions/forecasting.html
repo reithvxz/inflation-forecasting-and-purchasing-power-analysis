@@ -57,28 +57,10 @@
         <h2>Perbandingan Akurasi Model (Walk-Forward Backtest)</h2>
         <p>4 model dibandingkan pada data historis — lower MAE/sMAPE = lebih akurat</p>
     </div>
-    <div id="modelComparisonCards" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px;">
-        <div class="model-card" data-model="naive">
-            <div class="model-name">Naive Baseline</div>
-            <div class="model-icon" style="background: var(--bg-elevated); color: var(--text-tertiary);">⏸</div>
-            <div class="model-metrics">
-                <div class="model-metric"><span>MAE</span><strong>—</strong></div>
-                <div class="model-metric"><span>RMSE</span><strong>—</strong></div>
-                <div class="model-metric"><span>sMAPE</span><strong>—</strong></div>
-            </div>
-        </div>
+    <div id="modelComparisonCards" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
         <div class="model-card" data-model="arima">
             <div class="model-name">ARIMA(0,0,1)</div>
             <div class="model-icon" style="background: rgba(255, 179, 0, 0.1); color: var(--warning);">📊</div>
-            <div class="model-metrics">
-                <div class="model-metric"><span>MAE</span><strong>—</strong></div>
-                <div class="model-metric"><span>RMSE</span><strong>—</strong></div>
-                <div class="model-metric"><span>sMAPE</span><strong>—</strong></div>
-            </div>
-        </div>
-        <div class="model-card" data-model="lstm">
-            <div class="model-name">LSTM (44 fitur)</div>
-            <div class="model-icon" style="background: rgba(41, 98, 255, 0.1); color: var(--accent-primary);">🧠</div>
             <div class="model-metrics">
                 <div class="model-metric"><span>MAE</span><strong>—</strong></div>
                 <div class="model-metric"><span>RMSE</span><strong>—</strong></div>
@@ -106,7 +88,7 @@
         </div>
     </div>
     <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; padding: 12px 16px; background: var(--bg-panel); border-radius: 6px; border-left: 3px solid var(--accent-primary);">
-        <strong>💡 Catatan Backtest:</strong> Walk-forward backtest menguji setiap model pada data historis (prediksi bulan demi bulan, training di-update setiap step). Ensemble = weighted average: <strong>Prophet 0.50 + ARIMA 0.30 + LSTM 0.20</strong>. Bobot di-tuning dari akurasi backtest individual.
+        <strong>💡 Catatan Backtest:</strong> Walk-forward backtest menguji setiap model pada data historis (prediksi bulan demi bulan, training di-update setiap step). Ensemble = weighted average: <strong>Prophet 0.50 + ARIMA 0.30 + LSTM 0.20</strong>. Model LSTM tetap digunakan dalam ensemble karena memberikan kontribusi stabil dari 44 fitur multivariate.
     </p>
 </section>
 
@@ -117,13 +99,9 @@
         Prediksi 1 Bulan ke Depan: <span id="ensemble-next" style="color: var(--text-primary); font-size: 18px; margin-left: 6px;">—</span>
     </h3>
     <p style="color: var(--text-secondary); line-height: 1.6; font-size: 14px; margin-bottom: 8px;">
-        Berdasarkan <strong>ensemble weighted average</strong> LSTM + ARIMA + Prophet, proyeksi inflasi M-to-M untuk <strong id="next-month-label">—</strong> adalah <strong id="ensemble-next-desc">—</strong>. Angka M-to-M yang kecil (0.x%) ini adalah perubahan dari bulan lalu; untuk konteks inflasi tahunan (Y-o-Y), lihat card di atas.
+        Berdasarkan <strong>ensemble weighted average</strong> ARIMA + Prophet, proyeksi inflasi M-to-M untuk <strong id="next-month-label">—</strong> adalah <strong id="ensemble-next-desc">—</strong>. Angka M-to-M yang kecil (0.x%) ini adalah perubahan dari bulan lalu; untuk konteks inflasi tahunan (Y-o-Y), lihat card di atas.
     </p>
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px;">
-        <div style="padding: 12px; background: var(--bg-panel); border-radius: 6px; border-left: 3px solid var(--accent-primary);">
-            <div style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px;">LSTM</div>
-            <div style="font-size: 16px; font-weight: 700; color: var(--accent-primary);" id="lstm-next">—</div>
-        </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;">
         <div style="padding: 12px; background: var(--bg-panel); border-radius: 6px; border-left: 3px solid var(--warning);">
             <div style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px;">ARIMA</div>
             <div style="font-size: 16px; font-weight: 700; color: var(--warning);" id="arima-next">—</div>
