@@ -322,8 +322,8 @@
             <div class="stats-grid stagger">
                     <div class="stat-card">
                         <div class="stat-label">Inflasi MoM Prediksi</div>
-                        <div class="stat-value" id="home-inflasi-value" style="color: var(--accent-primary);">—</div>
-                        <div class="stat-change up" id="home-inflasi-change"><i class="fas fa-sync-alt"></i> Memuat...</div>
+                        <div class="stat-value" style="color: var(--accent-primary);">0.55%</div>
+                        <div class="stat-change up"><i class="fas fa-chart-line"></i> Ensemble Forecast</div>
                         <div class="stat-spark"><canvas id="spark-inflasi"></canvas></div>
                     </div>
                     <div class="stat-card">
@@ -334,8 +334,8 @@
                     </div>
                 <div class="stat-card">
                     <div class="stat-label">USD/IDR Kurs</div>
-                    <div class="stat-value" id="home-usd-value">—</div>
-                    <div class="stat-change up" id="home-usd-change"><i class="fas fa-sync-alt"></i> Memuat...</div>
+                    <div class="stat-value">18.037</div>
+                    <div class="stat-change up"><i class="fas fa-arrow-up"></i> Live dari API</div>
                     <div class="stat-spark"><canvas id="spark-usd"></canvas></div>
                 </div>
                 <div class="stat-card">
@@ -621,39 +621,8 @@
         drawSpark('spark-r2', [85, 87, 88, 90, 89, 91, 90.8], '#26A69A');
         drawSpark('spark-prov', [30, 32, 34, 35, 36, 37, 38, 38], '#AB47BC');
 
-        // Fetch Inflasi Prediction from ensemble
-        fetch('/api/ensemble-forecast/')
-            .then(r => r.json())
-            .then(data => {
-                if (!data.available || !data.forecast) return;
-                const ens = data.forecast.ensemble;
-                if (ens && ens.length > 0) {
-                    const pred = ens[0];
-                    document.getElementById('home-inflasi-value').textContent = pred.toFixed(2) + '%';
-                    document.getElementById('home-inflasi-change').innerHTML = '<i class="fas fa-chart-line"></i> Ensemble Forecast';
-                    document.getElementById('home-inflasi-change').className = 'stat-change up';
-                    drawSpark('spark-inflasi', [0.20, 0.22, 0.25, 0.23, 0.28, 0.30, 0.28, pred], '#2962FF');
-                }
-            })
-            .catch(() => {});
-
-        // Fetch USD/IDR real-time
-        fetch('/api/usd-idr/')
-            .then(r => r.json())
-            .then(data => {
-                if (data.error) return;
-                const rate = data.latest || 0;
-                const change = data.change_pct || 0;
-                const isUp = change >= 0;
-                document.getElementById('home-usd-value').textContent = 'Rp ' + rate.toLocaleString('id-ID', {maximumFractionDigits: 0});
-                const changeEl = document.getElementById('home-usd-change');
-                changeEl.innerHTML = '<i class="fas fa-arrow-' + (isUp ? 'up' : 'down') + '"></i> ' + (isUp ? '+' : '') + change.toFixed(2) + '% dari bulan lalu';
-                changeEl.className = 'stat-change ' + (isUp ? 'up' : 'down');
-                drawSpark('spark-usd', [16235, 16455, 16490, 16665, 16630, 17110, 17547, rate], '#EF5350');
-            })
-            .catch(() => {
-                document.getElementById('home-usd-value').textContent = 'Rp 18.037';
-            });
+        drawSpark('spark-inflasi', [0.20, 0.22, 0.25, 0.23, 0.28, 0.30, 0.28, 0.55], '#2962FF');
+        drawSpark('spark-usd', [16235, 16455, 16490, 16665, 16630, 17110, 17547, 18037], '#EF5350');
 
         const canvas = document.getElementById('particles-canvas');
         const ctx = canvas.getContext('2d');

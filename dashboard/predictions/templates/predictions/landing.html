@@ -587,7 +587,7 @@
                 } catch { return dateStr; }
             }
 
-            document.getElementById('kpi-usd-value').textContent = rate.toLocaleString('id-ID');
+            document.getElementById('kpi-usd-value').textContent = Math.round(rate).toLocaleString('id-ID');
             document.getElementById('kpi-usd-sub').textContent = (isUp ? '▲' : '▼') + ' ' + Math.abs(changePercent).toFixed(2) + '% (data ' + (dataType === 'daily' ? 'harian' : 'bulanan') + ')';
             document.getElementById('kpi-usd-badge').innerHTML = '<i class="fas fa-arrow-' + (isUp ? 'up' : 'down') + '" style="font-size: 8px;"></i> ' + (isUp ? 'Naik' : 'Turun');
             document.getElementById('kpi-usd-badge').className = 'kpi-badge ' + (isUp ? 'badge-up' : 'badge-down');

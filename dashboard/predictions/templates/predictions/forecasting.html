@@ -414,7 +414,6 @@
     });
     
     // Populate side cards
-    document.getElementById('lstm-next').textContent = (modelPreds.lstm !== undefined ? modelPreds.lstm.toFixed(2) : '—') + '%';
     document.getElementById('arima-next').textContent = (modelPreds.arima !== undefined ? modelPreds.arima.toFixed(2) : '—') + '%';
     document.getElementById('prophet-next').textContent = (modelPreds.prophet !== undefined ? modelPreds.prophet.toFixed(2) : '—') + '%';
     document.getElementById('ensemble-next-card').textContent = (modelPreds.ensemble !== undefined ? modelPreds.ensemble.toFixed(2) : '—') + '%';
