@@ -10,17 +10,17 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0a0a0c;
-            --bg-panel: #111116;
-            --bg-card: rgba(22, 22, 28, 0.6);
-            --accent: #ccff00;
-            --accent-glow: rgba(204, 255, 0, 0.5);
-            --accent-dim: rgba(204, 255, 0, 0.1);
-            --text-primary: #f2f2f5;
-            --text-secondary: #9a9cae;
-            --border: rgba(255, 255, 255, 0.06);
-            --positive: #ccff00;
-            --negative: #ff3366;
+            --bg-dark: #0B0F1A;
+            --bg-panel: #111827;
+            --bg-card: rgba(17, 24, 39, 0.65);
+            --accent: #0EA5E9;
+            --accent-glow: rgba(14, 165, 233, 0.4);
+            --accent-dim: rgba(14, 165, 233, 0.1);
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --border: rgba(148, 163, 184, 0.1);
+            --positive: #10B981;
+            --negative: #EF4444;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
@@ -32,19 +32,19 @@
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 60px; height: 72px;
-            background: rgba(10,10,12,0.85); backdrop-filter: blur(24px);
+            background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(24px);
             border-bottom: 1px solid var(--border);
             transition: background 0.3s;
         }
-        .lp-nav.scrolled { background: rgba(10,10,12,0.95); box-shadow: 0 4px 30px rgba(0,0,0,0.5); }
+        .lp-nav.scrolled { background: rgba(11, 15, 26, 0.95); box-shadow: 0 4px 30px rgba(0,0,0,0.5); }
         .lp-logo { display: flex; align-items: center; gap: 12px; }
-        .lp-logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), #88ff00); border-radius: 10px; box-shadow: 0 0 20px var(--accent-glow); }
+        .lp-logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), #38bdf8); border-radius: 10px; box-shadow: 0 0 20px var(--accent-glow); }
         .lp-logo h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
         .lp-nav-links { display: flex; gap: 8px; list-style: none; }
         .lp-nav-links a { padding: 10px 20px; border-radius: 24px; font-size: 14px; font-weight: 500; color: var(--text-secondary); transition: all 0.25s; }
         .lp-nav-links a:hover { background: rgba(255,255,255,0.05); color: #fff; }
-        .lp-nav-links a.nav-cta { background: var(--accent); color: #000; font-weight: 700; box-shadow: 0 4px 15px rgba(204,255,0,0.3); }
-        .lp-nav-links a.nav-cta:hover { box-shadow: 0 6px 25px rgba(204,255,0,0.5); transform: translateY(-1px); }
+        .lp-nav-links a.nav-cta { background: var(--accent); color: #000; font-weight: 700; box-shadow: 0 4px 15px rgba(14,165,233,0.3); }
+        .lp-nav-links a.nav-cta:hover { box-shadow: 0 6px 25px rgba(14,165,233,0.5); transform: translateY(-1px); }
 
         /* ===== HERO ===== */
         .hero {
@@ -53,35 +53,41 @@
         }
         .hero-bg {
             position: absolute; inset: 0;
-            background: radial-gradient(ellipse at 50% 30%, rgba(204,255,0,0.08) 0%, transparent 60%),
-                        radial-gradient(ellipse at 20% 80%, rgba(0,100,255,0.05) 0%, transparent 50%);
+            background: 
+                radial-gradient(ellipse at 50% 30%, rgba(14,165,233,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(56,189,248,0.05) 0%, transparent 50%);
+            animation: meshMove 12s ease-in-out infinite alternate;
+        }
+        @keyframes meshMove {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
         }
         #particles-canvas { position: absolute; inset: 0; pointer-events: none; }
-        .hero-content { position: relative; z-index: 2; max-width: 900px; }
+        .hero-content { position: relative; z-index: 2; max-width: 980px; }
         .hero-badge {
             display: inline-flex; align-items: center; gap: 8px;
             padding: 8px 20px; border-radius: 24px;
-            background: var(--accent-dim); border: 1px solid rgba(204,255,0,0.2);
+            background: var(--accent-dim); border: 1px solid rgba(14,165,233,0.2);
             font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 32px;
         }
         .hero-badge i { font-size: 12px; }
         .hero h1 {
-            font-size: clamp(40px, 6vw, 72px); font-weight: 900; line-height: 1.05;
-            letter-spacing: -2px; margin-bottom: 24px;
-            background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+            font-size: clamp(48px, 7vw, 84px); font-weight: 900; line-height: 1.05;
+            letter-spacing: -3px; margin-bottom: 28px;
+            background: linear-gradient(135deg, #fff 0%, #bae6fd 50%, #7dd3fc 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         .hero h1 .accent { -webkit-text-fill-color: var(--accent); text-shadow: 0 0 40px var(--accent-glow); }
-        .hero p { font-size: 20px; color: var(--text-secondary); max-width: 640px; margin: 0 auto 48px; line-height: 1.6; }
+        .hero p { font-size: 20px; color: var(--text-secondary); max-width: 660px; margin: 0 auto 48px; line-height: 1.65; }
         .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
         .btn-hero {
             padding: 18px 36px; border-radius: 16px; font-size: 16px; font-weight: 700;
             display: inline-flex; align-items: center; gap: 10px; transition: all 0.3s;
         }
-        .btn-hero.primary { background: var(--accent); color: #000; box-shadow: 0 8px 30px rgba(204,255,0,0.35); }
-        .btn-hero.primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(204,255,0,0.5); }
+        .btn-hero.primary { background: var(--accent); color: #000; box-shadow: 0 8px 30px rgba(14,165,233,0.35); }
+        .btn-hero.primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(14,165,233,0.5); }
         .btn-hero.secondary { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border); }
-        .btn-hero.secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: translateY(-3px); }
+        .btn-hero.secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(148,163,184,0.2); transform: translateY(-3px); }
 
         /* ===== SECTIONS COMMON ===== */
         .section { padding: 120px 60px; position: relative; }
@@ -89,29 +95,46 @@
         .section-header { text-align: center; margin-bottom: 64px; }
         .section-header .tag {
             display: inline-block; padding: 6px 16px; border-radius: 20px;
-            background: var(--accent-dim); border: 1px solid rgba(204,255,0,0.2);
+            background: var(--accent-dim); border: 1px solid rgba(14,165,233,0.2);
             color: var(--accent); font-size: 12px; font-weight: 700;
             text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;
         }
         .section-header h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
         .section-header p { font-size: 17px; color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6; }
 
+        /* ===== ECONOMIC PULSE TICKER ===== */
+        .pulse-section { padding: 20px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(11,15,26,0.6); backdrop-filter: blur(8px); overflow: hidden; }
+        .pulse-track { display: flex; gap: 48px; animation: tickerScroll 30s linear infinite; width: max-content; }
+        .pulse-track:hover { animation-play-state: paused; }
+        @keyframes tickerScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .pulse-item { display: flex; align-items: center; gap: 12px; white-space: nowrap; flex-shrink: 0; }
+        .pulse-item i { font-size: 16px; color: var(--accent); }
+        .pulse-item .label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+        .pulse-item .value { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-left: 4px; }
+        .pulse-item .delta { font-size: 12px; margin-left: 4px; }
+        .pulse-item .delta.up { color: var(--positive); }
+        .pulse-item .delta.down { color: var(--negative); }
+        .pulse-sep { width: 4px; height: 4px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+
         /* ===== KPI STATS ===== */
-        .stats-section { background: linear-gradient(180deg, transparent 0%, rgba(204,255,0,0.02) 50%, transparent 100%); }
+        .stats-section { background: linear-gradient(180deg, transparent 0%, rgba(14,165,233,0.02) 50%, transparent 100%); }
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
         .stat-card {
             background: var(--bg-card); backdrop-filter: blur(20px);
             border: 1px solid var(--border); border-radius: 24px;
-            padding: 40px 32px; text-align: center;
+            padding: 48px 32px; text-align: center;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .stat-card:hover { transform: translateY(-8px); border-color: rgba(204,255,0,0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        .stat-icon { width: 56px; height: 56px; margin: 0 auto 20px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .stat-icon.green { background: rgba(204,255,0,0.1); color: var(--accent); border: 1px solid rgba(204,255,0,0.2); }
+        .stat-card:hover { transform: translateY(-8px); border-color: rgba(14,165,233,0.25); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 40px rgba(14,165,233,0.08); }
+        .stat-icon { width: 60px; height: 60px; margin: 0 auto 20px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .stat-icon.accent { background: rgba(14,165,233,0.1); color: var(--accent); border: 1px solid rgba(14,165,233,0.2); }
         .stat-icon.blue { background: rgba(59,130,246,0.1); color: #3b82f6; border: 1px solid rgba(59,130,246,0.2); }
-        .stat-icon.purple { background: rgba(168,85,247,0.1); color: #a855f7; border: 1px solid rgba(168,85,247,0.2); }
+        .stat-icon.purple { background: rgba(139,92,246,0.1); color: #8b5cf6; border: 1px solid rgba(139,92,246,0.2); }
         .stat-icon.orange { background: rgba(249,115,22,0.1); color: #f97316; border: 1px solid rgba(249,115,22,0.2); }
-        .stat-number { font-size: 48px; font-weight: 900; letter-spacing: -2px; color: #fff; margin-bottom: 8px; }
+        .stat-number { font-size: 56px; font-weight: 900; letter-spacing: -2px; color: #fff; margin-bottom: 8px; }
         .stat-label { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
 
         /* ===== FEATURES ===== */
@@ -122,7 +145,7 @@
             padding: 44px 36px; position: relative; overflow: hidden;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .feature-card:hover { transform: translateY(-10px); border-color: rgba(204,255,0,0.3); box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .feature-card:hover { transform: translateY(-10px); border-color: rgba(14,165,233,0.25); box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 40px rgba(14,165,233,0.08); }
         .feature-card::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
             background: linear-gradient(90deg, var(--accent), transparent);
@@ -133,9 +156,9 @@
             width: 64px; height: 64px; border-radius: 18px; display: flex; align-items: center; justify-content: center;
             font-size: 28px; margin-bottom: 28px;
         }
-        .feature-icon.f1 { background: rgba(204,255,0,0.1); color: var(--accent); border: 1px solid rgba(204,255,0,0.15); }
+        .feature-icon.f1 { background: rgba(14,165,233,0.1); color: var(--accent); border: 1px solid rgba(14,165,233,0.15); }
         .feature-icon.f2 { background: rgba(59,130,246,0.1); color: #3b82f6; border: 1px solid rgba(59,130,246,0.15); }
-        .feature-icon.f3 { background: rgba(168,85,247,0.1); color: #a855f7; border: 1px solid rgba(168,85,247,0.15); }
+        .feature-icon.f3 { background: rgba(139,92,246,0.1); color: #8b5cf6; border: 1px solid rgba(139,92,246,0.15); }
         .feature-icon.f4 { background: rgba(249,115,22,0.1); color: #f97316; border: 1px solid rgba(249,115,22,0.15); }
         .feature-icon.f5 { background: rgba(236,72,153,0.1); color: #ec4899; border: 1px solid rgba(236,72,153,0.15); }
         .feature-icon.f6 { background: rgba(20,184,166,0.1); color: #14b8a6; border: 1px solid rgba(20,184,166,0.15); }
@@ -148,10 +171,10 @@
         .tech-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
         .tech-item {
             background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
-            padding: 28px; text-align: center;
+            padding: 32px 24px; text-align: center;
             transition: all 0.3s;
         }
-        .tech-item:hover { border-color: rgba(204,255,0,0.3); transform: translateY(-4px); }
+        .tech-item:hover { border-color: rgba(14,165,233,0.25); transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.3), 0 0 20px rgba(14,165,233,0.06); }
         .tech-item i { font-size: 32px; margin-bottom: 14px; color: var(--accent); }
         .tech-item h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
         .tech-item p { font-size: 12px; color: var(--text-secondary); }
@@ -163,13 +186,14 @@
             padding: 36px 20px; text-align: center;
             transition: all 0.3s;
         }
-        .team-card:hover { border-color: rgba(204,255,0,0.3); transform: translateY(-6px); }
+        .team-card:hover { border-color: rgba(14,165,233,0.25); transform: translateY(-6px); box-shadow: 0 16px 32px rgba(0,0,0,0.3); }
         .team-avatar {
             width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 20px;
-            background: linear-gradient(135deg, var(--accent-dim), rgba(59,130,246,0.15));
-            border: 2px solid rgba(204,255,0,0.2);
+            background: linear-gradient(135deg, var(--accent-dim), rgba(56,189,248,0.15));
+            border: 2px solid rgba(14,165,233,0.2);
             display: flex; align-items: center; justify-content: center;
             font-size: 28px; font-weight: 800; color: var(--accent);
+            box-shadow: 0 0 20px rgba(14,165,233,0.1);
         }
         .team-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
         .team-card p { font-size: 13px; color: var(--text-secondary); }
@@ -177,7 +201,7 @@
         /* ===== FOOTER ===== */
         .lp-footer {
             padding: 60px 60px 30px; border-top: 1px solid var(--border);
-            background: rgba(0,0,0,0.3);
+            background: rgba(11,15,26,0.5);
         }
         .footer-inner { max-width: 1200px; margin: 0 auto; }
         .footer-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 48px; flex-wrap: wrap; gap: 40px; }
@@ -190,7 +214,7 @@
         .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-secondary); }
         .footer-social { display: flex; gap: 12px; }
         .footer-social a { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: all 0.2s; }
-        .footer-social a:hover { background: var(--accent-dim); color: var(--accent); border-color: rgba(204,255,0,0.3); }
+        .footer-social a:hover { background: var(--accent-dim); color: var(--accent); border-color: rgba(14,165,233,0.3); }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 1024px) {
@@ -254,6 +278,139 @@
         </div>
     </section>
 
+    <!-- ECONOMIC PULSE TICKER -->
+    <section class="pulse-section" data-aos="fade-up" data-aos-delay="100">
+        <div class="pulse-track">
+            <div class="pulse-item">
+                <i class="fas fa-fire-flame-curved"></i>
+                <span class="label">Inflasi Nasional:</span>
+                <span class="value">2.5%</span>
+                <span class="delta up">▲ 0.2%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-money-bill-wave"></i>
+                <span class="label">UMP Jakarta:</span>
+                <span class="value">Rp 5.2jt</span>
+                <span class="delta up">▲ 6.5%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="label">Daya Beli Jatim:</span>
+                <span class="value">Rp 3.8jt</span>
+                <span class="delta down">▼ 1.1%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-chart-area"></i>
+                <span class="label">PDRB Nasional:</span>
+                <span class="value">+5.1%</span>
+                <span class="delta up">▲ 0.3%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-briefcase"></i>
+                <span class="label">TPT Nasional:</span>
+                <span class="value">5.3%</span>
+                <span class="delta down">▼ 0.1%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-oil-can"></i>
+                <span class="label">Brent Oil:</span>
+                <span class="value">$82.40</span>
+                <span class="delta down">▼ 1.2%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-gas-pump"></i>
+                <span class="label">BBM Subsidi:</span>
+                <span class="value">Rp 6.800</span>
+                <span class="delta">—</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-rice"></i>
+                <span class="label">Harga Beras:</span>
+                <span class="value">Rp 13.200/kg</span>
+                <span class="delta up">▲ 2.4%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-globe-asia"></i>
+                <span class="label">Kurs USD/IDR:</span>
+                <span class="value">Rp 15.890</span>
+                <span class="delta down">▼ 0.5%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <!-- Duplicate for seamless loop -->
+            <div class="pulse-item">
+                <i class="fas fa-fire-flame-curved"></i>
+                <span class="label">Inflasi Nasional:</span>
+                <span class="value">2.5%</span>
+                <span class="delta up">▲ 0.2%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-money-bill-wave"></i>
+                <span class="label">UMP Jakarta:</span>
+                <span class="value">Rp 5.2jt</span>
+                <span class="delta up">▲ 6.5%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="label">Daya Beli Jatim:</span>
+                <span class="value">Rp 3.8jt</span>
+                <span class="delta down">▼ 1.1%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-chart-area"></i>
+                <span class="label">PDRB Nasional:</span>
+                <span class="value">+5.1%</span>
+                <span class="delta up">▲ 0.3%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-briefcase"></i>
+                <span class="label">TPT Nasional:</span>
+                <span class="value">5.3%</span>
+                <span class="delta down">▼ 0.1%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-oil-can"></i>
+                <span class="label">Brent Oil:</span>
+                <span class="value">$82.40</span>
+                <span class="delta down">▼ 1.2%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-gas-pump"></i>
+                <span class="label">BBM Subsidi:</span>
+                <span class="value">Rp 6.800</span>
+                <span class="delta">—</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-rice"></i>
+                <span class="label">Harga Beras:</span>
+                <span class="value">Rp 13.200/kg</span>
+                <span class="delta up">▲ 2.4%</span>
+            </div>
+            <div class="pulse-sep"></div>
+            <div class="pulse-item">
+                <i class="fas fa-globe-asia"></i>
+                <span class="label">Kurs USD/IDR:</span>
+                <span class="value">Rp 15.890</span>
+                <span class="delta down">▼ 0.5%</span>
+            </div>
+            <div class="pulse-sep"></div>
+        </div>
+    </section>
+
     <!-- KPI STATS -->
     <section class="section stats-section" id="stats">
         <div class="section-inner">
@@ -264,7 +421,7 @@
             </div>
             <div class="stats-grid">
                 <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
-                    <div class="stat-icon green"><i class="fas fa-bullseye"></i></div>
+                    <div class="stat-icon accent"><i class="fas fa-bullseye"></i></div>
                     <div class="stat-number"><span class="counter" data-target="0.18">0</span>%</div>
                     <div class="stat-label">MAE Forecasting LSTM</div>
                 </div>
@@ -337,7 +494,7 @@
     </section>
 
     <!-- TECH STACK -->
-    <section class="section" style="background: linear-gradient(180deg, transparent, rgba(204,255,0,0.02), transparent);">
+    <section class="section" style="background: linear-gradient(180deg, transparent, rgba(14,165,233,0.02), transparent);">
         <div class="section-inner">
             <div class="section-header" data-aos="fade-up">
                 <div class="tag">Teknologi</div>
@@ -508,7 +665,7 @@
         }, { threshold: 0.5 });
         counters.forEach(c => observer.observe(c));
 
-        // Particle Canvas
+        // Particle Canvas with new palette
         (function() {
             const canvas = document.getElementById('particles-canvas');
             const ctx = canvas.getContext('2d');
@@ -530,7 +687,7 @@
                 }
                 draw() {
                     ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(204, 255, 0, ${this.alpha})`; ctx.fill();
+                    ctx.fillStyle = `rgba(14, 165, 233, ${this.alpha})`; ctx.fill();
                 }
             }
             for (let i = 0; i < 60; i++) particles.push(new Particle());
@@ -545,7 +702,7 @@
                         const dist = Math.sqrt(dx * dx + dy * dy);
                         if (dist < 150) {
                             ctx.beginPath();
-                            ctx.strokeStyle = `rgba(204, 255, 0, ${0.05 * (1 - dist / 150)})`;
+                            ctx.strokeStyle = `rgba(14, 165, 233, ${0.05 * (1 - dist / 150)})`;
                             ctx.lineWidth = 0.5;
                             ctx.moveTo(particles[i].x, particles[i].y);
                             ctx.lineTo(particles[j].x, particles[j].y);

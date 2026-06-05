@@ -10,15 +10,15 @@
     .datasets-header p { color: var(--text-secondary); font-size: 15px; margin-top: 8px; }
     .filter-bar { display: flex; gap: 12px; margin-bottom: 32px; flex-wrap: wrap; justify-content: center; }
     .filter-btn { padding: 10px 24px; border-radius: 24px; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.25s; }
-    .filter-btn:hover, .filter-btn.active { background: var(--accent-neon); color: #000; border-color: var(--accent-neon); font-weight: 700; }
+    .filter-btn:hover, .filter-btn.active { background: #0EA5E9; color: #000; border-color: #0EA5E9; font-weight: 700; }
     .datasets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
     .dataset-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 28px; transition: all 0.3s; cursor: pointer; position: relative; overflow: hidden; }
-    .dataset-card:hover { transform: translateY(-6px); border-color: rgba(204,255,0,0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-    .dataset-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent-neon), transparent); opacity: 0; transition: opacity 0.3s; }
+    .dataset-card:hover { transform: translateY(-6px); border-color: rgba(14,165,233,0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+    .dataset-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #0EA5E9, transparent); opacity: 0; transition: opacity 0.3s; }
     .dataset-card:hover::before { opacity: 1; }
     .ds-header { display: flex; align-items: start; gap: 16px; margin-bottom: 16px; }
     .ds-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-    .ds-icon.domestic { background: rgba(204,255,0,0.1); color: var(--accent-neon); border: 1px solid rgba(204,255,0,0.15); }
+    .ds-icon.domestic { background: rgba(14,165,233,0.1); color: #0EA5E9; border: 1px solid rgba(14,165,233,0.15); }
     .ds-icon.intl { background: rgba(59,130,246,0.1); color: #3b82f6; border: 1px solid rgba(59,130,246,0.15); }
     .ds-icon.prov { background: rgba(168,85,247,0.1); color: #a855f7; border: 1px solid rgba(168,85,247,0.15); }
     .ds-icon.wb { background: rgba(249,115,22,0.1); color: #f97316; border: 1px solid rgba(249,115,22,0.15); }
@@ -27,23 +27,38 @@
     .ds-body { margin-bottom: 16px; }
     .ds-meta { display: flex; gap: 16px; flex-wrap: wrap; }
     .ds-tag { font-size: 11px; padding: 4px 10px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); color: var(--text-secondary); }
-    .ds-tag.model1 { border-color: rgba(204,255,0,0.2); color: var(--accent-neon); }
+    .ds-tag.model1 { border-color: rgba(14,165,233,0.2); color: #0EA5E9; }
     .ds-tag.model2 { border-color: rgba(59,130,246,0.2); color: #3b82f6; }
     .ds-footer { display: flex; justify-content: space-between; align-items: center; }
-    .ds-link { font-size: 13px; color: var(--accent-neon); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: gap 0.3s; }
+    .ds-link { font-size: 13px; color: #0EA5E9; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: gap 0.3s; }
     .ds-link:hover { gap: 10px; }
     .ds-chart-btn { padding: 8px 16px; border-radius: 10px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); color: var(--text-secondary); font-size: 12px; cursor: pointer; transition: all 0.2s; }
-    .ds-chart-btn:hover { background: var(--accent-dim); color: var(--accent-neon); border-color: rgba(204,255,0,0.3); }
+    .ds-chart-btn:hover { background: var(--accent-dim); color: #0EA5E9; border-color: rgba(14,165,233,0.3); }
 
     /* Modal */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; }
     .modal-overlay.active { display: flex; }
-    .modal-box { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 24px; padding: 36px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto; }
+    .modal-box { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 24px; padding: 36px; max-width: 900px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; }
     .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--text-secondary); font-size: 24px; cursor: pointer; }
     .modal-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
     .modal-source { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; }
-    .modal-chart { height: 300px; margin-bottom: 24px; }
     .modal-info { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+    /* Loader, Error & Table */
+    .modal-loader { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 48px; gap: 16px; color: var(--text-secondary); }
+    .spinner { width: 40px; height: 40px; border: 3px solid rgba(14,165,233,0.2); border-top-color: #0EA5E9; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-error { display: none; flex-direction: column; align-items: center; gap: 12px; padding: 48px; color: #EF4444; text-align: center; }
+    .modal-error i { font-size: 32px; }
+    .modal-table-wrap { display: none; margin-bottom: 24px; }
+    .table-scroll { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th { background: rgba(14,165,233,0.08); color: #0EA5E9; font-weight: 600; text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+    .data-table td { padding: 10px 14px; border-bottom: 1px solid var(--border-color); color: var(--text-main); white-space: nowrap; }
+    .data-table tbody tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .type-badge { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 6px; background: rgba(148,163,184,0.15); color: #94A3B8; margin-left: 6px; vertical-align: middle; font-weight: 500; text-transform: lowercase; }
+    .table-meta { margin-top: 10px; font-size: 12px; color: var(--text-secondary); text-align: right; }
 </style>
 {% endblock %}
 
@@ -66,11 +81,31 @@
 
 <!-- Modal -->
 <div class="modal-overlay" id="dsModal">
-    <div class="modal-box" style="position:relative;">
+    <div class="modal-box">
         <button class="modal-close" onclick="closeModal()">&times;</button>
         <div class="modal-title" id="modalTitle"></div>
         <div class="modal-source" id="modalSource"></div>
-        <div class="modal-chart"><canvas id="modalChart"></canvas></div>
+
+        <div id="modalLoader" class="modal-loader">
+            <div class="spinner"></div>
+            <p>Memuat data...</p>
+        </div>
+
+        <div id="modalError" class="modal-error">
+            <i class="fas fa-circle-exclamation"></i>
+            <p>Gagal memuat data preview. Silakan coba lagi nanti.</p>
+        </div>
+
+        <div id="modalTableWrap" class="modal-table-wrap">
+            <div class="table-scroll">
+                <table class="data-table" id="modalTable">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="table-meta" id="modalTableMeta"></div>
+        </div>
+
         <div class="modal-info" id="modalInfo"></div>
     </div>
 </div>
@@ -135,7 +170,7 @@ function renderCards(filter) {
             </div>
             <div class="ds-footer">
                 <a href="${d.link}" target="_blank" class="ds-link">Lihat Sumber <i class="fas fa-external-link-alt"></i></a>
-                <button class="ds-chart-btn" onclick="event.stopPropagation(); openModal(${d.id})"><i class="fas fa-chart-bar"></i> Preview</button>
+                <button class="ds-chart-btn" onclick="event.stopPropagation(); openModal(${d.id})"><i class="fas fa-table"></i> Preview</button>
             </div>`;
         card.addEventListener('click', () => openModal(d.id));
         grid.appendChild(card);
@@ -154,26 +189,109 @@ filterBtns.forEach(btn => {
 
 renderCards('all');
 
-let modalChart = null;
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function renderTable(data) {
+    const table = document.getElementById('modalTable');
+    const thead = table.querySelector('thead');
+    const tbody = table.querySelector('tbody');
+    const meta = document.getElementById('modalTableMeta');
+
+    thead.innerHTML = '';
+    tbody.innerHTML = '';
+
+    const columns = Array.isArray(data.columns) ? data.columns : (Array.isArray(data.rows) && data.rows.length > 0 && typeof data.rows[0] === 'object' ? Object.keys(data.rows[0]) : []);
+    const rows = Array.isArray(data.rows) ? data.rows : [];
+    const types = Array.isArray(data.types) ? data.types : (typeof data.types === 'object' && data.types !== null ? [] : []);
+    const totalRows = typeof data.total_rows === 'number' ? data.total_rows : rows.length;
+
+    // Header with type badges
+    const trHead = document.createElement('tr');
+    columns.forEach((col, i) => {
+        const th = document.createElement('th');
+        let typeLabel = '';
+        if (Array.isArray(types) && types[i]) {
+            typeLabel = types[i];
+        } else if (typeof data.types === 'object' && data.types !== null && data.types[col]) {
+            typeLabel = data.types[col];
+        }
+        th.innerHTML = escapeHtml(String(col)) + (typeLabel ? ` <span class="type-badge">${escapeHtml(typeLabel)}</span>` : '');
+        trHead.appendChild(th);
+    });
+    thead.appendChild(trHead);
+
+    // Rows (max 8)
+    const displayRows = rows.slice(0, 8);
+    displayRows.forEach(row => {
+        const tr = document.createElement('tr');
+        if (Array.isArray(row)) {
+            columns.forEach((_, i) => {
+                const td = document.createElement('td');
+                const val = row[i];
+                td.textContent = val === null || val === undefined ? '' : String(val);
+                tr.appendChild(td);
+            });
+        } else if (typeof row === 'object' && row !== null) {
+            columns.forEach(col => {
+                const td = document.createElement('td');
+                const val = row[col];
+                td.textContent = val === null || val === undefined ? '' : String(val);
+                tr.appendChild(td);
+            });
+        }
+        tbody.appendChild(tr);
+    });
+
+    meta.textContent = `Menampilkan ${displayRows.length} dari ${totalRows} baris`;
+}
+
 function openModal(id) {
     const d = DATASETS.find(x => x.id === id);
     if (!d) return;
+
     document.getElementById('modalTitle').textContent = d.name;
-    document.getElementById('modalSource').textContent = d.source + ' | ' + d.period + ' | ' + d.model;
+    document.getElementById('modalSource').textContent = `${d.source} | ${d.period} | ${d.model}`;
     document.getElementById('modalInfo').textContent = d.desc;
+
+    const loader = document.getElementById('modalLoader');
+    const error = document.getElementById('modalError');
+    const tableWrap = document.getElementById('modalTableWrap');
+
+    loader.style.display = 'flex';
+    error.style.display = 'none';
+    tableWrap.style.display = 'none';
+
     document.getElementById('dsModal').classList.add('active');
 
-    if (modalChart) modalChart.destroy();
-    const ctx = document.getElementById('modalChart').getContext('2d');
-    const years = ['2019','2020','2021','2022','2023','2024','2025'];
-    const vals = years.map(() => Math.random() * 80 + 20);
-    modalChart = new Chart(ctx, {
-        type: 'bar',
-        data: { labels: years, datasets: [{ label: d.name, data: vals, backgroundColor: 'rgba(204,255,0,0.6)', borderColor: 'rgba(204,255,0,0.8)', borderWidth: 1, borderRadius: 6 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#9a9ae' } } }, scales: { x: { ticks: { color: '#9a9ae' }, grid: { color: 'rgba(255,255,255,0.04)' } }, y: { ticks: { color: '#9a9ae' }, grid: { color: 'rgba(255,255,255,0.04)' } } } }
-    });
+    const datasetParam = d.model === 'Model 2' ? 'daya_beli' : 'inflasi';
+
+    fetch(`/api/dataset-sample/?dataset=${encodeURIComponent(datasetParam)}`)
+        .then(resp => {
+            if (!resp.ok) throw new Error('Network response was not ok');
+            return resp.json();
+        })
+        .then(data => {
+            loader.style.display = 'none';
+            renderTable(data);
+            tableWrap.style.display = 'block';
+        })
+        .catch(err => {
+            loader.style.display = 'none';
+            error.style.display = 'flex';
+            console.error(err);
+        });
 }
-function closeModal() { document.getElementById('dsModal').classList.remove('active'); }
-document.getElementById('dsModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+function closeModal() {
+    document.getElementById('dsModal').classList.remove('active');
+}
+
+document.getElementById('dsModal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal();
+});
 </script>
 {% endblock %}

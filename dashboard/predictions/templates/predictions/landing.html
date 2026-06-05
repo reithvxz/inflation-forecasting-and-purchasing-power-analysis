@@ -7,11 +7,11 @@
 <div class="welcome-section" style="margin-bottom: 40px; background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzE2MTYxYyIgc3RvcC1vcGFjaXR5PSIwLjkiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxZTFlMjQiIHN0b3Atb3BhY2l0eT0iMC45Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnKSIvPjwvc3ZnPg=='); background-size: cover; border-radius: 24px; padding: 64px 48px; border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 32px; position: relative; overflow: hidden;">
     
     <!-- Dekorasi aksen di sudut -->
-    <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: var(--accent-neon); filter: blur(100px); opacity: 0.15; border-radius: 50%;"></div>
+    <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: var(--accent-primary); filter: blur(100px); opacity: 0.15; border-radius: 50%;"></div>
     
     <div style="max-width: 800px; z-index: 1;">
         <h2 style="font-size: 36px; margin-bottom: 16px; font-weight: 800; letter-spacing: -1px; color: #fff;">
-            Menganalisis Tren Ekonomi,<br><span style="color: var(--accent-neon);">Memproyeksikan Masa Depan.</span>
+            Menganalisis Tren Ekonomi,<br><span style="color: var(--accent-primary);">Memproyeksikan Masa Depan.</span>
         </h2>
         <p style="color: var(--text-secondary); line-height: 1.7; font-size: 16px; margin-bottom: 40px;">
             EcoDash adalah pusat komando cerdas untuk mendukung pencapaian <strong>SDGs 8 (Pekerjaan Layak dan Pertumbuhan Ekonomi)</strong>. 
@@ -33,7 +33,7 @@
 <section class="kpi-grid" style="margin-bottom: 40px;">
     <div class="kpi-card">
         <div class="kpi-title">Proyeksi Inflasi (Bulan Depan)</div>
-        <div class="kpi-value" style="color: var(--accent-neon);">{{ inflasi_pred|floatformat:2 }}%</div>
+        <div class="kpi-value" style="color: var(--accent-primary);">{{ inflasi_pred|floatformat:2 }}%</div>
         <div class="kpi-trend neutral">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
             PyTorch LSTM Forecast
@@ -142,8 +142,8 @@
                     labels: ['Makanan', 'Non-Makanan'],
                     datasets: [{
                         data: pieData,
-                        backgroundColor: ['#ccff00', '#1a1a24'],
-                        borderColor: ['#ccff00', 'rgba(255,255,255,0.1)'],
+                        backgroundColor: ['#0EA5E9', '#1e293b'],
+                        borderColor: ['#0EA5E9', 'rgba(148,163,184,0.1)'],
                         borderWidth: 2,
                         hoverOffset: 4
                     }]

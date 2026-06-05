@@ -339,3 +339,145 @@ def compare_page(request):
 # --- What-If Scenarios ---
 def scenarios_page(request):
     return render(request, 'predictions/scenarios.html')
+
+
+# ============================================================
+# API ENDPOINTS FOR REAL DATA
+# ============================================================
+
+def api_dataset_sample(request):
+    """Return sample rows and column info from processed CSV files."""
+    dataset = request.GET.get('dataset', 'daya_beli')
+    n_rows = int(request.GET.get('n', 8))
+    project_root = os.path.dirname(settings.BASE_DIR)
+    
+    if dataset == 'daya_beli':
+        path = os.path.join(project_root, 'datasets', 'processed', 'clean_daya_beli.csv')
+    elif dataset == 'inflasi':
+        path = os.path.join(project_root, 'datasets', 'processed', 'clean_inflasi_ts.csv')
+    else:
+        return JsonResponse({'error': 'Unknown dataset'}, status=400)
+    
+    if not os.path.exists(path):
+        return JsonResponse({'error': 'File not found'}, status=404)
+    
+    try:
+        df = pd.read_csv(path)
+        # Get column types
+        columns = []
+        for col in df.columns:
+            if pd.api.types.is_numeric_dtype(df[col]):
+                ctype = 'number'
+            elif pd.api.types.is_datetime64_any_dtype(df[col]):
+                ctype = 'date'
+            else:
+                ctype = 'text'
+            columns.append({'name': col, 'type': ctype})
+        
+        # Sample rows (first n_rows)
+        sample = df.head(n_rows).fillna('').astype(str).to_dict('records')
+        
+        return JsonResponse({
+            'columns': columns,
+            'sample': sample,
+            'total_rows': len(df),
+            'dataset': dataset
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def api_province_list(request):
+    """Return list of provinces from daya_beli CSV."""
+    project_root = os.path.dirname(settings.BASE_DIR)
+    path = os.path.join(project_root, 'datasets', 'processed', 'clean_daya_beli.csv')
+    if not os.path.exists(path):
+        return JsonResponse({'provinces': []})
+    try:
+        df = pd.read_csv(path)
+        if 'Provinsi' in df.columns:
+            provinces = sorted(df['Provinsi'].unique().tolist())
+        else:
+            provinces = []
+        return JsonResponse({'provinces': provinces})
+    except Exception:
+        return JsonResponse({'provinces': []})
+
+
+def api_province_data(request):
+    """Return data for selected provinces and metric."""
+    provinces = request.GET.getlist('provinsi')
+    metric = request.GET.get('metric', 'Total_Pengeluaran')
+    project_root = os.path.dirname(settings.BASE_DIR)
+    path = os.path.join(project_root, 'datasets', 'processed', 'clean_daya_beli.csv')
+    
+    if not os.path.exists(path):
+        return JsonResponse({'error': 'Data not found'}, status=404)
+    
+    try:
+        df = pd.read_csv(path)
+        if 'Provinsi' not in df.columns or 'Tahun' not in df.columns:
+            return JsonResponse({'error': 'Required columns missing'}, status=500)
+        
+        if metric not in df.columns:
+            metric = 'Total_Pengeluaran'
+        
+        # Filter by provinces if specified
+        if provinces:
+            df = df[df['Provinsi'].isin(provinces)]
+        
+        # Group by province and year
+        result = {}
+        for prov in df['Provinsi'].unique():
+            prov_df = df[df['Provinsi'] == prov].sort_values('Tahun')
+            result[prov] = {
+                'years': prov_df['Tahun'].tolist(),
+                'values': prov_df[metric].fillna(0).tolist()
+            }
+        
+        # Metric info
+        metric_info = {
+            'Total_Pengeluaran': {'label': 'Daya Beli (Total Pengeluaran)', 'unit': 'Rp', 'format': 'currency'},
+            'UMP': {'label': 'Upah Minimum Provinsi', 'unit': 'Rp', 'format': 'currency'},
+            'PDRB_HargaKonstan': {'label': 'PDRB Per Kapita', 'unit': 'Rp', 'format': 'currency'},
+            'TPT': {'label': 'Tingkat Pengangguran Terbuka', 'unit': '%', 'format': 'percent'},
+            'IPM': {'label': 'Indeks Pembangunan Manusia', 'unit': '', 'format': 'number'},
+            'Gini_Rasio': {'label': 'Gini Ratio', 'unit': '', 'format': 'number'},
+            'Garis_Kemiskinan': {'label': 'Garis Kemiskinan', 'unit': 'Rp', 'format': 'currency'},
+            'Pct_Penduduk_Miskin': {'label': '% Penduduk Miskin', 'unit': '%', 'format': 'percent'},
+            'Jumlah_Penduduk': {'label': 'Jumlah Penduduk', 'unit': '', 'format': 'number'},
+            'Inflasi_Rata_Tahunan': {'label': 'Inflasi Rata-rata Tahunan', 'unit': '%', 'format': 'percent'},
+        }
+        
+        return JsonResponse({
+            'data': result,
+            'metric_info': metric_info.get(metric, {'label': metric, 'unit': '', 'format': 'number'})
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def api_all_metrics_latest(request):
+    """Return latest year metrics for all provinces (for radar chart)."""
+    project_root = os.path.dirname(settings.BASE_DIR)
+    path = os.path.join(project_root, 'datasets', 'processed', 'clean_daya_beli.csv')
+    if not os.path.exists(path):
+        return JsonResponse({'error': 'Data not found'}, status=404)
+    try:
+        df = pd.read_csv(path)
+        latest_year = df['Tahun'].max()
+        latest = df[df['Tahun'] == latest_year]
+        
+        metrics = ['Total_Pengeluaran', 'UMP', 'PDRB_HargaKonstan', 'TPT', 'IPM', 'Gini_Rasio', 
+                   'Pct_Penduduk_Miskin', 'Inflasi_Rata_Tahunan']
+        available = [m for m in metrics if m in latest.columns]
+        
+        result = {}
+        for _, row in latest.iterrows():
+            prov = row['Provinsi']
+            result[prov] = {m: float(row[m]) if pd.notna(row[m]) else 0 for m in available}
+            result[prov]['Tahun'] = int(row['Tahun'])
+        
+        return JsonResponse({'latest_year': int(latest_year), 'provinces': result, 'metrics': available})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
