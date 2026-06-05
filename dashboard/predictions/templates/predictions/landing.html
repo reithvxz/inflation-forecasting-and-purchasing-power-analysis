@@ -89,11 +89,141 @@
         </div>
     </section>
 </div>
+
+<!-- Rupiah Purchasing Power Section -->
+<section class="purchasing-power-section" style="margin-top: 24px;">
+    <div style="background: var(--bg-card); backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: 24px; padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+        <div style="margin-bottom: 8px;">
+            <h2 style="font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px;">Dampak Inflasi pada Uang Anda</h2>
+            <p style="color: var(--text-secondary); font-size: 14px; margin-top: 6px;">Inflasi mengurangi daya beli uang Anda. Berikut simulasi dampaknya:</p>
+        </div>
+
+        <!-- Input Area -->
+        <div style="display: flex; align-items: center; gap: 16px; margin: 28px 0 32px 0; flex-wrap: wrap;">
+            <label style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">Masukkan nominal Rupiah:</label>
+            <input type="text" id="ppNominal" value="1.000.000" style="
+                background: rgba(148,163,184,0.06); border: 1px solid var(--border-color); border-radius: 12px;
+                padding: 12px 18px; color: var(--text-primary); font-size: 16px; font-weight: 600;
+                font-family: 'Inter', sans-serif; width: 200px; outline: none; transition: border-color 0.3s;
+            " onfocus="this.style.borderColor='rgba(14,165,233,0.5)'" onblur="this.style.borderColor='var(--border-color)'">
+            <button onclick="calculatePP()" style="
+                background: var(--accent-primary); color: #0B0F1A; border: none; border-radius: 12px;
+                padding: 12px 24px; font-size: 14px; font-weight: 700; cursor: pointer;
+                font-family: 'Inter', sans-serif; transition: all 0.3s; box-shadow: 0 0 20px rgba(14,165,233,0.3);
+            " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 30px rgba(14,165,233,0.5)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 0 20px rgba(14,165,233,0.3)'">Hitung Dampak</button>
+        </div>
+
+        <!-- Result Display -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 32px; margin-bottom: 36px; flex-wrap: wrap;">
+            <div style="text-align: center; min-width: 180px;">
+                <div style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 8px;">Daya Beli Saat Ini</div>
+                <div id="ppBefore" style="font-size: 32px; font-weight: 800; color: var(--positive); letter-spacing: -1px;">Rp 1.000.000</div>
+            </div>
+            <div style="font-size: 28px; color: var(--text-secondary);">→</div>
+            <div style="text-align: center; min-width: 180px;">
+                <div style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 8px;">Setelah Inflasi <span id="ppInflasiRate">2.50%</span></div>
+                <div id="ppAfter" style="font-size: 32px; font-weight: 800; color: var(--negative); letter-spacing: -1px;">Rp 975.000</div>
+            </div>
+        </div>
+
+        <!-- Visual Bar -->
+        <div style="margin-bottom: 36px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 12px; color: var(--positive); font-weight: 600; width: 80px;">Saat ini</span>
+                <div style="flex: 1; height: 20px; background: rgba(148,163,184,0.06); border-radius: 10px; overflow: hidden;">
+                    <div id="ppBarBefore" style="height: 100%; width: 100%; background: linear-gradient(90deg, var(--positive), rgba(16,185,129,0.5)); border-radius: 10px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 12px; color: var(--negative); font-weight: 600; width: 80px;">Inflasi</span>
+                <div style="flex: 1; height: 20px; background: rgba(148,163,184,0.06); border-radius: 10px; overflow: hidden;">
+                    <div id="ppBarAfter" style="height: 100%; width: 97.5%; background: linear-gradient(90deg, var(--negative), rgba(239,68,68,0.5)); border-radius: 10px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Commodity Comparison Cards -->
+        <div id="ppCommodities" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;"></div>
+    </div>
+</section>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    function formatRupiah(num) {
+        return 'Rp ' + Math.round(num).toLocaleString('id-ID').replace(/,/g, '.');
+    }
+
+    function parseNominal(str) {
+        return parseInt(str.replace(/[^0-9]/g, ''), 10) || 0;
+    }
+
+    function formatNominalInput(input) {
+        let val = input.value.replace(/[^0-9]/g, '');
+        if (val) input.value = parseInt(val).toLocaleString('id-ID').replace(/,/g, '.');
+    }
+
+    document.getElementById('ppNominal').addEventListener('input', function() {
+        formatNominalInput(this);
+    });
+
+    function animateBars(before, after) {
+        const pct = (after / before) * 100;
+        document.getElementById('ppBarBefore').style.width = '100%';
+        setTimeout(() => {
+            document.getElementById('ppBarAfter').style.width = pct + '%';
+        }, 100);
+    }
+
+    async function calculatePP() {
+        const nominal = parseNominal(document.getElementById('ppNominal').value);
+        if (!nominal || nominal <= 0) return;
+
+        try {
+            const resp = await fetch('/api/commodity-prices/');
+            const data = await resp.json();
+
+            const inflasi = data.inflasi_prediksi / 100;
+            const afterValue = nominal * (1 - inflasi);
+            const diff = nominal - afterValue;
+
+            document.getElementById('ppBefore').textContent = formatRupiah(nominal);
+            document.getElementById('ppAfter').textContent = formatRupiah(afterValue);
+            document.getElementById('ppInflasiRate').textContent = data.inflasi_prediksi.toFixed(2) + '%';
+
+            const commodities = Object.values(data.commodities);
+            let html = '';
+            commodities.forEach(c => {
+                const beforeQty = Math.floor(nominal / c.price);
+                const afterQty = Math.floor(afterValue / c.price);
+                const qtyDiff = beforeQty - afterQty;
+                const unit = c.unit.split('/')[1];
+                html += `
+                    <div style="
+                        background: rgba(148,163,184,0.04); border: 1px solid var(--border-color);
+                        border-radius: 16px; padding: 20px; transition: all 0.3s;
+                    " onmouseover="this.style.borderColor='rgba(14,165,233,0.3)';this.style.transform='translateY(-3px)'" onmouseout="this.style.borderColor='var(--border-color)';this.style.transform='translateY(0)'">
+                        <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">${c.name}</div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <span style="font-size: 18px; font-weight: 700; color: var(--positive);">${beforeQty} ${unit}</span>
+                            <span style="color: var(--text-secondary);">→</span>
+                            <span style="font-size: 18px; font-weight: 700; color: ${qtyDiff > 0 ? 'var(--negative)' : 'var(--positive)'};">${afterQty} ${unit}</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">Harga: ${formatRupiah(c.price)}/${unit}</div>
+                        ${qtyDiff > 0 ? '<div style="font-size: 12px; color: var(--negative); font-weight: 600; margin-top: 6px;">Kehilangan ' + qtyDiff + ' ' + unit + '</div>' : ''}
+                    </div>
+                `;
+            });
+            document.getElementById('ppCommodities').innerHTML = html;
+            animateBars(nominal, afterValue);
+        } catch (err) {
+            console.error('Failed to fetch commodity prices:', err);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+        calculatePP();
+
         const labels = {{ chart_labels|safe }};
         const umpData = {{ ump_data|safe }};
         const pieData = {{ pie_data|safe }};

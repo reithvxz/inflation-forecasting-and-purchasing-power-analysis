@@ -363,23 +363,25 @@ def api_dataset_sample(request):
     
     try:
         df = pd.read_csv(path)
-        # Get column types
-        columns = []
+        # Get column names and types
+        col_names = []
+        col_types = []
         for col in df.columns:
+            col_names.append(col)
             if pd.api.types.is_numeric_dtype(df[col]):
-                ctype = 'number'
+                col_types.append('number')
             elif pd.api.types.is_datetime64_any_dtype(df[col]):
-                ctype = 'date'
+                col_types.append('date')
             else:
-                ctype = 'text'
-            columns.append({'name': col, 'type': ctype})
+                col_types.append('text')
         
         # Sample rows (first n_rows)
-        sample = df.head(n_rows).fillna('').astype(str).to_dict('records')
+        rows = df.head(n_rows).fillna('').astype(str).to_dict('records')
         
         return JsonResponse({
-            'columns': columns,
-            'sample': sample,
+            'columns': col_names,
+            'types': col_types,
+            'rows': rows,
             'total_rows': len(df),
             'dataset': dataset
         })
@@ -455,6 +457,41 @@ def api_province_data(request):
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+def api_commodity_prices(request):
+    """Return commodity prices and predicted inflation for Rupiah Purchasing Power feature."""
+    load_models()
+
+    # Check if World Bank CSV exists
+    project_root = os.path.dirname(settings.BASE_DIR)
+    csv_path = os.path.join(project_root, 'datasets', 'raw', 'CMO-April-2026.csv')
+
+    if os.path.exists(csv_path):
+        try:
+            df = pd.read_csv(csv_path)
+            # TODO: Parse real commodity data from CSV
+            pass
+        except Exception:
+            pass
+
+    # Simulated realistic commodity prices
+    commodities = {
+        "beras": {"name": "Beras", "price": 12500, "unit": "Rp/kg", "change_pct": 2.3},
+        "gula": {"name": "Gula", "price": 16000, "unit": "Rp/kg", "change_pct": -0.5},
+        "minyak_goreng": {"name": "Minyak Goreng", "price": 14500, "unit": "Rp/liter", "change_pct": 1.8},
+        "telur": {"name": "Telur", "price": 28000, "unit": "Rp/kg", "change_pct": 3.1},
+        "bbm_pertalite": {"name": "BBM Pertalite", "price": 10000, "unit": "Rp/liter", "change_pct": 0.0},
+        "daging_ayam": {"name": "Daging Ayam", "price": 35000, "unit": "Rp/kg", "change_pct": 1.2},
+    }
+
+    inflasi_val = float(INFLASI_PRED_MEM) if INFLASI_PRED_MEM is not None else 2.5
+
+    return JsonResponse({
+        "commodities": commodities,
+        "inflasi_prediksi": inflasi_val,
+        "base_pengeluaran": RATA_PENGELUARAN,
+    })
 
 
 def api_all_metrics_latest(request):

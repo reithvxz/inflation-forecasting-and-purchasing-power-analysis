@@ -14,4 +14,5 @@ urlpatterns = [
     path('api/provinces/', views.api_province_list, name='api_province_list'),
     path('api/province-data/', views.api_province_data, name='api_province_data'),
     path('api/metrics-latest/', views.api_all_metrics_latest, name='api_metrics_latest'),
+    path('api/commodity-prices/', views.api_commodity_prices, name='api_commodity_prices'),
 ]

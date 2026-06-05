@@ -4,581 +4,826 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoDash — Prediksi Inflasi & Daya Beli Indonesia</title>
+    <title>EcoDash — Terminal Prediksi Inflasi & Daya Beli Indonesia</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         :root {
             --bg-dark: #0B0F1A;
             --bg-panel: #111827;
             --bg-card: rgba(17, 24, 39, 0.65);
-            --accent: #0EA5E9;
+            --accent-primary: #0EA5E9;
+            --accent-secondary: #10B981;
+            --accent-tertiary: #8B5CF6;
             --accent-glow: rgba(14, 165, 233, 0.4);
-            --accent-dim: rgba(14, 165, 233, 0.1);
             --text-primary: #F1F5F9;
             --text-secondary: #94A3B8;
-            --border: rgba(148, 163, 184, 0.1);
+            --border-color: rgba(148, 163, 184, 0.1);
             --positive: #10B981;
             --negative: #EF4444;
+            --warning: #F59E0B;
+            --neutral: #64748B;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-primary); overflow-x: hidden; }
         a { text-decoration: none; color: inherit; }
+
+        /* ===== SCROLL REVEAL ANIMATIONS ===== */
+        .reveal-up { opacity: 0; transform: translateY(60px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal-up.in-view { opacity: 1; transform: translateY(0); }
+        .reveal-left { opacity: 0; transform: translateX(-60px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal-left.in-view { opacity: 1; transform: translateX(0); }
+        .reveal-right { opacity: 0; transform: translateX(60px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal-right.in-view { opacity: 1; transform: translateX(0); }
+        .reveal-scale { opacity: 0; transform: scale(0.85); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal-scale.in-view { opacity: 1; transform: scale(1); }
+        .stagger-children > * { opacity: 0; transform: translateY(30px); transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .stagger-children.in-view > *:nth-child(1) { transition-delay: 0s; opacity: 1; transform: translateY(0); }
+        .stagger-children.in-view > *:nth-child(2) { transition-delay: 0.1s; opacity: 1; transform: translateY(0); }
+        .stagger-children.in-view > *:nth-child(3) { transition-delay: 0.2s; opacity: 1; transform: translateY(0); }
+        .stagger-children.in-view > *:nth-child(4) { transition-delay: 0.3s; opacity: 1; transform: translateY(0); }
+        .stagger-children.in-view > *:nth-child(5) { transition-delay: 0.4s; opacity: 1; transform: translateY(0); }
+        .stagger-children.in-view > *:nth-child(6) { transition-delay: 0.5s; opacity: 1; transform: translateY(0); }
+        .stagger-children.in-view > *:nth-child(7) { transition-delay: 0.6s; opacity: 1; transform: translateY(0); }
+        .stagger-children.in-view > *:nth-child(8) { transition-delay: 0.7s; opacity: 1; transform: translateY(0); }
 
         /* ===== NAVBAR ===== */
         .lp-nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 60px; height: 72px;
-            background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(24px);
-            border-bottom: 1px solid var(--border);
-            transition: background 0.3s;
+            padding: 0 60px; height: 64px;
+            background: rgba(11, 15, 26, 0.92); backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s;
         }
-        .lp-nav.scrolled { background: rgba(11, 15, 26, 0.95); box-shadow: 0 4px 30px rgba(0,0,0,0.5); }
-        .lp-logo { display: flex; align-items: center; gap: 12px; }
-        .lp-logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), #38bdf8); border-radius: 10px; box-shadow: 0 0 20px var(--accent-glow); }
-        .lp-logo h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
-        .lp-nav-links { display: flex; gap: 8px; list-style: none; }
-        .lp-nav-links a { padding: 10px 20px; border-radius: 24px; font-size: 14px; font-weight: 500; color: var(--text-secondary); transition: all 0.25s; }
+        .lp-nav.scrolled { background: rgba(11, 15, 26, 0.98); box-shadow: 0 4px 30px rgba(0,0,0,0.5); }
+        .lp-logo { display: flex; align-items: center; gap: 10px; }
+        .lp-logo-icon {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px; position: relative; overflow: hidden;
+            box-shadow: 0 0 16px var(--accent-glow);
+        }
+        .lp-logo-icon::after {
+            content: ''; position: absolute; inset: 3px;
+            border: 1.5px solid rgba(255,255,255,0.3); border-radius: 5px;
+        }
+        .lp-logo h2 { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
+        .lp-logo .version {
+            font-size: 9px; font-weight: 600; padding: 2px 6px;
+            background: rgba(14,165,233,0.15); color: var(--accent-primary);
+            border-radius: 4px; letter-spacing: 0.5px; border: 1px solid rgba(14,165,233,0.2);
+        }
+        .lp-nav-links { display: flex; gap: 4px; list-style: none; align-items: center; }
+        .lp-nav-links a {
+            padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
+            color: var(--text-secondary); transition: all 0.25s;
+        }
         .lp-nav-links a:hover { background: rgba(255,255,255,0.05); color: #fff; }
-        .lp-nav-links a.nav-cta { background: var(--accent); color: #000; font-weight: 700; box-shadow: 0 4px 15px rgba(14,165,233,0.3); }
+        .lp-nav-links a.nav-cta {
+            background: var(--accent-primary); color: #000; font-weight: 700;
+            box-shadow: 0 4px 15px rgba(14,165,233,0.3);
+        }
         .lp-nav-links a.nav-cta:hover { box-shadow: 0 6px 25px rgba(14,165,233,0.5); transform: translateY(-1px); }
 
-        /* ===== HERO ===== */
-        .hero {
-            min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;
-            position: relative; padding: 120px 40px 80px; overflow: hidden;
+        /* ===== TICKER TAPE ===== */
+        .ticker-tape {
+            position: fixed; top: 64px; left: 0; right: 0; z-index: 999;
+            height: 36px; overflow: hidden;
+            background: rgba(11, 15, 26, 0.95);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center;
         }
-        .hero-bg {
-            position: absolute; inset: 0;
-            background: 
-                radial-gradient(ellipse at 50% 30%, rgba(14,165,233,0.08) 0%, transparent 60%),
-                radial-gradient(ellipse at 20% 80%, rgba(56,189,248,0.05) 0%, transparent 50%);
-            animation: meshMove 12s ease-in-out infinite alternate;
-        }
-        @keyframes meshMove {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.05); }
-        }
-        #particles-canvas { position: absolute; inset: 0; pointer-events: none; }
-        .hero-content { position: relative; z-index: 2; max-width: 980px; }
-        .hero-badge {
-            display: inline-flex; align-items: center; gap: 8px;
-            padding: 8px 20px; border-radius: 24px;
-            background: var(--accent-dim); border: 1px solid rgba(14,165,233,0.2);
-            font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 32px;
-        }
-        .hero-badge i { font-size: 12px; }
-        .hero h1 {
-            font-size: clamp(48px, 7vw, 84px); font-weight: 900; line-height: 1.05;
-            letter-spacing: -3px; margin-bottom: 28px;
-            background: linear-gradient(135deg, #fff 0%, #bae6fd 50%, #7dd3fc 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .hero h1 .accent { -webkit-text-fill-color: var(--accent); text-shadow: 0 0 40px var(--accent-glow); }
-        .hero p { font-size: 20px; color: var(--text-secondary); max-width: 660px; margin: 0 auto 48px; line-height: 1.65; }
-        .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-        .btn-hero {
-            padding: 18px 36px; border-radius: 16px; font-size: 16px; font-weight: 700;
-            display: inline-flex; align-items: center; gap: 10px; transition: all 0.3s;
-        }
-        .btn-hero.primary { background: var(--accent); color: #000; box-shadow: 0 8px 30px rgba(14,165,233,0.35); }
-        .btn-hero.primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(14,165,233,0.5); }
-        .btn-hero.secondary { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border); }
-        .btn-hero.secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(148,163,184,0.2); transform: translateY(-3px); }
-
-        /* ===== SECTIONS COMMON ===== */
-        .section { padding: 120px 60px; position: relative; }
-        .section-inner { max-width: 1200px; margin: 0 auto; }
-        .section-header { text-align: center; margin-bottom: 64px; }
-        .section-header .tag {
-            display: inline-block; padding: 6px 16px; border-radius: 20px;
-            background: var(--accent-dim); border: 1px solid rgba(14,165,233,0.2);
-            color: var(--accent); font-size: 12px; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;
-        }
-        .section-header h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
-        .section-header p { font-size: 17px; color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6; }
-
-        /* ===== ECONOMIC PULSE TICKER ===== */
-        .pulse-section { padding: 20px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(11,15,26,0.6); backdrop-filter: blur(8px); overflow: hidden; }
-        .pulse-track { display: flex; gap: 48px; animation: tickerScroll 30s linear infinite; width: max-content; }
-        .pulse-track:hover { animation-play-state: paused; }
-        @keyframes tickerScroll {
+        .ticker-wrap { overflow: hidden; white-space: nowrap; width: 100%; }
+        .ticker-content { display: inline-block; animation: ticker 35s linear infinite; }
+        .ticker-content:hover { animation-play-state: paused; }
+        @keyframes ticker {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
         }
-        .pulse-item { display: flex; align-items: center; gap: 12px; white-space: nowrap; flex-shrink: 0; }
-        .pulse-item i { font-size: 16px; color: var(--accent); }
-        .pulse-item .label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-        .pulse-item .value { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-left: 4px; }
-        .pulse-item .delta { font-size: 12px; margin-left: 4px; }
-        .pulse-item .delta.up { color: var(--positive); }
-        .pulse-item .delta.down { color: var(--negative); }
-        .pulse-sep { width: 4px; height: 4px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+        .ticker-item {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 0 24px; font-size: 12px; font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+        .ticker-item .sym { color: var(--text-primary); }
+        .ticker-item .val { color: var(--text-secondary); }
+        .ticker-item .up { color: var(--accent-primary); }
+        .ticker-item .down { color: var(--negative); }
+        .ticker-sep { display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: var(--neutral); margin: 0 8px; vertical-align: middle; }
 
-        /* ===== KPI STATS ===== */
-        .stats-section { background: linear-gradient(180deg, transparent 0%, rgba(14,165,233,0.02) 50%, transparent 100%); }
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-        .stat-card {
+        /* ===== HERO ===== */
+        .hero {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            text-align: center; position: relative; padding: 140px 40px 100px; overflow: hidden;
+        }
+        .hero-grid {
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(14,165,233,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14,165,233,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridPulse 4s ease-in-out infinite;
+        }
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+        .hero-glow {
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse at 50% 20%, rgba(14,165,233,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(139,92,246,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 60%, rgba(16,185,129,0.03) 0%, transparent 50%);
+        }
+        #particles-canvas { position: absolute; inset: 0; pointer-events: none; }
+        .hero-content { position: relative; z-index: 2; max-width: 900px; }
+        .live-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 16px; border-radius: 6px;
+            background: rgba(14,165,233,0.08); border: 1px solid rgba(14,165,233,0.2);
+            font-size: 11px; font-weight: 700; color: var(--accent-primary);
+            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 28px;
+        }
+        .live-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--accent-primary);
+            animation: livePulse 1.5s ease-in-out infinite;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+        .hero h1 {
+            font-size: clamp(42px, 6.5vw, 76px); font-weight: 900; line-height: 1.05;
+            letter-spacing: -3px; margin-bottom: 24px;
+            background: linear-gradient(135deg, #fff 0%, #bae6fd 40%, #0EA5E9 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero h1 .accent {
+            -webkit-text-fill-color: var(--accent-primary);
+            text-shadow: 0 0 60px var(--accent-glow);
+        }
+        .hero-typing {
+            font-size: 18px; color: var(--text-secondary); max-width: 600px;
+            margin: 0 auto 40px; line-height: 1.6; min-height: 54px;
+        }
+        .typing-cursor { display: inline-block; width: 2px; height: 18px; background: var(--accent-primary); margin-left: 2px; animation: blink 0.8s step-end infinite; vertical-align: text-bottom; }
+        @keyframes blink { 50% { opacity: 0; } }
+        .hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .btn-hero {
+            padding: 14px 28px; border-radius: 10px; font-size: 14px; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s;
+            position: relative; overflow: hidden;
+        }
+        .btn-hero.primary {
+            background: var(--accent-primary); color: #000;
+            box-shadow: 0 8px 30px rgba(14,165,233,0.3);
+        }
+        .btn-hero.primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(14,165,233,0.45); }
+        .btn-hero.primary::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.15), transparent);
+            transform: rotate(45deg) translateX(-100%);
+            transition: transform 0.6s;
+        }
+        .btn-hero.primary:hover::after { transform: rotate(45deg) translateX(100%); }
+        .btn-hero.secondary {
+            background: rgba(255,255,255,0.04); color: #fff;
+            border: 1px solid var(--border-color);
+        }
+        .btn-hero.secondary:hover { background: rgba(255,255,255,0.08); border-color: rgba(148,163,184,0.2); transform: translateY(-2px); }
+
+        /* ===== SECTIONS COMMON ===== */
+        .section { padding: 100px 60px; position: relative; }
+        .section-inner { max-width: 1200px; margin: 0 auto; }
+        .section-header { text-align: center; margin-bottom: 56px; }
+        .section-header .tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 14px; border-radius: 6px;
+            background: rgba(14,165,233,0.08); border: 1px solid rgba(14,165,233,0.15);
+            color: var(--accent-primary); font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px;
+        }
+        .section-header h2 {
+            font-size: clamp(26px, 3.5vw, 40px); font-weight: 800;
+            letter-spacing: -1px; margin-bottom: 12px;
+        }
+        .section-header p {
+            font-size: 15px; color: var(--text-secondary);
+            max-width: 560px; margin: 0 auto; line-height: 1.6;
+        }
+        .section-divider {
+            width: 100%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+        }
+
+        /* ===== ECONOMIC PULSE KPI ===== */
+        .pulse-section { background: linear-gradient(180deg, rgba(14,165,233,0.01), transparent); }
+        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .kpi-card {
             background: var(--bg-card); backdrop-filter: blur(20px);
-            border: 1px solid var(--border); border-radius: 24px;
-            padding: 48px 32px; text-align: center;
+            border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 28px 24px; position: relative; overflow: hidden;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .stat-card:hover { transform: translateY(-8px); border-color: rgba(14,165,233,0.25); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 40px rgba(14,165,233,0.08); }
-        .stat-icon { width: 60px; height: 60px; margin: 0 auto 20px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .stat-icon.accent { background: rgba(14,165,233,0.1); color: var(--accent); border: 1px solid rgba(14,165,233,0.2); }
-        .stat-icon.blue { background: rgba(59,130,246,0.1); color: #3b82f6; border: 1px solid rgba(59,130,246,0.2); }
-        .stat-icon.purple { background: rgba(139,92,246,0.1); color: #8b5cf6; border: 1px solid rgba(139,92,246,0.2); }
-        .stat-icon.orange { background: rgba(249,115,22,0.1); color: #f97316; border: 1px solid rgba(249,115,22,0.2); }
-        .stat-number { font-size: 56px; font-weight: 900; letter-spacing: -2px; color: #fff; margin-bottom: 8px; }
-        .stat-label { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(14,165,233,0.2);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.3), 0 0 24px rgba(14,165,233,0.06);
+        }
+        .kpi-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, var(--accent-primary), transparent);
+            opacity: 0.5;
+        }
+        .kpi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .kpi-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-badge {
+            font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;
+        }
+        .kpi-badge.up { background: rgba(14,165,233,0.1); color: var(--accent-primary); }
+        .kpi-badge.down { background: rgba(239,68,68,0.1); color: var(--negative); }
+        .kpi-badge.neutral { background: rgba(100,116,139,0.1); color: var(--neutral); }
+        .kpi-value {
+            font-size: 36px; font-weight: 900; letter-spacing: -1.5px;
+            color: #fff; margin-bottom: 4px; font-variant-numeric: tabular-nums;
+        }
+        .kpi-sub { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
+        .kpi-sparkline { height: 32px; width: 100%; }
+        .kpi-sparkline canvas { width: 100% !important; height: 100% !important; }
+
+        /* ===== DATA FLOW ===== */
+        .dataflow-section { background: linear-gradient(180deg, transparent, rgba(14,165,233,0.015), transparent); }
+        .dataflow-container { position: relative; width: 100%; max-width: 1000px; margin: 0 auto; }
+        .dataflow-svg { width: 100%; height: auto; }
+        .flow-node {
+            fill: var(--bg-panel); stroke: var(--border-color); stroke-width: 1;
+            rx: 8; transition: all 0.4s;
+        }
+        .flow-node:hover { stroke: var(--accent-primary); filter: drop-shadow(0 0 12px rgba(14,165,233,0.3)); }
+        .flow-node-text { fill: var(--text-primary); font-family: 'Inter', sans-serif; font-weight: 600; font-size: 11px; text-anchor: middle; }
+        .flow-line {
+            stroke: var(--accent-primary); stroke-width: 1.5; fill: none;
+            stroke-dasharray: 8 4; opacity: 0.4;
+            animation: flowDash 1.5s linear infinite;
+        }
+        @keyframes flowDash { to { stroke-dashoffset: -24; } }
+        .flow-pulse {
+            fill: var(--accent-primary); opacity: 0.6;
+            animation: flowPulseAnim 2s ease-in-out infinite;
+        }
+        @keyframes flowPulseAnim {
+            0%, 100% { opacity: 0.3; r: 3; }
+            50% { opacity: 0.8; r: 5; }
+        }
+        .flow-icon-text { fill: var(--accent-primary); font-size: 16px; text-anchor: middle; dominant-baseline: central; }
 
         /* ===== FEATURES ===== */
-        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .feature-card {
             background: var(--bg-card); backdrop-filter: blur(20px);
-            border: 1px solid var(--border); border-radius: 24px;
-            padding: 44px 36px; position: relative; overflow: hidden;
+            border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 32px 28px; position: relative; overflow: hidden;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .feature-card:hover { transform: translateY(-10px); border-color: rgba(14,165,233,0.25); box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 40px rgba(14,165,233,0.08); }
+        .feature-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(14,165,233,0.2);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 30px rgba(14,165,233,0.06);
+        }
         .feature-card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-            background: linear-gradient(90deg, var(--accent), transparent);
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-tertiary));
             opacity: 0; transition: opacity 0.4s;
         }
         .feature-card:hover::before { opacity: 1; }
         .feature-icon {
-            width: 64px; height: 64px; border-radius: 18px; display: flex; align-items: center; justify-content: center;
-            font-size: 28px; margin-bottom: 28px;
+            width: 48px; height: 48px; border-radius: 10px; display: flex;
+            align-items: center; justify-content: center; font-size: 20px; margin-bottom: 20px;
         }
-        .feature-icon.f1 { background: rgba(14,165,233,0.1); color: var(--accent); border: 1px solid rgba(14,165,233,0.15); }
-        .feature-icon.f2 { background: rgba(59,130,246,0.1); color: #3b82f6; border: 1px solid rgba(59,130,246,0.15); }
-        .feature-icon.f3 { background: rgba(139,92,246,0.1); color: #8b5cf6; border: 1px solid rgba(139,92,246,0.15); }
+        .feature-icon.f1 { background: rgba(14,165,233,0.1); color: var(--accent-primary); border: 1px solid rgba(14,165,233,0.15); }
+        .feature-icon.f2 { background: rgba(16,185,129,0.1); color: var(--accent-secondary); border: 1px solid rgba(16,185,129,0.15); }
+        .feature-icon.f3 { background: rgba(139,92,246,0.1); color: var(--accent-tertiary); border: 1px solid rgba(139,92,246,0.15); }
         .feature-icon.f4 { background: rgba(249,115,22,0.1); color: #f97316; border: 1px solid rgba(249,115,22,0.15); }
         .feature-icon.f5 { background: rgba(236,72,153,0.1); color: #ec4899; border: 1px solid rgba(236,72,153,0.15); }
         .feature-icon.f6 { background: rgba(20,184,166,0.1); color: #14b8a6; border: 1px solid rgba(20,184,166,0.15); }
-        .feature-card h3 { font-size: 22px; font-weight: 700; margin-bottom: 14px; letter-spacing: -0.5px; }
-        .feature-card p { font-size: 15px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 24px; }
-        .feature-link { font-size: 14px; font-weight: 600; color: var(--accent); display: inline-flex; align-items: center; gap: 6px; transition: gap 0.3s; }
-        .feature-card:hover .feature-link { gap: 12px; }
+        .feature-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.3px; }
+        .feature-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 18px; }
+        .feature-link {
+            font-size: 13px; font-weight: 600; color: var(--accent-primary);
+            display: inline-flex; align-items: center; gap: 6px; transition: gap 0.3s;
+        }
+        .feature-card:hover .feature-link { gap: 10px; }
 
         /* ===== TECH STACK ===== */
-        .tech-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-        .tech-item {
-            background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
-            padding: 32px 24px; text-align: center;
-            transition: all 0.3s;
+        .tech-scroll-wrap { overflow: hidden; position: relative; }
+        .tech-scroll-wrap::before, .tech-scroll-wrap::after {
+            content: ''; position: absolute; top: 0; bottom: 0; width: 80px; z-index: 2;
+            pointer-events: none;
         }
-        .tech-item:hover { border-color: rgba(14,165,233,0.25); transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.3), 0 0 20px rgba(14,165,233,0.06); }
-        .tech-item i { font-size: 32px; margin-bottom: 14px; color: var(--accent); }
-        .tech-item h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-        .tech-item p { font-size: 12px; color: var(--text-secondary); }
+        .tech-scroll-wrap::before { left: 0; background: linear-gradient(90deg, var(--bg-dark), transparent); }
+        .tech-scroll-wrap::after { right: 0; background: linear-gradient(-90deg, var(--bg-dark), transparent); }
+        .tech-track { display: flex; gap: 16px; animation: techScroll 25s linear infinite; width: max-content; }
+        .tech-track:hover { animation-play-state: paused; }
+        @keyframes techScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .tech-badge {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 20px; border-radius: 8px;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            white-space: nowrap; flex-shrink: 0; transition: all 0.3s;
+        }
+        .tech-badge:hover {
+            border-color: rgba(14,165,233,0.25);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3), 0 0 16px rgba(14,165,233,0.06);
+            transform: translateY(-2px);
+        }
+        .tech-badge i { font-size: 18px; color: var(--accent-primary); }
+        .tech-badge span { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+        .tech-badge small { font-size: 11px; color: var(--text-secondary); }
 
         /* ===== TEAM ===== */
-        .team-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; }
+        .team-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
         .team-card {
-            background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
-            padding: 36px 20px; text-align: center;
+            background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 32px 16px; text-align: center; position: relative; overflow: hidden;
             transition: all 0.3s;
         }
-        .team-card:hover { border-color: rgba(14,165,233,0.25); transform: translateY(-6px); box-shadow: 0 16px 32px rgba(0,0,0,0.3); }
-        .team-avatar {
-            width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 20px;
-            background: linear-gradient(135deg, var(--accent-dim), rgba(56,189,248,0.15));
-            border: 2px solid rgba(14,165,233,0.2);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 28px; font-weight: 800; color: var(--accent);
-            box-shadow: 0 0 20px rgba(14,165,233,0.1);
+        .team-card:hover {
+            border-color: rgba(14,165,233,0.25);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.3);
         }
-        .team-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-        .team-card p { font-size: 13px; color: var(--text-secondary); }
+        .team-avatar {
+            width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 16px;
+            background: linear-gradient(135deg, rgba(14,165,233,0.1), rgba(139,92,246,0.1));
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; font-weight: 800; color: var(--accent-primary);
+        }
+        .team-avatar::before {
+            content: ''; position: absolute; inset: -2px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary));
+            z-index: -1; opacity: 0.3;
+        }
+        .team-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.2px; }
+        .team-card p { font-size: 12px; color: var(--text-secondary); }
+        .team-card .role {
+            display: inline-block; margin-top: 8px; padding: 3px 10px;
+            border-radius: 4px; font-size: 10px; font-weight: 600;
+            background: rgba(14,165,233,0.08); color: var(--accent-primary);
+            border: 1px solid rgba(14,165,233,0.12);
+        }
 
         /* ===== FOOTER ===== */
         .lp-footer {
-            padding: 60px 60px 30px; border-top: 1px solid var(--border);
-            background: rgba(11,15,26,0.5);
+            padding: 60px 60px 24px;
+            border-top: 1px solid var(--border-color);
+            background: rgba(11,15,26,0.6);
         }
         .footer-inner { max-width: 1200px; margin: 0 auto; }
-        .footer-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 48px; flex-wrap: wrap; gap: 40px; }
-        .footer-brand h3 { font-size: 24px; font-weight: 800; margin-bottom: 12px; }
-        .footer-brand p { font-size: 14px; color: var(--text-secondary); max-width: 320px; line-height: 1.6; }
-        .footer-links h4 { font-size: 14px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
-        .footer-links ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-        .footer-links a { font-size: 14px; color: var(--text-secondary); transition: color 0.2s; }
-        .footer-links a:hover { color: var(--accent); }
-        .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-secondary); }
-        .footer-social { display: flex; gap: 12px; }
-        .footer-social a { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: all 0.2s; }
-        .footer-social a:hover { background: var(--accent-dim); color: var(--accent); border-color: rgba(14,165,233,0.3); }
+        .footer-top {
+            display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px; margin-bottom: 40px;
+        }
+        .footer-brand h3 { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+        .footer-brand p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; max-width: 300px; }
+        .footer-links h4 {
+            font-size: 11px; font-weight: 700; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
+        }
+        .footer-links ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .footer-links a { font-size: 13px; color: var(--text-secondary); transition: color 0.2s; }
+        .footer-links a:hover { color: var(--accent-primary); }
+        .footer-bottom {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-top: 20px; border-top: 1px solid var(--border-color);
+            font-size: 12px; color: var(--text-secondary);
+        }
+        .footer-social { display: flex; gap: 8px; }
+        .footer-social a {
+            width: 36px; height: 36px; border-radius: 8px;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary); transition: all 0.2s; font-size: 14px;
+        }
+        .footer-social a:hover {
+            background: rgba(14,165,233,0.1); color: var(--accent-primary);
+            border-color: rgba(14,165,233,0.3);
+        }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 1024px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
             .features-grid { grid-template-columns: repeat(2, 1fr); }
             .team-grid { grid-template-columns: repeat(3, 1fr); }
-            .tech-grid { grid-template-columns: repeat(2, 1fr); }
+            .footer-top { grid-template-columns: 1fr 1fr; }
         }
         @media (max-width: 768px) {
-            .lp-nav { padding: 0 24px; }
+            .lp-nav { padding: 0 20px; }
             .lp-nav-links { display: none; }
-            .section { padding: 80px 24px; }
-            .hero { padding: 100px 24px 60px; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .section { padding: 60px 20px; }
+            .hero { padding: 120px 20px 60px; }
+            .hero h1 { letter-spacing: -1.5px; }
+            .kpi-grid { grid-template-columns: 1fr; }
             .features-grid { grid-template-columns: 1fr; }
             .team-grid { grid-template-columns: repeat(2, 1fr); }
-            .tech-grid { grid-template-columns: 1fr 1fr; }
-            .footer-top { flex-direction: column; }
+            .footer-top { grid-template-columns: 1fr; gap: 24px; }
+            .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+            .ticker-tape { display: none; }
+            .hero { padding-top: 100px; }
         }
     </style>
 </head>
 <body>
+
     <!-- NAVBAR -->
     <nav class="lp-nav" id="mainNav">
         <div class="lp-logo">
             <div class="lp-logo-icon"></div>
             <h2>EcoDash</h2>
+            <span class="version">v2.0</span>
         </div>
         <ul class="lp-nav-links">
+            <li><a href="#pulse">Pulse</a></li>
+            <li><a href="#dataflow">Data Flow</a></li>
             <li><a href="#features">Fitur</a></li>
-            <li><a href="#stats">Statistik</a></li>
             <li><a href="#team">Tim</a></li>
-            <li><a href="{% url 'landing' %}" class="nav-cta">Dashboard <i class="fas fa-arrow-right"></i></a></li>
+            <li><a href="{% url 'landing' %}" class="nav-cta"><i class="fas fa-terminal"></i> Dashboard</a></li>
         </ul>
     </nav>
 
+    <!-- TICKER TAPE -->
+    <div class="ticker-tape">
+        <div class="ticker-wrap">
+            <div class="ticker-content">
+                <span class="ticker-item"><span class="sym">IHK</span> <span class="val">105.23</span> <span class="up">▲0.12%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">USD/IDR</span> <span class="val">16,234</span> <span class="down">▼0.05%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">Brent</span> <span class="val">$78.45</span> <span class="up">▲1.2%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">Inflasi</span> <span class="val">0.18%</span> <span class="up">▲0.02</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">UMP Jakarta</span> <span class="val">Rp5.2jt</span> <span class="up">▲6.5%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">PDRB</span> <span class="val">+5.1%</span> <span class="up">▲0.3%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">TPT</span> <span class="val">5.3%</span> <span class="down">▼0.1%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">Emas</span> <span class="val">$2,345</span> <span class="up">▲0.8%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">CPO</span> <span class="val">RM4,120</span> <span class="down">▼0.3%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">Beras</span> <span class="val">Rp13,200</span> <span class="up">▲2.4%</span></span>
+                <span class="ticker-sep"></span>
+                <!-- Duplicate for seamless loop -->
+                <span class="ticker-item"><span class="sym">IHK</span> <span class="val">105.23</span> <span class="up">▲0.12%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">USD/IDR</span> <span class="val">16,234</span> <span class="down">▼0.05%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">Brent</span> <span class="val">$78.45</span> <span class="up">▲1.2%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">Inflasi</span> <span class="val">0.18%</span> <span class="up">▲0.02</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">UMP Jakarta</span> <span class="val">Rp5.2jt</span> <span class="up">▲6.5%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">PDRB</span> <span class="val">+5.1%</span> <span class="up">▲0.3%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">TPT</span> <span class="val">5.3%</span> <span class="down">▼0.1%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">Emas</span> <span class="val">$2,345</span> <span class="up">▲0.8%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">CPO</span> <span class="val">RM4,120</span> <span class="down">▼0.3%</span></span>
+                <span class="ticker-sep"></span>
+                <span class="ticker-item"><span class="sym">Beras</span> <span class="val">Rp13,200</span> <span class="up">▲2.4%</span></span>
+                <span class="ticker-sep"></span>
+            </div>
+        </div>
+    </div>
+
     <!-- HERO -->
     <section class="hero" id="hero">
-        <div class="hero-bg"></div>
+        <div class="hero-grid"></div>
+        <div class="hero-glow"></div>
         <canvas id="particles-canvas"></canvas>
         <div class="hero-content">
-            <div class="hero-badge" data-aos="fade-down" data-aos-delay="200">
-                <i class="fas fa-chart-line"></i>
-                Machine Learning &mdash; Universitas Airlangga
+            <div class="live-badge reveal-up">
+                <span class="live-dot"></span>
+                Live Data Feed — LSTM Model Active
             </div>
-            <h1 data-aos="fade-up" data-aos-delay="300">
-                Prediksi <span class="accent">Inflasi</span> &<br>Analisis <span class="accent">Daya Beli</span>
+            <h1 class="reveal-up">
+                Terminal Prediksi<br><span class="accent">Inflasi</span> & <span class="accent">Daya Beli</span>
             </h1>
-            <p data-aos="fade-up" data-aos-delay="400">
-                Sistem prediksi inflasi bulanan menggunakan LSTM dengan 44 fitur time-series, 
-                dan analisis dampaknya terhadap daya beli masyarakat di 38 provinsi Indonesia.
-            </p>
-            <div class="hero-buttons" data-aos="fade-up" data-aos-delay="500">
+            <div class="hero-typing reveal-up">
+                <span id="typing-text"></span><span class="typing-cursor"></span>
+            </div>
+            <div class="hero-buttons reveal-up">
                 <a href="{% url 'landing' %}" class="btn-hero primary">
-                    <i class="fas fa-rocket"></i> Buka Dashboard
+                    <i class="fas fa-terminal"></i> Buka Dashboard
                 </a>
                 <a href="#features" class="btn-hero secondary">
-                    <i class="fas fa-play"></i> Pelajari Lebih Lanjut
+                    <i class="fas fa-chart-line"></i> Jelajahi Fitur
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- ECONOMIC PULSE TICKER -->
-    <section class="pulse-section" data-aos="fade-up" data-aos-delay="100">
-        <div class="pulse-track">
-            <div class="pulse-item">
-                <i class="fas fa-fire-flame-curved"></i>
-                <span class="label">Inflasi Nasional:</span>
-                <span class="value">2.5%</span>
-                <span class="delta up">▲ 0.2%</span>
+    <!-- ECONOMIC PULSE KPI -->
+    <section class="section pulse-section" id="pulse">
+        <div class="section-inner">
+            <div class="section-header reveal-up">
+                <div class="tag"><i class="fas fa-heartbeat"></i> Economic Pulse</div>
+                <h2>Indikator Ekonomi Real-time</h2>
+                <p>Monitoring indikator makroekonomi Indonesia dengan data terkini dari sumber resmi.</p>
             </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-money-bill-wave"></i>
-                <span class="label">UMP Jakarta:</span>
-                <span class="value">Rp 5.2jt</span>
-                <span class="delta up">▲ 6.5%</span>
+            <div class="kpi-grid stagger-children">
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Inflasi Nasional</span>
+                        <span class="kpi-badge up">▲ 0.02%</span>
+                    </div>
+                    <div class="kpi-value"><span class="counter" data-target="2.51" data-suffix="%">0</span></div>
+                    <div class="kpi-sub">vs 2.49% bulan lalu</div>
+                    <div class="kpi-sparkline"><canvas id="spark-inflasi"></canvas></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">UMP Rata-rata</span>
+                        <span class="kpi-badge up">▲ 6.5%</span>
+                    </div>
+                    <div class="kpi-value">Rp <span class="counter" data-target="3.2" data-suffix="jt">0</span></div>
+                    <div class="kpi-sub">vs Rp 3.0jt tahun lalu</div>
+                    <div class="kpi-sparkline"><canvas id="spark-ump"></canvas></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Daya Beli</span>
+                        <span class="kpi-badge down">▼ 1.1%</span>
+                    </div>
+                    <div class="kpi-value">Rp <span class="counter" data-target="3.8" data-suffix="jt">0</span></div>
+                    <div class="kpi-sub">vs Rp 3.84jt tahun lalu</div>
+                    <div class="kpi-sparkline"><canvas id="spark-dayabeli"></canvas></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">PDRB Nasional</span>
+                        <span class="kpi-badge up">▲ 0.3%</span>
+                    </div>
+                    <div class="kpi-value"><span class="counter" data-target="5.11" data-suffix="%">0</span></div>
+                    <div class="kpi-sub">vs 4.81% Q3 lalu</div>
+                    <div class="kpi-sparkline"><canvas id="spark-pdrb"></canvas></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">TPT Nasional</span>
+                        <span class="kpi-badge down">▼ 0.1%</span>
+                    </div>
+                    <div class="kpi-value"><span class="counter" data-target="5.32" data-suffix="%">0</span></div>
+                    <div class="kpi-sub">vs 5.42% Q3 lalu</div>
+                    <div class="kpi-sparkline"><canvas id="spark-tpt"></canvas></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">IPM Nasional</span>
+                        <span class="kpi-badge up">▲ 0.4</span>
+                    </div>
+                    <div class="kpi-value"><span class="counter" data-target="74.3" data-suffix="">0</span></div>
+                    <div class="kpi-sub">vs 73.9 tahun lalu</div>
+                    <div class="kpi-sparkline"><canvas id="spark-ipm"></canvas></div>
+                </div>
             </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="label">Daya Beli Jatim:</span>
-                <span class="value">Rp 3.8jt</span>
-                <span class="delta down">▼ 1.1%</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-chart-area"></i>
-                <span class="label">PDRB Nasional:</span>
-                <span class="value">+5.1%</span>
-                <span class="delta up">▲ 0.3%</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-briefcase"></i>
-                <span class="label">TPT Nasional:</span>
-                <span class="value">5.3%</span>
-                <span class="delta down">▼ 0.1%</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-oil-can"></i>
-                <span class="label">Brent Oil:</span>
-                <span class="value">$82.40</span>
-                <span class="delta down">▼ 1.2%</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-gas-pump"></i>
-                <span class="label">BBM Subsidi:</span>
-                <span class="value">Rp 6.800</span>
-                <span class="delta">—</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-rice"></i>
-                <span class="label">Harga Beras:</span>
-                <span class="value">Rp 13.200/kg</span>
-                <span class="delta up">▲ 2.4%</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-globe-asia"></i>
-                <span class="label">Kurs USD/IDR:</span>
-                <span class="value">Rp 15.890</span>
-                <span class="delta down">▼ 0.5%</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <!-- Duplicate for seamless loop -->
-            <div class="pulse-item">
-                <i class="fas fa-fire-flame-curved"></i>
-                <span class="label">Inflasi Nasional:</span>
-                <span class="value">2.5%</span>
-                <span class="delta up">▲ 0.2%</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-money-bill-wave"></i>
-                <span class="label">UMP Jakarta:</span>
-                <span class="value">Rp 5.2jt</span>
-                <span class="delta up">▲ 6.5%</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="label">Daya Beli Jatim:</span>
-                <span class="value">Rp 3.8jt</span>
-                <span class="delta down">▼ 1.1%</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-chart-area"></i>
-                <span class="label">PDRB Nasional:</span>
-                <span class="value">+5.1%</span>
-                <span class="delta up">▲ 0.3%</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-briefcase"></i>
-                <span class="label">TPT Nasional:</span>
-                <span class="value">5.3%</span>
-                <span class="delta down">▼ 0.1%</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-oil-can"></i>
-                <span class="label">Brent Oil:</span>
-                <span class="value">$82.40</span>
-                <span class="delta down">▼ 1.2%</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-gas-pump"></i>
-                <span class="label">BBM Subsidi:</span>
-                <span class="value">Rp 6.800</span>
-                <span class="delta">—</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-rice"></i>
-                <span class="label">Harga Beras:</span>
-                <span class="value">Rp 13.200/kg</span>
-                <span class="delta up">▲ 2.4%</span>
-            </div>
-            <div class="pulse-sep"></div>
-            <div class="pulse-item">
-                <i class="fas fa-globe-asia"></i>
-                <span class="label">Kurs USD/IDR:</span>
-                <span class="value">Rp 15.890</span>
-                <span class="delta down">▼ 0.5%</span>
-            </div>
-            <div class="pulse-sep"></div>
         </div>
     </section>
 
-    <!-- KPI STATS -->
-    <section class="section stats-section" id="stats">
+    <div class="section-divider"></div>
+
+    <!-- DATA FLOW VISUALIZATION -->
+    <section class="section dataflow-section" id="dataflow">
         <div class="section-inner">
-            <div class="section-header" data-aos="fade-up">
-                <div class="tag">Performa Model</div>
-                <h2>Angka yang Berbicara</h2>
-                <p>Dua model machine learning yang telah dilatih dan dievaluasi dengan data historis Indonesia.</p>
+            <div class="section-header reveal-up">
+                <div class="tag"><i class="fas fa-project-diagram"></i> Architecture</div>
+                <h2>Data Flow Pipeline</h2>
+                <p>Aliran data dari sumber hingga prediksi yang dihasilkan oleh model LSTM.</p>
             </div>
-            <div class="stats-grid">
-                <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
-                    <div class="stat-icon accent"><i class="fas fa-bullseye"></i></div>
-                    <div class="stat-number"><span class="counter" data-target="0.18">0</span>%</div>
-                    <div class="stat-label">MAE Forecasting LSTM</div>
-                </div>
-                <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="stat-icon blue"><i class="fas fa-chart-bar"></i></div>
-                    <div class="stat-number"><span class="counter" data-target="0.91">0</span></div>
-                    <div class="stat-label">Test R&sup2; Ridge Regression</div>
-                </div>
-                <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
-                    <div class="stat-icon purple"><i class="fas fa-map-marked-alt"></i></div>
-                    <div class="stat-number"><span class="counter" data-target="38">0</span></div>
-                    <div class="stat-label">Provinsi Indonesia</div>
-                </div>
-                <div class="stat-card" data-aos="fade-up" data-aos-delay="400">
-                    <div class="stat-icon orange"><i class="fas fa-database"></i></div>
-                    <div class="stat-number"><span class="counter" data-target="23">0</span>+</div>
-                    <div class="stat-label">Dataset Terintegrasi</div>
-                </div>
+            <div class="dataflow-container reveal-scale">
+                <svg class="dataflow-svg" viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Grid background -->
+                    <defs>
+                        <pattern id="svgGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(14,165,233,0.04)" stroke-width="0.5"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#svgGrid)"/>
+
+                    <!-- Flow Lines: Sources → LSTM -->
+                    <line class="flow-line" x1="150" y1="80" x2="460" y2="180" style="animation-delay: 0s"/>
+                    <line class="flow-line" x1="150" y1="180" x2="460" y2="180" style="animation-delay: 0.3s"/>
+                    <line class="flow-line" x1="150" y1="280" x2="460" y2="180" style="animation-delay: 0.6s"/>
+                    <line class="flow-line" x1="280" y1="340" x2="460" y2="220" style="animation-delay: 0.9s"/>
+
+                    <!-- Flow Lines: LSTM → Outputs -->
+                    <line class="flow-line" x1="560" y1="170" x2="740" y2="120" style="animation-delay: 0.4s"/>
+                    <line class="flow-line" x1="560" y1="200" x2="740" y2="200" style="animation-delay: 0.7s"/>
+                    <line class="flow-line" x1="560" y1="230" x2="740" y2="280" style="animation-delay: 1.0s"/>
+
+                    <!-- Animated pulses on lines -->
+                    <circle class="flow-pulse" cx="300" cy="130" r="3"><animate attributeName="cx" values="150;460" dur="2s" repeatCount="indefinite"/><animate attributeName="cy" values="80;180" dur="2s" repeatCount="indefinite"/></circle>
+                    <circle class="flow-pulse" cx="300" cy="180" r="3"><animate attributeName="cx" values="150;460" dur="2.5s" repeatCount="indefinite"/></circle>
+                    <circle class="flow-pulse" cx="300" cy="230" r="3"><animate attributeName="cx" values="150;460" dur="3s" repeatCount="indefinite"/><animate attributeName="cy" values="280;180" dur="3s" repeatCount="indefinite"/></circle>
+
+                    <!-- Source Nodes -->
+                    <g class="flow-source">
+                        <rect class="flow-node" x="40" y="50" width="120" height="50" rx="8"/>
+                        <text class="flow-icon-text" x="70" y="68">📊</text>
+                        <text class="flow-node-text" x="120" y="82">BPS</text>
+                    </g>
+                    <g class="flow-source">
+                        <rect class="flow-node" x="40" y="150" width="120" height="50" rx="8"/>
+                        <text class="flow-icon-text" x="70" y="168">🏦</text>
+                        <text class="flow-node-text" x="120" y="182">Bank Indonesia</text>
+                    </g>
+                    <g class="flow-source">
+                        <rect class="flow-node" x="40" y="250" width="120" height="50" rx="8"/>
+                        <text class="flow-icon-text" x="70" y="268">🌍</text>
+                        <text class="flow-node-text" x="120" y="282">World Bank</text>
+                    </g>
+                    <g class="flow-source">
+                        <rect class="flow-node" x="180" y="310" width="110" height="50" rx="8"/>
+                        <text class="flow-icon-text" x="210" y="328">🛢️</text>
+                        <text class="flow-node-text" x="255" y="342">FAO & FRED</text>
+                    </g>
+
+                    <!-- LSTM Model Node (Center) -->
+                    <rect class="flow-node" x="440" y="140" width="140" height="80" rx="10" style="stroke: rgba(14,165,233,0.4); stroke-width: 2;"/>
+                    <text x="510" y="172" text-anchor="middle" fill="var(--accent-primary)" font-family="Inter" font-weight="800" font-size="14">LSTM MODEL</text>
+                    <text x="510" y="192" text-anchor="middle" fill="var(--text-secondary)" font-family="Inter" font-weight="500" font-size="10">44 Features · 2 Layers</text>
+                    <text x="510" y="206" text-anchor="middle" fill="var(--text-secondary)" font-family="Inter" font-weight="500" font-size="10">MAE: 0.18%</text>
+
+                    <!-- Output Nodes -->
+                    <g class="flow-output">
+                        <rect class="flow-node" x="720" y="90" width="140" height="50" rx="8"/>
+                        <text class="flow-icon-text" x="750" y="108">📈</text>
+                        <text class="flow-node-text" x="810" y="122">Forecasting</text>
+                    </g>
+                    <g class="flow-output">
+                        <rect class="flow-node" x="720" y="170" width="140" height="50" rx="8"/>
+                        <text class="flow-icon-text" x="750" y="188">💰</text>
+                        <text class="flow-node-text" x="810" y="202">Daya Beli</text>
+                    </g>
+                    <g class="flow-output">
+                        <rect class="flow-node" x="720" y="250" width="140" height="50" rx="8"/>
+                        <text class="flow-icon-text" x="750" y="268">🗺️</text>
+                        <text class="flow-node-text" x="810" y="282">38 Provinsi</text>
+                    </g>
+
+                    <!-- Labels -->
+                    <text x="300" y="30" text-anchor="middle" fill="var(--text-secondary)" font-family="Inter" font-weight="600" font-size="11" letter-spacing="1">DATA SOURCES</text>
+                    <text x="510" y="125" text-anchor="middle" fill="var(--text-secondary)" font-family="Inter" font-weight="600" font-size="11" letter-spacing="1">MODEL</text>
+                    <text x="800" y="70" text-anchor="middle" fill="var(--text-secondary)" font-family="Inter" font-weight="600" font-size="11" letter-spacing="1">OUTPUT</text>
+                </svg>
             </div>
         </div>
     </section>
+
+    <div class="section-divider"></div>
 
     <!-- FEATURES -->
     <section class="section" id="features">
         <div class="section-inner">
-            <div class="section-header" data-aos="fade-up">
-                <div class="tag">Fitur Unggulan</div>
-                <h2>Apa yang Bisa Dilakukan?</h2>
-                <p>Sistem ini dirancang untuk membantu analisis kebijakan ekonomi berbasis data.</p>
+            <div class="section-header reveal-up">
+                <div class="tag"><i class="fas fa-cube"></i> Capabilities</div>
+                <h2>Fitur Terminal</h2>
+                <p>Sistem analisis ekonomi berbasis data untuk pengambilan kebijakan.</p>
             </div>
-            <div class="features-grid">
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="features-grid stagger-children">
+                <div class="feature-card">
                     <div class="feature-icon f1"><i class="fas fa-brain"></i></div>
                     <h3>Forecasting Inflasi</h3>
-                    <p>Prediksi inflasi bulanan 1-2 bulan ke depan menggunakan LSTM dengan 44 fitur time-series dari data domestik, internasional, dan 26 komoditas global.</p>
+                    <p>Prediksi inflasi bulanan 1-2 bulan ke depan menggunakan LSTM dengan 44 fitur time-series dari data domestik & internasional.</p>
                     <a href="{% url 'forecasting' %}" class="feature-link">Lihat Prediksi <i class="fas fa-arrow-right"></i></a>
                 </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card">
                     <div class="feature-icon f2"><i class="fas fa-sliders-h"></i></div>
                     <h3>Simulasi Daya Beli</h3>
-                    <p>Simulasi interaktif dampak perubahan inflasi, UMP, TPT, dan PDRB terhadap daya beli per kapita di setiap provinsi Indonesia.</p>
+                    <p>Simulasi interaktif dampak perubahan inflasi, UMP, TPT, dan PDRB terhadap daya beli per kapita di 38 provinsi.</p>
                     <a href="{% url 'daya_beli' %}" class="feature-link">Mulai Simulasi <i class="fas fa-arrow-right"></i></a>
                 </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-card">
                     <div class="feature-icon f3"><i class="fas fa-map-compare"></i></div>
                     <h3>Bandingkan Provinsi</h3>
-                    <p>Perbandingan metrik ekonomi antar provinsi: UMP, daya beli, PDRB, TPT, IPM, Gini Ratio, dan lainnya secara visual.</p>
+                    <p>Perbandingan metrik ekonomi antar provinsi: UMP, daya beli, PDRB, TPT, IPM, Gini Ratio secara visual.</p>
                     <a href="{% url 'compare' %}" class="feature-link">Bandingkan <i class="fas fa-arrow-right"></i></a>
                 </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-card">
                     <div class="feature-icon f4"><i class="fas fa-chart-pie"></i></div>
                     <h3>Dataset Explorer</h3>
-                    <p>Jelajahi 23 dataset dari BPS, Bank Indonesia, World Bank, dan sumber lainnya. Lihat preview chart dan download data.</p>
+                    <p>Jelajahi 23 dataset dari BPS, Bank Indonesia, World Bank, dan sumber lainnya. Preview chart & download.</p>
                     <a href="{% url 'datasets' %}" class="feature-link">Eksplor Data <i class="fas fa-arrow-right"></i></a>
                 </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="500">
+                <div class="feature-card">
                     <div class="feature-icon f5"><i class="fas fa-lightbulb"></i></div>
                     <h3>What-If Scenarios</h3>
-                    <p>Simulasi skenario kebijakan: "Bagaimana jika UMP naik 10%?", "Resesi ekonomi?", "Inflasi +5%?".</p>
+                    <p>Simulasi skenario kebijakan: "Bagaimana jika UMP naik 10%?", "Resesi?", "Inflasi +5%?".</p>
                     <a href="{% url 'scenarios' %}" class="feature-link">Coba Skenario <i class="fas fa-arrow-right"></i></a>
                 </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="600">
+                <div class="feature-card">
                     <div class="feature-icon f6"><i class="fas fa-chart-area"></i></div>
                     <h3>Visualisasi Interaktif</h3>
-                    <p>Chart interaktif yang bisa di-hover, di-zoom, dan di-filter. Mendukung eksplorasi data secara mendalam.</p>
+                    <p>Chart interaktif yang bisa di-hover, di-zoom, dan di-filter. Eksplorasi data secara mendalam.</p>
                     <a href="{% url 'landing' %}" class="feature-link">Lihat Dashboard <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
         </div>
     </section>
 
+    <div class="section-divider"></div>
+
     <!-- TECH STACK -->
-    <section class="section" style="background: linear-gradient(180deg, transparent, rgba(14,165,233,0.02), transparent);">
+    <section class="section" style="padding: 60px 0;">
         <div class="section-inner">
-            <div class="section-header" data-aos="fade-up">
-                <div class="tag">Teknologi</div>
+            <div class="section-header reveal-up">
+                <div class="tag"><i class="fas fa-microchip"></i> Infrastructure</div>
                 <h2>Tech Stack</h2>
                 <p>Dibangun dengan teknologi modern untuk performa dan skalabilitas.</p>
             </div>
-            <div class="tech-grid">
-                <div class="tech-item" data-aos="fade-up" data-aos-delay="100">
-                    <i class="fab fa-python"></i>
-                    <h4>Python</h4>
-                    <p>Backend & ML</p>
-                </div>
-                <div class="tech-item" data-aos="fade-up" data-aos-delay="200">
-                    <i class="fas fa-fire"></i>
-                    <h4>PyTorch</h4>
-                    <p>LSTM Model</p>
-                </div>
-                <div class="tech-item" data-aos="fade-up" data-aos-delay="300">
-                    <i class="fas fa-cogs"></i>
-                    <h4>Scikit-learn</h4>
-                    <p>Ridge & XGBoost</p>
-                </div>
-                <div class="tech-item" data-aos="fade-up" data-aos-delay="400">
-                    <i class="fas fa-chart-line"></i>
-                    <h4>Chart.js</h4>
-                    <p>Visualisasi</p>
-                </div>
-                <div class="tech-item" data-aos="fade-up" data-aos-delay="500">
-                    <i class="fab fa-react"></i>
-                    <h4>Django</h4>
-                    <p>Web Framework</p>
-                </div>
-                <div class="tech-item" data-aos="fade-up" data-aos-delay="600">
-                    <i class="fas fa-database"></i>
-                    <h4>Pandas</h4>
-                    <p>Data Pipeline</p>
-                </div>
-                <div class="tech-item" data-aos="fade-up" data-aos-delay="700">
-                    <i class="fas fa-globe"></i>
-                    <h4>World Bank API</h4>
-                    <p>Auto Data Source</p>
-                </div>
-                <div class="tech-item" data-aos="fade-up" data-aos-delay="800">
-                    <i class="fas fa-layer-group"></i>
-                    <h4>PanelOLS</h4>
-                    <p>Econometrics</p>
-                </div>
+        </div>
+        <div class="tech-scroll-wrap">
+            <div class="tech-track">
+                <div class="tech-badge"><i class="fab fa-python"></i><span>Python</span><small>Backend</small></div>
+                <div class="tech-badge"><i class="fas fa-fire"></i><span>PyTorch</span><small>LSTM</small></div>
+                <div class="tech-badge"><i class="fas fa-cogs"></i><span>Scikit-learn</span><small>ML</small></div>
+                <div class="tech-badge"><i class="fas fa-chart-line"></i><span>Chart.js</span><small>Viz</small></div>
+                <div class="tech-badge"><i class="fas fa-code"></i><span>Django</span><small>Framework</small></div>
+                <div class="tech-badge"><i class="fas fa-database"></i><span>Pandas</span><small>Data</small></div>
+                <div class="tech-badge"><i class="fas fa-globe"></i><span>World Bank API</span><small>Source</small></div>
+                <div class="tech-badge"><i class="fas fa-layer-group"></i><span>PanelOLS</span><small>Econometrics</small></div>
+                <div class="tech-badge"><i class="fas fa-bolt"></i><span>XGBoost</span><small>Boosting</small></div>
+                <div class="tech-badge"><i class="fas fa-server"></i><span>PostgreSQL</span><small>Database</small></div>
+                <!-- Duplicate for seamless -->
+                <div class="tech-badge"><i class="fab fa-python"></i><span>Python</span><small>Backend</small></div>
+                <div class="tech-badge"><i class="fas fa-fire"></i><span>PyTorch</span><small>LSTM</small></div>
+                <div class="tech-badge"><i class="fas fa-cogs"></i><span>Scikit-learn</span><small>ML</small></div>
+                <div class="tech-badge"><i class="fas fa-chart-line"></i><span>Chart.js</span><small>Viz</small></div>
+                <div class="tech-badge"><i class="fas fa-code"></i><span>Django</span><small>Framework</small></div>
+                <div class="tech-badge"><i class="fas fa-database"></i><span>Pandas</span><small>Data</small></div>
+                <div class="tech-badge"><i class="fas fa-globe"></i><span>World Bank API</span><small>Source</small></div>
+                <div class="tech-badge"><i class="fas fa-layer-group"></i><span>PanelOLS</span><small>Econometrics</small></div>
+                <div class="tech-badge"><i class="fas fa-bolt"></i><span>XGBoost</span><small>Boosting</small></div>
+                <div class="tech-badge"><i class="fas fa-server"></i><span>PostgreSQL</span><small>Database</small></div>
             </div>
         </div>
     </section>
 
+    <div class="section-divider"></div>
+
     <!-- TEAM -->
     <section class="section" id="team">
         <div class="section-inner">
-            <div class="section-header" data-aos="fade-up">
-                <div class="tag">Tim Pengembang</div>
+            <div class="section-header reveal-up">
+                <div class="tag"><i class="fas fa-users"></i> Team</div>
                 <h2>Kelompok E</h2>
-                <p>Machine Learning SD-A1 &mdash; Universitas Airlangga</p>
+                <p>Machine Learning SD-A1 — Universitas Airlangga</p>
             </div>
-            <div class="team-grid">
-                <div class="team-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="team-grid stagger-children">
+                <div class="team-card">
                     <div class="team-avatar">MR</div>
                     <h4>Muhammad Rajif Al Farikhi</h4>
                     <p>162112133008</p>
+                    <span class="role">Lead Engineer</span>
                 </div>
-                <div class="team-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="team-card">
                     <div class="team-avatar">SA</div>
                     <h4>Sahrul Adicandra Effendy</h4>
                     <p>164231013</p>
+                    <span class="role">Data Scientist</span>
                 </div>
-                <div class="team-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="team-card">
                     <div class="team-avatar">SD</div>
                     <h4>Semaya David Petroes Putra</h4>
                     <p>164231048</p>
+                    <span class="role">ML Engineer</span>
                 </div>
-                <div class="team-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="team-card">
                     <div class="team-avatar">AF</div>
                     <h4>Adrina Firda Marwah</h4>
                     <p>164231087</p>
+                    <span class="role">Analyst</span>
                 </div>
-                <div class="team-card" data-aos="fade-up" data-aos-delay="500">
+                <div class="team-card">
                     <div class="team-avatar">OA</div>
                     <h4>Okan Athallah Maredith</h4>
                     <p>164231088</p>
+                    <span class="role">Researcher</span>
                 </div>
             </div>
         </div>
@@ -589,7 +834,7 @@
         <div class="footer-inner">
             <div class="footer-top">
                 <div class="footer-brand">
-                    <h3>EcoDash</h3>
+                    <h3><i class="fas fa-terminal" style="color: var(--accent-primary); margin-right: 6px;"></i>EcoDash</h3>
                     <p>Sistem prediksi inflasi dan analisis dampaknya terhadap daya beli masyarakat Indonesia. Proyek Machine Learning Universitas Airlangga.</p>
                 </div>
                 <div class="footer-links">
@@ -616,57 +861,145 @@
                     <h4>Teknologi</h4>
                     <ul>
                         <li><a href="#">Python &amp; Django</a></li>
-                        <li><a href="#">PyTorch &amp; Scikit-learn</a></li>
+                        <li><a href="#">PyTorch &amp; LSTM</a></li>
                         <li><a href="#">Chart.js</a></li>
                         <li><a href="#">World Bank API</a></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <span>&copy; 2026 Kelompok E &mdash; Machine Learning SD-A1, Universitas Airlangga</span>
+                <span>&copy; 2026 Kelompok E — Machine Learning SD-A1, Universitas Airlangga</span>
                 <div class="footer-social">
                     <a href="#"><i class="fab fa-github"></i></a>
                     <a href="#"><i class="fas fa-globe"></i></a>
+                    <a href="#"><i class="fas fa-envelope"></i></a>
                 </div>
             </div>
         </div>
     </footer>
 
     <!-- SCRIPTS -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        // AOS Init
-        AOS.init({ duration: 800, easing: 'ease-out-cubic', once: true, offset: 80 });
+        // ===== INTERSECTION OBSERVER FOR SCROLL REVEALS =====
+        document.addEventListener('DOMContentLoaded', () => {
+            const revealEls = document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right, .reveal-scale, .stagger-children');
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                        revealObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+            revealEls.forEach(el => revealObserver.observe(el));
 
-        // Navbar scroll effect
-        window.addEventListener('scroll', () => {
-            document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 50);
-        });
+            // ===== NAVBAR SCROLL =====
+            window.addEventListener('scroll', () => {
+                document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 50);
+            });
 
-        // Counter animation
-        const counters = document.querySelectorAll('.counter');
-        const animateCounter = (el) => {
-            const target = parseFloat(el.dataset.target);
-            const isDecimal = target < 1;
-            const duration = 2000;
-            const start = performance.now();
-            const step = (now) => {
-                const elapsed = now - start;
-                const progress = Math.min(elapsed / duration, 1);
-                const eased = 1 - Math.pow(1 - progress, 3);
-                const current = eased * target;
-                el.textContent = isDecimal ? current.toFixed(2) : Math.round(current);
-                if (progress < 1) requestAnimationFrame(step);
+            // ===== TYPING EFFECT =====
+            const phrases = [
+                'Prediksi inflasi bulanan dengan LSTM.',
+                'Analisis daya beli 38 provinsi.',
+                '44 fitur time-series terintegrasi.',
+                'Skenario kebijakan What-If.',
+                'Data dari BPS, BI, World Bank.'
+            ];
+            let phraseIdx = 0, charIdx = 0, isDeleting = false;
+            const typingEl = document.getElementById('typing-text');
+
+            function typeLoop() {
+                const current = phrases[phraseIdx];
+                if (isDeleting) {
+                    charIdx--;
+                    typingEl.textContent = current.substring(0, charIdx);
+                    if (charIdx === 0) {
+                        isDeleting = false;
+                        phraseIdx = (phraseIdx + 1) % phrases.length;
+                        setTimeout(typeLoop, 400);
+                        return;
+                    }
+                    setTimeout(typeLoop, 30);
+                } else {
+                    charIdx++;
+                    typingEl.textContent = current.substring(0, charIdx);
+                    if (charIdx === current.length) {
+                        isDeleting = true;
+                        setTimeout(typeLoop, 2000);
+                        return;
+                    }
+                    setTimeout(typeLoop, 60);
+                }
+            }
+            typeLoop();
+
+            // ===== COUNTER ANIMATION =====
+            const counters = document.querySelectorAll('.counter');
+            const animateCounter = (el) => {
+                const target = parseFloat(el.dataset.target);
+                const suffix = el.dataset.suffix || '';
+                const isDecimal = target < 10 && target % 1 !== 0;
+                const duration = 2000;
+                const start = performance.now();
+                const step = (now) => {
+                    const elapsed = now - start;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    const current = eased * target;
+                    el.textContent = (isDecimal ? current.toFixed(2) : Math.round(current)) + suffix;
+                    if (progress < 1) requestAnimationFrame(step);
+                };
+                requestAnimationFrame(step);
             };
-            requestAnimationFrame(step);
-        };
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(e => { if (e.isIntersecting) { animateCounter(e.target); observer.unobserve(e.target); } });
-        }, { threshold: 0.5 });
-        counters.forEach(c => observer.observe(c));
+            const counterObserver = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        animateCounter(e.target);
+                        counterObserver.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+            counters.forEach(c => counterObserver.observe(c));
 
-        // Particle Canvas with new palette
-        (function() {
+            // ===== SPARKLINE CHARTS =====
+            const sparkData = {
+                'spark-inflasi': [2.1, 2.3, 2.2, 2.4, 2.5, 2.3, 2.4, 2.5, 2.6, 2.5, 2.4, 2.51],
+                'spark-ump': [2.4, 2.5, 2.6, 2.7, 2.8, 2.8, 2.9, 3.0, 3.0, 3.1, 3.1, 3.2],
+                'spark-dayabeli': [4.1, 4.0, 3.9, 3.95, 3.85, 3.9, 3.88, 3.82, 3.85, 3.8, 3.82, 3.8],
+                'spark-pdrb': [4.5, 4.7, 4.8, 4.9, 5.0, 5.1, 4.9, 5.0, 5.1, 5.0, 5.1, 5.11],
+                'spark-tpt': [5.8, 5.7, 5.6, 5.5, 5.5, 5.4, 5.5, 5.4, 5.3, 5.4, 5.3, 5.32],
+                'spark-ipm': [72.0, 72.3, 72.5, 72.8, 73.0, 73.2, 73.5, 73.7, 73.9, 74.0, 74.1, 74.3]
+            };
+            Object.entries(sparkData).forEach(([id, data]) => {
+                const canvas = document.getElementById(id);
+                if (!canvas) return;
+                new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: data.map((_, i) => i),
+                        datasets: [{
+                            data: data,
+                            borderColor: data[data.length-1] >= data[0] ? '#0EA5E9' : '#EF4444',
+                            borderWidth: 1.5,
+                            pointRadius: 0,
+                            tension: 0.4,
+                            fill: true,
+                            backgroundColor: data[data.length-1] >= data[0]
+                                ? 'rgba(14,165,233,0.05)'
+                                : 'rgba(239,68,68,0.05)'
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { display: false }, y: { display: false } },
+                        elements: { line: { capBezierPoints: true } }
+                    }
+                });
+            });
+
+            // ===== PARTICLE CANVAS =====
             const canvas = document.getElementById('particles-canvas');
             const ctx = canvas.getContext('2d');
             let w, h, particles = [];
@@ -677,32 +1010,37 @@
             class Particle {
                 constructor() { this.reset(); }
                 reset() {
-                    this.x = Math.random() * w; this.y = Math.random() * h;
-                    this.vx = (Math.random() - 0.5) * 0.4; this.vy = (Math.random() - 0.5) * 0.4;
-                    this.r = Math.random() * 2 + 0.5; this.alpha = Math.random() * 0.4 + 0.1;
+                    this.x = Math.random() * w;
+                    this.y = Math.random() * h;
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = (Math.random() - 0.5) * 0.3;
+                    this.r = Math.random() * 1.5 + 0.5;
+                    this.alpha = Math.random() * 0.3 + 0.05;
+                    this.color = Math.random() > 0.7 ? '16,185,129' : '14,165,233';
                 }
                 update() {
                     this.x += this.vx; this.y += this.vy;
                     if (this.x < 0 || this.x > w || this.y < 0 || this.y > h) this.reset();
                 }
                 draw() {
-                    ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(14, 165, 233, ${this.alpha})`; ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${this.color}, ${this.alpha})`;
+                    ctx.fill();
                 }
             }
-            for (let i = 0; i < 60; i++) particles.push(new Particle());
+            for (let i = 0; i < 50; i++) particles.push(new Particle());
             const animate = () => {
                 ctx.clearRect(0, 0, w, h);
                 particles.forEach(p => { p.update(); p.draw(); });
-                // Lines
                 for (let i = 0; i < particles.length; i++) {
                     for (let j = i + 1; j < particles.length; j++) {
                         const dx = particles[i].x - particles[j].x;
                         const dy = particles[i].y - particles[j].y;
                         const dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < 150) {
+                        if (dist < 120) {
                             ctx.beginPath();
-                            ctx.strokeStyle = `rgba(14, 165, 233, ${0.05 * (1 - dist / 150)})`;
+                            ctx.strokeStyle = `rgba(14, 165, 233, ${0.04 * (1 - dist / 120)})`;
                             ctx.lineWidth = 0.5;
                             ctx.moveTo(particles[i].x, particles[i].y);
                             ctx.lineTo(particles[j].x, particles[j].y);
@@ -713,7 +1051,7 @@
                 requestAnimationFrame(animate);
             };
             animate();
-        })();
+        });
     </script>
 </body>
 </html>
