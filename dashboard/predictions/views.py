@@ -583,25 +583,46 @@ def api_all_metrics_latest(request):
 
 
 def api_usd_idr_latest(request):
-    """Return latest USD/IDR exchange rate with daily + monthly data."""
+    """Return the latest USD/IDR rate and its previous daily observation."""
     import urllib.request
     import json as json_lib
-    from datetime import datetime
+    from datetime import date, timedelta
     
     project_root = os.path.dirname(settings.BASE_DIR)
     path = os.path.join(project_root, 'datasets', 'processed', 'clean_inflasi_ts.csv')
     
-    # 1. Try to fetch daily rate from external API
+    # Frankfurter returns one consistent daily series and skips non-trading days.
     daily_rate = None
     daily_date = None
+    previous_rate = None
+    previous_date = None
+    daily_history = []
     try:
-        url = "https://open.er-api.com/v6/latest/USD"
+        end_date = date.today()
+        start_date = end_date - timedelta(days=14)
+        url = (
+            "https://api.frankfurter.dev/v1/"
+            f"{start_date.isoformat()}..{end_date.isoformat()}"
+            "?base=USD&symbols=IDR"
+        )
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req, timeout=5) as resp:
             data = json_lib.loads(resp.read().decode())
-            if data.get('result') == 'success' and 'IDR' in data.get('rates', {}):
-                daily_rate = round(data['rates']['IDR'], 2)
-                daily_date = data.get('time_last_update_utc', datetime.now().strftime('%Y-%m-%d'))
+            observations = sorted(
+                (
+                    observation_date,
+                    rates.get('IDR'),
+                )
+                for observation_date, rates in data.get('rates', {}).items()
+                if rates.get('IDR') is not None
+            )
+            if observations:
+                daily_date, daily_rate = observations[-1]
+                daily_rate = round(float(daily_rate), 2)
+                daily_history = [round(float(rate), 2) for _, rate in observations[-10:]]
+            if len(observations) >= 2:
+                previous_date, previous_rate = observations[-2]
+                previous_rate = round(float(previous_rate), 2)
     except Exception:
         pass
     
@@ -621,27 +642,29 @@ def api_usd_idr_latest(request):
     except Exception:
         pass
     
-    # 3. Prepare response
-    # Use daily rate if available, otherwise fallback to monthly
+    # Use daily data when available, otherwise retain the existing monthly fallback.
     latest = daily_rate if daily_rate else (monthly_rate if monthly_rate else 18050)
-    date_str = daily_date if daily_date else (monthly_date if monthly_date else 'N/A')
-    
-    # Calculate change from monthly data
     change_pct = 0
-    if monthly_history and len(monthly_history) >= 2:
+    if daily_rate is not None and previous_rate:
+        change_pct = ((daily_rate - previous_rate) / previous_rate) * 100
+    elif monthly_history and len(monthly_history) >= 2:
         prev = monthly_history[-2]
         if prev > 0:
             change_pct = ((monthly_history[-1] - prev) / prev) * 100
+
+    history = daily_history if daily_history else monthly_history
     
     return JsonResponse({
         'latest': latest,
         'daily_rate': daily_rate,
         'daily_date': daily_date,
+        'previous_rate': previous_rate,
+        'previous_date': previous_date,
         'monthly_rate': monthly_rate,
         'monthly_date': monthly_date,
         'change_pct': round(change_pct, 2),
-        'history': monthly_history,
-        'source': 'open.er-api.com' if daily_rate else 'BPS (monthly avg)',
+        'history': history,
+        'source': 'Frankfurter (central bank reference rates)' if daily_rate else 'BPS (monthly avg)',
         'data_type': 'daily' if daily_rate else 'monthly_avg'
     })
 

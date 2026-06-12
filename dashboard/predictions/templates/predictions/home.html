@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-dark: #FFFFFF;
@@ -264,7 +265,7 @@
     <div class="ticker-wrap" style="margin-top: 56px;">
         <div class="ticker-content">
             <span>IHK <strong>105.23</strong> <span class="up">▲ 0.12%</span></span>
-            <span>USD/IDR <strong>18,037</strong> <span class="down">▼ 0.05%</span></span>
+            <span>USD/IDR <strong class="ticker-usd-value">Memuat...</strong> <span class="ticker-usd-change">—</span></span>
             <span>Brent Oil <strong>$78.45</strong> <span class="up">▲ 1.20%</span></span>
             <span>Inflation MoM <strong>0.28%</strong> <span class="up">▲ 0.03%</span></span>
             <span>UMP Jakarta <strong>Rp 5.39jt</strong></span>
@@ -274,7 +275,7 @@
             <span>BI Rate <strong>5.75%</strong></span>
             <span>GDP/PPP <strong>$14,254</strong> <span class="up">▲ 3.20%</span></span>
             <span>IHK <strong>105.23</strong> <span class="up">▲ 0.12%</span></span>
-            <span>USD/IDR <strong>18,037</strong> <span class="down">▼ 0.05%</span></span>
+            <span>USD/IDR <strong class="ticker-usd-value">Memuat...</strong> <span class="ticker-usd-change">—</span></span>
             <span>Brent Oil <strong>$78.45</strong> <span class="up">▲ 1.20%</span></span>
             <span>Inflation MoM <strong>0.28%</strong> <span class="up">▲ 0.03%</span></span>
             <span>UMP Jakarta <strong>Rp 5.39jt</strong></span>
@@ -334,8 +335,9 @@
                     </div>
                 <div class="stat-card">
                     <div class="stat-label">USD/IDR Kurs</div>
-                    <div class="stat-value">18.037</div>
-                    <div class="stat-change up"><i class="fas fa-arrow-up"></i> Live dari API</div>
+                    <div class="stat-value" id="home-usd-value">Memuat...</div>
+                    <div class="stat-change" id="home-usd-change"><i class="fas fa-sync-alt"></i> Kurs harian terbaru</div>
+                    <div id="home-usd-date" style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;"></div>
                     <div class="stat-spark"><canvas id="spark-usd"></canvas></div>
                 </div>
                 <div class="stat-card">
@@ -617,12 +619,59 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
             });
         }
-        drawSpark('spark-inflasi', [0.20, 0.22, 0.25, 0.23, 0.28, 0.30, 0.28, 0.21], '#2962FF');
         drawSpark('spark-r2', [85, 87, 88, 90, 89, 91, 90.8], '#26A69A');
         drawSpark('spark-prov', [30, 32, 34, 35, 36, 37, 38, 38], '#AB47BC');
 
         drawSpark('spark-inflasi', [0.20, 0.22, 0.25, 0.23, 0.28, 0.30, 0.28, 0.55], '#2962FF');
-        drawSpark('spark-usd', [16235, 16455, 16490, 16665, 16630, 17110, 17547, 18037], '#EF5350');
+
+        function formatUsdDate(dateString) {
+            if (!dateString) return 'Tanggal tidak tersedia';
+            const date = new Date(dateString + 'T00:00:00');
+            return date.toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+
+        fetch('/api/usd-idr/')
+            .then(response => {
+                if (!response.ok) throw new Error('Gagal memuat kurs');
+                return response.json();
+            })
+            .then(data => {
+                const rate = Number(data.latest);
+                const change = Number(data.change_pct || 0);
+                const direction = change > 0 ? 'up' : change < 0 ? 'down' : '';
+                const icon = change > 0 ? 'arrow-up' : change < 0 ? 'arrow-down' : 'minus';
+                const sign = change > 0 ? '+' : '';
+                const formattedRate = Math.round(rate).toLocaleString('id-ID');
+                const comparisonDate = data.previous_date
+                    ? 'dibanding ' + formatUsdDate(data.previous_date)
+                    : 'perubahan sebelumnya belum tersedia';
+
+                document.getElementById('home-usd-value').textContent = 'Rp ' + formattedRate;
+                const changeElement = document.getElementById('home-usd-change');
+                changeElement.innerHTML = '<i class="fas fa-' + icon + '"></i> ' + sign + change.toFixed(2) + '% ' + comparisonDate;
+                changeElement.className = 'stat-change ' + direction;
+                document.getElementById('home-usd-date').textContent =
+                    'Kurs per ' + formatUsdDate(data.daily_date || data.monthly_date) + ' · ' + data.source;
+
+                document.querySelectorAll('.ticker-usd-value').forEach(element => {
+                    element.textContent = formattedRate;
+                });
+                document.querySelectorAll('.ticker-usd-change').forEach(element => {
+                    element.textContent = (change > 0 ? '▲ +' : change < 0 ? '▼ ' : '— ') + Math.abs(change).toFixed(2) + '%';
+                    element.className = 'ticker-usd-change ' + direction;
+                });
+
+                drawSpark('spark-usd', data.history || [rate], direction !== 'down' ? '#26A69A' : '#EF5350');
+            })
+            .catch(() => {
+                document.getElementById('home-usd-value').textContent = 'Tidak tersedia';
+                document.getElementById('home-usd-change').textContent = 'Gagal memuat kurs';
+                document.getElementById('home-usd-date').textContent = '';
+            });
 
         const canvas = document.getElementById('particles-canvas');
         const ctx = canvas.getContext('2d');

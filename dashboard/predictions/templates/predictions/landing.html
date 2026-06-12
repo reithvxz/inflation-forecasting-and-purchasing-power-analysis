@@ -413,7 +413,7 @@
             <div class="icon"><i class="fas fa-exchange-alt"></i></div>
             <div>
                 <h3>USD/IDR Live Exchange Rate</h3>
-                <p>Real-time data dari open.er-api.com</p>
+                <p>Kurs harian terbaru dari Frankfurter</p>
             </div>
         </div>
         <div class="usd-idr-status">
@@ -576,26 +576,28 @@
             const source = data.source || 'Unknown';
             const dailyRate = data.daily_rate;
             const dailyDate = data.daily_date;
+            const previousDate = data.previous_date;
             const monthlyRate = data.monthly_rate;
             const monthlyDate = data.monthly_date;
 
             function formatDate(dateStr) {
                 if (!dateStr) return '';
                 try {
-                    const d = new Date(dateStr);
+                    const d = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
                     return d.toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
                 } catch { return dateStr; }
             }
 
             document.getElementById('kpi-usd-value').textContent = Math.round(rate).toLocaleString('id-ID');
-            document.getElementById('kpi-usd-sub').textContent = (isUp ? '▲' : '▼') + ' ' + Math.abs(changePercent).toFixed(2) + '% (data ' + (dataType === 'daily' ? 'harian' : 'bulanan') + ')';
+            const comparisonLabel = previousDate ? ' vs ' + formatDate(previousDate) : '';
+            document.getElementById('kpi-usd-sub').textContent = (isUp ? '▲' : '▼') + ' ' + Math.abs(changePercent).toFixed(2) + '%' + comparisonLabel;
             document.getElementById('kpi-usd-badge').innerHTML = '<i class="fas fa-arrow-' + (isUp ? 'up' : 'down') + '" style="font-size: 8px;"></i> ' + (isUp ? 'Naik' : 'Turun');
             document.getElementById('kpi-usd-badge').className = 'kpi-badge ' + (isUp ? 'badge-up' : 'badge-down');
             document.getElementById('kpi-usd-value').style.color = isUp ? 'var(--positive)' : 'var(--negative)';
 
             document.getElementById('usd-idr-rate').textContent = 'Rp ' + rate.toLocaleString('id-ID');
             document.getElementById('usd-idr-rate').style.color = isUp ? 'var(--positive)' : 'var(--negative)';
-            document.getElementById('usd-idr-change').innerHTML = (isUp ? '<i class="fas fa-arrow-up" style="font-size: 10px;"></i>' : '<i class="fas fa-arrow-down" style="font-size: 10px;"></i>') + ' ' + Math.abs(changePercent).toFixed(2) + '% (data ' + (dataType === 'daily' ? 'harian' : 'bulanan') + ')';
+            document.getElementById('usd-idr-change').innerHTML = (isUp ? '<i class="fas fa-arrow-up" style="font-size: 10px;"></i>' : '<i class="fas fa-arrow-down" style="font-size: 10px;"></i>') + ' ' + Math.abs(changePercent).toFixed(2) + '%' + comparisonLabel;
             document.getElementById('usd-idr-change').className = 'usd-idr-change ' + (isUp ? 'badge-up' : 'badge-down');
             
             let dateInfo = '';
