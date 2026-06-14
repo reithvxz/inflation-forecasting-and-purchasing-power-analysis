@@ -46,6 +46,12 @@
                             <span>Dashboard</span>
                         </a>
                     </li>
+                    <li class="{% if request.path == '/panduan/' %}active{% endif %}">
+                        <a href="{% url 'guide' %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M12 4h9"></path><path d="M4 9h16"></path><path d="M4 15h16"></path></svg>
+                            <span>Panduan</span>
+                        </a>
+                    </li>
                     <li class="{% if request.path == '/forecasting/' %}active{% endif %}">
                         <a href="{% url 'forecasting' %}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>

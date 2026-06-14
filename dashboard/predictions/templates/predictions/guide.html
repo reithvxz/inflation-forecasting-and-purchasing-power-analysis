@@ -1,0 +1,263 @@
+{% extends 'predictions/base.html' %}
+
+{% block page_title %}Panduan Membaca Dashboard{% endblock %}
+
+{% block extra_head %}
+<style>
+    .guide-shell {
+        display: grid;
+        gap: 18px;
+    }
+    .guide-hero,
+    .guide-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        box-shadow: var(--shadow-sm);
+    }
+    .guide-hero {
+        padding: 30px;
+        background:
+            radial-gradient(circle at top right, rgba(41, 98, 255, 0.1), transparent 30%),
+            linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+    .guide-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--accent-primary-dim);
+        color: var(--accent-primary);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 14px;
+    }
+    .guide-kicker::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: currentColor;
+    }
+    .guide-hero h2 {
+        font-size: 30px;
+        line-height: 1.1;
+        letter-spacing: -0.8px;
+        margin-bottom: 12px;
+    }
+    .guide-hero p,
+    .guide-card p,
+    .guide-card li {
+        color: var(--text-secondary);
+        line-height: 1.7;
+        font-size: 14px;
+    }
+    .guide-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+    .guide-card {
+        padding: 24px;
+    }
+    .guide-card h3 {
+        font-size: 18px;
+        margin-bottom: 12px;
+        letter-spacing: -0.3px;
+    }
+    .term-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 12px;
+    }
+    .term-item {
+        padding: 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-panel);
+    }
+    .term-item strong {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--text-primary);
+        font-size: 13px;
+    }
+    .flow-steps {
+        display: grid;
+        gap: 12px;
+        margin-top: 12px;
+    }
+    .flow-step {
+        display: grid;
+        grid-template-columns: 42px 1fr;
+        gap: 12px;
+        align-items: start;
+    }
+    .flow-step-index {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--accent-primary-dim);
+        color: var(--accent-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+    }
+    .guide-note {
+        margin-top: 12px;
+        padding: 14px 16px;
+        border-left: 4px solid var(--accent-warning);
+        background: rgba(255, 179, 0, 0.08);
+        border-radius: 0 12px 12px 0;
+    }
+    .guide-cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    .guide-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 16px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: 0.15s ease;
+    }
+    .guide-link.primary {
+        background: var(--accent-primary);
+        color: #fff;
+    }
+    .guide-link.secondary {
+        background: var(--bg-panel);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    .guide-link.primary:hover,
+    .guide-link.secondary:hover {
+        transform: translateY(-1px);
+    }
+    @media (max-width: 860px) {
+        .guide-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="guide-shell">
+    <div class="guide-hero">
+        <div class="guide-kicker">Panduan untuk user awam</div>
+        <h2>Apa yang sebenarnya dibaca dari project ini?</h2>
+        <p>
+            EcoDash membantu membaca arah ekonomi Indonesia melalui dua hal utama:
+            prediksi inflasi jangka dekat dan estimasi daya beli masyarakat. Jadi dashboard ini
+            bukan cuma menampilkan angka, tetapi mencoba menjawab apakah kondisi ekonomi sedang
+            memberi ruang belanja yang lebih longgar atau justru makin tertekan.
+        </p>
+        <div class="guide-cta">
+            <a class="guide-link primary" href="{% url 'landing' %}">Buka dashboard</a>
+            <a class="guide-link secondary" href="{% url 'daya_beli' %}">Coba simulasi daya beli</a>
+        </div>
+    </div>
+
+    <div class="guide-grid">
+        <div class="guide-card">
+            <h3>1. Apa yang diprediksi project ini</h3>
+            <p>
+                Bagian inflasi memproyeksikan perubahan harga dalam waktu dekat berdasarkan data historis
+                dan variabel ekonomi terkait. Bagian daya beli memperkirakan pengeluaran per kapita per bulan,
+                yang kita pakai sebagai pendekatan sederhana untuk membaca kekuatan konsumsi masyarakat.
+            </p>
+            <div class="guide-note">
+                Angka pengeluaran yang lebih tinggi biasanya berarti ruang belanja masyarakat lebih besar,
+                walau tetap harus dibaca bersama konteks harga, upah, dan kondisi provinsi.
+            </div>
+        </div>
+
+        <div class="guide-card">
+            <h3>2. Istilah penting yang sering bikin bingung</h3>
+            <div class="term-list">
+                <div class="term-item">
+                    <strong>MoM</strong>
+                    Perubahan harga bulan ini dibanding bulan lalu.
+                </div>
+                <div class="term-item">
+                    <strong>YoY</strong>
+                    Perubahan harga dibanding bulan yang sama pada tahun lalu.
+                </div>
+                <div class="term-item">
+                    <strong>Y-to-D</strong>
+                    Akumulasi perubahan harga sejak Januari sampai bulan yang sedang berjalan.
+                </div>
+                <div class="term-item">
+                    <strong>Daya beli</strong>
+                    Gambaran kemampuan rata-rata masyarakat untuk membelanjakan pendapatannya.
+                </div>
+                <div class="term-item">
+                    <strong>Baseline</strong>
+                    Titik awal data terbaru yang dipakai model sebelum kita mengubah input simulasi.
+                </div>
+                <div class="term-item">
+                    <strong>Prediksi</strong>
+                    Estimasi yang dibuat model dari pola data masa lalu, bukan angka pasti masa depan.
+                </div>
+            </div>
+        </div>
+
+        <div class="guide-card">
+            <h3>3. Cara kerja model, versi sederhana</h3>
+            <div class="flow-steps">
+                <div class="flow-step">
+                    <div class="flow-step-index">1</div>
+                    <div>
+                        <strong>Data dikumpulkan</strong>
+                        <p>Data datang dari sumber resmi seperti BPS, Bank Indonesia, dan indikator ekonomi terkait.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-index">2</div>
+                    <div>
+                        <strong>Data dibersihkan dan dirapikan</strong>
+                        <p>Nilai kosong ditangani, kolom diseragamkan, lalu dibentuk fitur yang lebih mudah dibaca model.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-index">3</div>
+                    <div>
+                        <strong>Model mempelajari pola</strong>
+                        <p>Model inflasi melihat pola waktu, sedangkan model daya beli membaca hubungan antarvariabel ekonomi.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-index">4</div>
+                    <div>
+                        <strong>Prediksi ditampilkan</strong>
+                        <p>Hasil akhirnya muncul sebagai angka yang mudah dibaca di dashboard dan halaman simulasi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="guide-card">
+            <h3>4. Batasan hasil yang perlu diingat</h3>
+            <p>
+                Prediksi ini adalah estimasi berbasis data historis, jadi sangat berguna untuk membaca arah dan
+                kemungkinan skenario, tetapi tidak bisa dianggap kepastian. Perubahan kebijakan, shock global,
+                atau peristiwa besar yang belum ada di data tetap bisa membuat hasil nyata bergerak berbeda.
+            </p>
+            <div class="guide-note">
+                Cara paling sehat membaca dashboard ini: pakai untuk memahami tren, bukan untuk menganggap model
+                selalu tepat sampai dua digit terakhir.
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,138 +1,667 @@
 {% extends 'predictions/base.html' %}
-{% load static %}
 
-{% block page_title %}Simulasi Kesejahteraan & Daya Beli{% endblock %}
+{% block page_title %}Simulasi Daya Beli Berbasis Model{% endblock %}
+
+{% block extra_head %}
+<style>
+    .sim-shell {
+        display: grid;
+        grid-template-columns: 1.2fr 0.9fr;
+        gap: 20px;
+        align-items: start;
+    }
+    .sim-panel,
+    .sim-result,
+    .sim-note {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+    }
+    .sim-panel {
+        padding: 24px;
+    }
+    .sim-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: start;
+        margin-bottom: 20px;
+    }
+    .sim-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--accent-primary-dim);
+        color: var(--accent-primary);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+    .sim-kicker::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: currentColor;
+    }
+    .sim-head h2 {
+        font-size: 24px;
+        line-height: 1.15;
+        letter-spacing: -0.5px;
+        margin-bottom: 8px;
+    }
+    .sim-head p,
+    .sim-note p,
+    .field-help {
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.65;
+    }
+    .sim-badge {
+        padding: 10px 12px;
+        min-width: 180px;
+        border-radius: 10px;
+        background: linear-gradient(180deg, rgba(41, 98, 255, 0.08), rgba(0, 188, 212, 0.06));
+        border: 1px solid rgba(41, 98, 255, 0.12);
+    }
+    .sim-badge-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        color: var(--text-tertiary);
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+    .sim-badge-value {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    .sim-tabs {
+        display: inline-flex;
+        padding: 4px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 999px;
+        margin-bottom: 20px;
+    }
+    .sim-tab {
+        border: 0;
+        background: transparent;
+        color: var(--text-secondary);
+        padding: 10px 16px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: 0.15s ease;
+    }
+    .sim-tab.active {
+        background: var(--accent-primary);
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(41, 98, 255, 0.18);
+    }
+    .sim-tab-panel {
+        display: none;
+    }
+    .sim-tab-panel.active {
+        display: block;
+    }
+    .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .field-group.full {
+        grid-column: 1 / -1;
+    }
+    .field-group label {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .field-group select,
+    .field-group input[type="number"] {
+        width: 100%;
+        border: 1px solid var(--border-color);
+        background: #fff;
+        color: var(--text-primary);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .field-group select:focus,
+    .field-group input[type="number"]:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 4px rgba(41, 98, 255, 0.12);
+    }
+    .slider-shell {
+        padding: 16px 18px 14px;
+        border-radius: 12px;
+        background: linear-gradient(180deg, rgba(41, 98, 255, 0.05), rgba(255, 255, 255, 0.9));
+        border: 1px solid rgba(41, 98, 255, 0.12);
+    }
+    .slider-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    .slider-head strong {
+        font-size: 18px;
+        color: var(--accent-primary);
+        letter-spacing: -0.3px;
+    }
+    .slider-meta {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-tertiary);
+        font-size: 11px;
+        margin-top: 10px;
+    }
+    .slider-shell input[type="range"] {
+        width: 100%;
+    }
+    .sim-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+        flex-wrap: wrap;
+    }
+    .sim-btn {
+        border: 0;
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: 0.15s ease;
+        font-family: inherit;
+    }
+    .sim-btn.primary {
+        color: #fff;
+        background: var(--accent-primary);
+        box-shadow: 0 10px 20px rgba(41, 98, 255, 0.18);
+    }
+    .sim-btn.primary:hover {
+        background: var(--accent-primary-hover);
+        transform: translateY(-1px);
+    }
+    .sim-btn.ghost {
+        background: var(--bg-panel);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    .sim-result {
+        padding: 24px;
+        position: sticky;
+        top: 92px;
+    }
+    .result-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--text-tertiary);
+        margin-bottom: 8px;
+    }
+    .result-value {
+        font-size: clamp(34px, 4vw, 44px);
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1.2px;
+        margin-bottom: 12px;
+        color: var(--text-primary);
+    }
+    .result-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: capitalize;
+        margin-bottom: 18px;
+    }
+    .result-status.meningkat {
+        background: rgba(38, 166, 154, 0.12);
+        color: var(--positive);
+    }
+    .result-status.stabil {
+        background: rgba(41, 98, 255, 0.12);
+        color: var(--accent-primary);
+    }
+    .result-status.menurun {
+        background: rgba(239, 83, 80, 0.12);
+        color: var(--negative);
+    }
+    .result-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+    .result-item {
+        padding: 14px;
+        border-radius: 12px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+    }
+    .result-item span {
+        display: block;
+    }
+    .result-item .small {
+        font-size: 11px;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+    .result-item .big {
+        font-size: 16px;
+        color: var(--text-primary);
+        font-weight: 700;
+    }
+    .chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        background: #fff;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .sim-note {
+        margin-top: 18px;
+        padding: 18px 20px;
+    }
+    .sim-note h3 {
+        margin-bottom: 8px;
+        font-size: 15px;
+    }
+    .sim-loading,
+    .sim-error {
+        margin-top: 14px;
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+    .sim-error {
+        color: var(--negative);
+    }
+    @media (max-width: 1100px) {
+        .sim-shell {
+            grid-template-columns: 1fr;
+        }
+        .sim-result {
+            position: static;
+        }
+    }
+    @media (max-width: 720px) {
+        .sim-head {
+            flex-direction: column;
+        }
+        .field-grid,
+        .result-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="glass-card" style="margin-bottom: 24px; background: var(--bg-card); padding: 32px 40px; border-left: 4px solid var(--accent-primary);">
-    <h3 style="color: var(--text-primary); margin-bottom: 12px; font-size: 18px; font-weight: 600;">Model Ridge Regression Terintegrasi</h3>
-    <p style="color: var(--text-secondary); font-size: 15px; line-height: 1.7; max-width: 900px;">
-        Simulasi di bawah ini 100% menggunakan <strong>Ridge Regression ML Pipeline</strong> dengan 15 fitur panel data (TPT, PDRB, IPM, Gini Ratio, UMP, dll). Model memprediksi <strong>Rata-rata Pengeluaran Per Kapita per Bulan</strong> berdasarkan kondisi makro ekonomi saat ini.
-    </p>
-</div>
-
-<!-- Info Box -->
-<div style="background: rgba(41, 98, 255, 0.06); border: 1px solid rgba(41, 98, 255, 0.15); border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; display: flex; gap: 12px; align-items: flex-start;">
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2962FF" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-    <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
-        <strong style="color: var(--text-primary);">Cara membaca:</strong> Angka yang ditampilkan adalah <strong>estimasi pengeluaran per kapita per bulan</strong> (dalam Rupiah). Misalnya Rp 1.400.000 berarti rata-rata setiap orang menghabiskan Rp 1,4 juta per bulan untuk konsumsi makanan dan non-makanan. Semakin tinggi angka, semakin kuat daya beli masyarakat.
-    </div>
-</div>
-
-<!-- Interactive Simulator -->
-<section class="interactive-section">
-    <div class="glass-card simulation-card">
-        <div class="sim-left">
-            <div class="sim-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+<section class="sim-shell">
+    <div>
+        <div class="sim-panel">
+            <div class="sim-head">
+                <div>
+                    <div class="sim-kicker">Full model inference</div>
+                    <h2>Simulasi daya beli yang benar-benar memakai model Ridge</h2>
+                    <p>
+                        Halaman ini tidak lagi memakai rumus linear demo. Setiap perubahan akan dikirim ke model
+                        dengan baseline provinsi terbaru, lalu fitur turunannya dihitung ulang sebelum prediksi dibuat.
+                    </p>
+                </div>
+                <div class="sim-badge">
+                    <div class="sim-badge-label">Mode aktif</div>
+                    <div class="sim-badge-value">Basic dan Advanced</div>
+                </div>
             </div>
-            <div class="sim-content">
-                <h3>Simulasi Dampak Inflasi</h3>
-                <p>Geser slider untuk melihat estimasi seberapa jauh daya beli masyarakat (Pengeluaran Per Kapita Per Bulan) akan tergerus jika inflasi naik atau turun.</p>
-                
-                <div class="slider-container">
-                    <label for="inflasiSlider">
-                        <span>Kenaikan Inflasi</span>
-                        <span id="inflasiVal" class="neon-text">0.0%</span>
-                    </label>
-                    <input type="range" id="inflasiSlider" min="-2.0" max="15.0" step="0.1" value="0.0">
+
+            <div class="sim-tabs" role="tablist" aria-label="Mode simulasi">
+                <button class="sim-tab active" type="button" data-tab="basic">Basic</button>
+                <button class="sim-tab" type="button" data-tab="advanced">Advanced</button>
+            </div>
+
+            <div class="sim-tab-panel active" id="tab-basic">
+                <div class="field-grid">
+                    <div class="field-group full">
+                        <label for="basicProvince">Provinsi</label>
+                        <select id="basicProvince">
+                            {% for province in provinces %}
+                            <option value="{{ province }}" {% if province == default_province %}selected{% endif %}>{{ province }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="field-help">Baseline terbaru akan mengikuti provinsi yang dipilih.</div>
+                    </div>
+
+                    <div class="field-group full">
+                        <label for="basicInflation">Inflasi tahunan</label>
+                        <div class="slider-shell">
+                            <div class="slider-head">
+                                <span>Geser untuk mengubah inflasi</span>
+                                <strong id="basicInflationValue">0.00%</strong>
+                            </div>
+                            <input id="basicInflation" type="range" min="-2" max="15" step="0.1" value="0">
+                            <div class="slider-meta">
+                                <span>-2.0% deflasi</span>
+                                <span>0.0% stabil</span>
+                                <span>15.0% tekanan tinggi</span>
+                            </div>
+                        </div>
+                        <div class="field-help">Mode Basic cocok untuk demo cepat. Tetap memakai full model, hanya input yang dibuka memang lebih sedikit.</div>
+                    </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-tertiary); margin-top: 4px;">
-                    <span>-2.0% (Deflasi)</span>
-                    <span>0.0% (Stabil)</span>
-                    <span>+15.0% (Hyperinflasi)</span>
+            </div>
+
+            <div class="sim-tab-panel" id="tab-advanced">
+                <div class="field-grid">
+                    <div class="field-group full">
+                        <label for="advancedProvince">Provinsi</label>
+                        <select id="advancedProvince">
+                            {% for province in provinces %}
+                            <option value="{{ province }}" {% if province == default_province %}selected{% endif %}>{{ province }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="advancedInflation">Inflasi tahunan</label>
+                        <input id="advancedInflation" type="number" step="0.1" inputmode="decimal">
+                        <div class="field-help">Dalam persen per tahun.</div>
+                    </div>
+                    <div class="field-group">
+                        <label for="advancedUmp">UMP</label>
+                        <input id="advancedUmp" type="number" step="1000" inputmode="decimal">
+                        <div class="field-help">Masukkan nominal Rupiah.</div>
+                    </div>
+                    <div class="field-group">
+                        <label for="advancedTpt">TPT</label>
+                        <input id="advancedTpt" type="number" step="0.01" inputmode="decimal">
+                        <div class="field-help">Tingkat pengangguran terbuka dalam persen.</div>
+                    </div>
+                    <div class="field-group">
+                        <label for="advancedPdrb">PDRB harga konstan</label>
+                        <input id="advancedPdrb" type="number" step="1000" inputmode="decimal">
+                        <div class="field-help">Nominal mengikuti baseline provinsi terbaru.</div>
+                    </div>
                 </div>
+
+                <div class="sim-actions">
+                    <button class="sim-btn primary" type="button" id="advancedPredict">Jalankan prediksi model</button>
+                    <button class="sim-btn ghost" type="button" id="advancedReset">Reset ke baseline provinsi</button>
+                </div>
+            </div>
+
+            <div id="simLoading" class="sim-loading" hidden>Model sedang menghitung ulang prediksi...</div>
+            <div id="simError" class="sim-error" hidden></div>
+        </div>
+
+        <div class="sim-note">
+            <h3>Cara baca hasil</h3>
+            <p>
+                Angka yang muncul adalah estimasi pengeluaran per kapita per bulan. Semakin tinggi nilainya,
+                semakin besar ruang belanja rata-rata masyarakat pada konteks provinsi dan kondisi makro yang dipilih.
+            </p>
+        </div>
+    </div>
+
+    <aside class="sim-result">
+        <div class="result-label">Prediksi pengeluaran per kapita per bulan</div>
+        <div class="result-value" id="resultValue">Rp 0</div>
+        <div class="result-status stabil" id="resultStatus">stabil</div>
+
+        <div class="result-grid">
+            <div class="result-item">
+                <span class="small">Provinsi</span>
+                <span class="big" id="resultProvince">{{ default_province }}</span>
+            </div>
+            <div class="result-item">
+                <span class="small">Tahun baseline</span>
+                <span class="big" id="resultYear">-</span>
+            </div>
+            <div class="result-item">
+                <span class="small">Baseline pengeluaran</span>
+                <span class="big" id="resultBaseline">Rp 0</span>
+            </div>
+            <div class="result-item">
+                <span class="small">Mode</span>
+                <span class="big" id="resultMode">Basic</span>
             </div>
         </div>
-        <div class="sim-right">
-            <div class="result-box">
-                <span class="result-label">Estimasi Pengeluaran Per Kapita Per Bulan</span>
-                <div class="result-value" id="dayaBeliResult">Loading...</div>
-                <div style="display: flex; gap: 12px; justify-content: center; margin-top: 12px; font-size: 11px;">
-                    <span style="color: var(--text-tertiary);">
-                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-primary); margin-right: 4px;"></span>
-                        Kondisi Saat Ini
-                    </span>
-                    <span id="statusIndicator" style="font-weight: 600; padding: 2px 8px; border-radius: 3px;"></span>
-                </div>
-                <span class="result-desc" style="margin-top: 8px;">Prediksi Instan Ridge Regression (15 fitur)</span>
-            </div>
-        </div>
-    </div>
+
+        <div class="result-label" style="margin-top: 10px;">Input aktif yang dipakai model</div>
+        <div class="chip-list" id="inputsUsed"></div>
+    </aside>
 </section>
-
-<!-- Penjelasan Tambahan -->
-<div class="glass-card" style="margin-top: 24px; padding: 24px; background: var(--bg-card);">
-    <h4 style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">Interpretasi Angka</h4>
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-        <div style="padding: 16px; background: var(--bg-panel); border-radius: 8px;">
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px;">Normal</div>
-            <div style="font-size: 15px; font-weight: 700; color: var(--positive); margin-bottom: 4px;">Rp 1.4 - 1.5 juta/bulan</div>
-            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">Daya beli masyarakat dalam kondisi stabil. Pengeluaran per kapita sesuai tren normal.</p>
-        </div>
-        <div style="padding: 16px; background: var(--bg-panel); border-radius: 8px;">
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px;">Inflasi Tinggi</div>
-            <div style="font-size: 15px; font-weight: 700; color: var(--negative); margin-bottom: 4px;">Di bawah Rp 1.4 juta/bulan</div>
-            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">Daya beli tergerus. Masyarakat mengurangi konsumsi karena harga naik.</p>
-        </div>
-        <div style="padding: 16px; background: var(--bg-panel); border-radius: 8px;">
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px;">Deflasi</div>
-            <div style="font-size: 15px; font-weight: 700; color: var(--accent-info); margin-bottom: 4px;">Di atas Rp 1.5 juta/bulan</div>
-            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">Harga turun, daya beli naik. Namun deflasi berlebih bisa indikasi lesunya permintaan.</p>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const slider = document.getElementById('inflasiSlider');
-        const inflasiVal = document.getElementById('inflasiVal');
-        const dayaBeliResult = document.getElementById('dayaBeliResult');
-        const statusIndicator = document.getElementById('statusIndicator');
-        
-        // Data dari backend
-        const slopePerPercent = {{ slope }};
-        const baseValue = {{ base_value }};
-        
-        const formatIDR = (number) => {
-            return new Intl.NumberFormat('id-ID', {
-                style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0
-            }).format(number);
+        const provinceDefaults = {{ province_defaults_json|safe }};
+        const formatCurrency = (value) => new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(Number(value || 0));
+        const formatNumber = (value, digits = 2) => new Intl.NumberFormat('id-ID', {
+            minimumFractionDigits: digits,
+            maximumFractionDigits: digits
+        }).format(Number(value || 0));
+
+        const tabs = document.querySelectorAll('.sim-tab');
+        const panels = {
+            basic: document.getElementById('tab-basic'),
+            advanced: document.getElementById('tab-advanced')
         };
 
-        function updatePrediction(inflasi) {
-            const estimasi = baseValue + (inflasi * slopePerPercent);
-            dayaBeliResult.textContent = formatIDR(estimasi);
-            
-            if (estimasi < 1400000) {
-                dayaBeliResult.style.color = 'var(--negative)';
-                statusIndicator.textContent = 'Merosot';
-                statusIndicator.style.color = 'var(--negative)';
-                statusIndicator.style.background = 'rgba(239, 83, 80, 0.1)';
-            } else if (estimasi > 1500000) {
-                dayaBeliResult.style.color = 'var(--accent-info)';
-                statusIndicator.textContent = 'Meningkat';
-                statusIndicator.style.color = 'var(--accent-info)';
-                statusIndicator.style.background = 'rgba(0, 188, 212, 0.1)';
-            } else {
-                dayaBeliResult.style.color = 'var(--positive)';
-                statusIndicator.textContent = 'Stabil';
-                statusIndicator.style.color = 'var(--positive)';
-                statusIndicator.style.background = 'rgba(38, 166, 154, 0.1)';
+        const basicProvince = document.getElementById('basicProvince');
+        const basicInflation = document.getElementById('basicInflation');
+        const basicInflationValue = document.getElementById('basicInflationValue');
+
+        const advancedProvince = document.getElementById('advancedProvince');
+        const advancedInflation = document.getElementById('advancedInflation');
+        const advancedUmp = document.getElementById('advancedUmp');
+        const advancedTpt = document.getElementById('advancedTpt');
+        const advancedPdrb = document.getElementById('advancedPdrb');
+        const advancedPredict = document.getElementById('advancedPredict');
+        const advancedReset = document.getElementById('advancedReset');
+
+        const resultValue = document.getElementById('resultValue');
+        const resultStatus = document.getElementById('resultStatus');
+        const resultProvince = document.getElementById('resultProvince');
+        const resultYear = document.getElementById('resultYear');
+        const resultBaseline = document.getElementById('resultBaseline');
+        const resultMode = document.getElementById('resultMode');
+        const inputsUsed = document.getElementById('inputsUsed');
+        const simLoading = document.getElementById('simLoading');
+        const simError = document.getElementById('simError');
+
+        let activeTab = 'basic';
+        let debounceTimer = null;
+
+        function showLoading(isLoading) {
+            simLoading.hidden = !isLoading;
+        }
+
+        function showError(message) {
+            simError.hidden = !message;
+            simError.textContent = message || '';
+        }
+
+        function setBasicDefaults(province) {
+            const defaults = provinceDefaults[province];
+            if (!defaults) {
+                return;
+            }
+            basicInflation.value = defaults.inflasi;
+            basicInflationValue.textContent = `${formatNumber(defaults.inflasi, 2)}%`;
+        }
+
+        function setAdvancedDefaults(province) {
+            const defaults = provinceDefaults[province];
+            if (!defaults) {
+                return;
+            }
+            advancedInflation.value = defaults.inflasi;
+            advancedUmp.value = Math.round(defaults.ump);
+            advancedTpt.value = defaults.tpt;
+            advancedPdrb.value = Math.round(defaults.pdrb_hargakonstan);
+        }
+
+        function renderInputsChips(inputs) {
+            inputsUsed.innerHTML = '';
+            const chipMap = [
+                ['provinsi', 'Provinsi'],
+                ['inflasi', 'Inflasi'],
+                ['ump', 'UMP'],
+                ['tpt', 'TPT'],
+                ['pdrb_hargakonstan', 'PDRB konstan']
+            ];
+            chipMap.forEach(([key, label]) => {
+                if (inputs[key] === undefined || inputs[key] === null || inputs[key] === '') {
+                    return;
+                }
+                const chip = document.createElement('div');
+                chip.className = 'chip';
+                let value = inputs[key];
+                if (key === 'inflasi' || key === 'tpt') {
+                    value = `${formatNumber(value, 2)}%`;
+                } else if (key === 'ump' || key === 'pdrb_hargakonstan') {
+                    value = formatCurrency(value);
+                }
+                chip.textContent = `${label}: ${value}`;
+                inputsUsed.appendChild(chip);
+            });
+        }
+
+        function renderResult(data, modeLabel) {
+            resultValue.textContent = formatCurrency(data.predicted_pengeluaran);
+            resultProvince.textContent = data.province;
+            resultYear.textContent = data.baseline_year;
+            resultBaseline.textContent = formatCurrency(data.baseline_pengeluaran);
+            resultMode.textContent = modeLabel;
+            resultStatus.textContent = data.status_label;
+            resultStatus.className = `result-status ${data.status_label}`;
+            renderInputsChips(data.inputs_used || {});
+        }
+
+        async function runSimulation(params, modeLabel) {
+            showError('');
+            showLoading(true);
+            try {
+                const qs = new URLSearchParams(params);
+                const response = await fetch(`/api/simulate/?${qs.toString()}`);
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Prediksi gagal dijalankan');
+                }
+                renderResult(data, modeLabel);
+            } catch (error) {
+                showError(error.message || 'Terjadi kesalahan saat memanggil model');
+            } finally {
+                showLoading(false);
             }
         }
 
-        const initVal = parseFloat(slider.value);
-        inflasiVal.textContent = initVal.toFixed(1) + '%';
-        updatePrediction(initVal);
+        function debounceSimulation(fn) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(fn, 260);
+        }
 
-        slider.addEventListener('input', function(e) {
-            const val = parseFloat(e.target.value);
-            inflasiVal.textContent = val.toFixed(1) + '%';
-            updatePrediction(val);
+        function runBasicSimulation() {
+            const province = basicProvince.value;
+            const inflasi = basicInflation.value;
+            basicInflationValue.textContent = `${formatNumber(inflasi, 2)}%`;
+            debounceSimulation(() => runSimulation({
+                provinsi: province,
+                inflasi: inflasi
+            }, 'Basic'));
+        }
+
+        function runAdvancedSimulation() {
+            runSimulation({
+                provinsi: advancedProvince.value,
+                inflasi: advancedInflation.value,
+                ump: advancedUmp.value,
+                tpt: advancedTpt.value,
+                pdrb_hargakonstan: advancedPdrb.value
+            }, 'Advanced');
+        }
+
+        tabs.forEach((tab) => {
+            tab.addEventListener('click', () => {
+                activeTab = tab.dataset.tab;
+                tabs.forEach((item) => item.classList.toggle('active', item === tab));
+                Object.entries(panels).forEach(([key, panel]) => {
+                    panel.classList.toggle('active', key === activeTab);
+                });
+                resultMode.textContent = activeTab === 'basic' ? 'Basic' : 'Advanced';
+            });
         });
+
+        basicProvince.addEventListener('change', () => {
+            advancedProvince.value = basicProvince.value;
+            setBasicDefaults(basicProvince.value);
+            setAdvancedDefaults(basicProvince.value);
+            runBasicSimulation();
+        });
+
+        advancedProvince.addEventListener('change', () => {
+            basicProvince.value = advancedProvince.value;
+            setBasicDefaults(advancedProvince.value);
+            setAdvancedDefaults(advancedProvince.value);
+            if (activeTab === 'advanced') {
+                runAdvancedSimulation();
+            }
+        });
+
+        basicInflation.addEventListener('input', runBasicSimulation);
+        advancedPredict.addEventListener('click', runAdvancedSimulation);
+        advancedReset.addEventListener('click', () => {
+            setAdvancedDefaults(advancedProvince.value);
+            runAdvancedSimulation();
+        });
+
+        setBasicDefaults(basicProvince.value);
+        setAdvancedDefaults(advancedProvince.value);
+        runSimulation({
+            provinsi: basicProvince.value,
+            inflasi: basicInflation.value
+        }, 'Basic');
     });
 </script>
 {% endblock %}

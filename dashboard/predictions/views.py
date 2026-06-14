@@ -8,6 +8,7 @@ import torch.nn as nn
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.conf import settings
+from predictions.daya_beli_model import prepare_daya_beli_dataframe
 
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size, dropout=0.3):
@@ -33,6 +34,24 @@ DATA_HISTORIS = None
 LSTM_FEATURES = None
 RATA_PENGELUARAN = 1450000
 RIDGE_SIMULATION_DEFAULTS = None
+PROVINCE_SIMULATION_BASELINES = None
+
+
+def _safe_float(value, fallback=0.0):
+    try:
+        if value is None or pd.isna(value):
+            return float(fallback)
+        return float(value)
+    except (TypeError, ValueError):
+        return float(fallback)
+
+
+def _pct_change(current, previous, fallback=0.0):
+    current_val = _safe_float(current, fallback)
+    previous_val = _safe_float(previous, 0.0)
+    if previous_val == 0:
+        return _safe_float(fallback, 0.0)
+    return ((current_val - previous_val) / previous_val) * 100.0
 
 
 def _build_ridge_simulation_defaults(project_root):
@@ -41,18 +60,9 @@ def _build_ridge_simulation_defaults(project_root):
     if not os.path.exists(path):
         return None
 
-    df = pd.read_csv(path).sort_values(['Provinsi', 'Tahun']).copy()
+    df = prepare_daya_beli_dataframe(pd.read_csv(path))
     if df.empty:
         return None
-
-    df['Real_UMP'] = df['UMP'] / (1 + (df['Inflasi_Rata_Tahunan'] / 100.0))
-    df['Real_UMP_Growth'] = df.groupby('Provinsi')['Real_UMP'].pct_change() * 100.0
-    df['PDRB_HargaKonstan_Growth'] = df.groupby('Provinsi')['PDRB_HargaKonstan'].pct_change() * 100.0
-    df['TPT_Growth'] = df.groupby('Provinsi')['TPT'].pct_change() * 100.0
-    df['UMP_x_PDRB'] = df['Real_UMP'] * df['PDRB_HargaKonstan']
-    df['Inflasi_x_TPT'] = df['Inflasi_Rata_Tahunan'] * df['TPT']
-    df['Log_PDRB'] = np.log1p(df['PDRB_HargaKonstan'])
-    df['Log_UMP'] = np.log1p(df['Real_UMP'])
 
     latest_year = df['Tahun'].max()
     latest = df[df['Tahun'] == latest_year]
@@ -69,6 +79,98 @@ def _build_ridge_simulation_defaults(project_root):
         'RATA_PENGELUARAN': float(numeric_defaults.get('Total_Pengeluaran', 1450000.0)),
         'numeric_defaults': numeric_defaults,
     }
+
+
+def _build_province_simulation_baselines(project_root):
+    path = os.path.join(project_root, 'datasets', 'processed', 'clean_daya_beli.csv')
+    if not os.path.exists(path):
+        return {}
+
+    df = prepare_daya_beli_dataframe(pd.read_csv(path))
+    if df.empty:
+        return {}
+
+    latest_rows = df.groupby('Provinsi').tail(1).copy()
+    baselines = {}
+    for _, row in latest_rows.iterrows():
+        province = row.get('Provinsi')
+        if not province:
+            continue
+        row_dict = row.to_dict()
+        baselines[province] = {
+            'baseline_year': int(_safe_float(row_dict.get('Tahun'), 0)),
+            'baseline_pengeluaran': _safe_float(row_dict.get('Total_Pengeluaran'), 1450000.0),
+            'fields': row_dict,
+        }
+    return baselines
+
+
+def _get_province_simulation_baselines():
+    global PROVINCE_SIMULATION_BASELINES
+    if PROVINCE_SIMULATION_BASELINES is None:
+        project_root = os.path.dirname(settings.BASE_DIR)
+        PROVINCE_SIMULATION_BASELINES = _build_province_simulation_baselines(project_root)
+    return PROVINCE_SIMULATION_BASELINES or {}
+
+
+def _build_simulation_input(province, overrides=None):
+    load_models()
+    baselines = _get_province_simulation_baselines()
+    if province not in baselines:
+        raise KeyError(f"Provinsi '{province}' tidak ditemukan")
+
+    baseline = baselines[province]
+    fields = baseline['fields']
+    overrides = overrides or {}
+
+    inflasi_pct = _safe_float(overrides.get('inflasi'), fields.get('Inflasi_Rata_Tahunan', 0.0))
+    ump_value = _safe_float(overrides.get('ump'), fields.get('UMP', 3000000.0))
+    tpt_value = _safe_float(overrides.get('tpt'), fields.get('TPT', 5.0))
+    pdrb_value = _safe_float(overrides.get('pdrb_hargakonstan'), fields.get('PDRB_HargaKonstan', 40000.0))
+
+    denominator = 1 + (inflasi_pct / 100.0)
+    real_ump = ump_value / denominator if denominator != 0 else ump_value
+
+    prev_real_ump = _safe_float(fields.get('Prev_Real_UMP'), fields.get('Real_UMP', real_ump))
+    prev_pdrb = _safe_float(fields.get('Prev_PDRB_HargaKonstan'), pdrb_value)
+    prev_tpt = _safe_float(fields.get('Prev_TPT'), tpt_value)
+
+    feature_row = {
+        'Provinsi': province,
+        'TPT': tpt_value,
+        'PDRB_HargaKonstan': pdrb_value,
+        'Inflasi_Rata_Tahunan': inflasi_pct,
+        'Gini_Rasio': _safe_float(fields.get('Gini_Rasio'), 0.30),
+        'IPM': _safe_float(fields.get('IPM'), 72.4),
+        'Garis_Kemiskinan': _safe_float(fields.get('Garis_Kemiskinan'), 609000.0),
+        'Jumlah_Penduduk': _safe_float(fields.get('Jumlah_Penduduk'), 8000.0),
+        'Pct_Populasi': _safe_float(fields.get('Pct_Populasi'), 2.8),
+        'Pct_Akses_Air_Bersih': _safe_float(fields.get('Pct_Akses_Air_Bersih'), 87.7),
+        'Protein_gram_per_hari': _safe_float(fields.get('Protein_gram_per_hari'), 62.3),
+        'Inflasi_WB_Annual': _safe_float(fields.get('Inflasi_WB_Annual'), 2.7),
+        'GDP_PerCapita_PPP': _safe_float(fields.get('GDP_PerCapita_PPP'), 13800.0),
+        'Pct_Unemployment_WB': _safe_float(fields.get('Pct_Unemployment_WB'), 3.4),
+        'Poverty_Headcount_Pct': _safe_float(fields.get('Poverty_Headcount_Pct'), 9.4),
+        'Real_UMP': real_ump,
+        'Real_UMP_Growth': _pct_change(real_ump, prev_real_ump, fields.get('Real_UMP_Growth', 0.0)),
+        'PDRB_HargaKonstan_Growth': _pct_change(
+            pdrb_value,
+            prev_pdrb,
+            fields.get('PDRB_HargaKonstan_Growth', 0.0),
+        ),
+        'TPT_Growth': _pct_change(tpt_value, prev_tpt, fields.get('TPT_Growth', 0.0)),
+        'UMP_x_PDRB': real_ump * pdrb_value,
+        'Inflasi_x_TPT': inflasi_pct * tpt_value,
+        'Log_PDRB': float(np.log1p(max(pdrb_value, 0.0))),
+        'Log_UMP': float(np.log1p(max(real_ump, 0.0))),
+    }
+
+    if RIDGE_MODEL_BUNDLE is not None and 'num_features' in RIDGE_MODEL_BUNDLE:
+        for feat in RIDGE_MODEL_BUNDLE.get('num_features', []):
+            if feat not in feature_row:
+                feature_row[feat] = _safe_float(fields.get(feat), 0.0)
+
+    return pd.DataFrame([feature_row]), baseline
 
 def load_models():
     global LSTM_MODEL, LSTM_SCALER_X, LSTM_SCALER_Y, RIDGE_MODEL, RIDGE_MODEL_BUNDLE, INFLASI_PRED_MEM, DATA_HISTORIS, LSTM_FEATURES, RATA_PENGELUARAN, RIDGE_SIMULATION_DEFAULTS
@@ -87,7 +189,7 @@ def load_models():
             RIDGE_MODEL_BUNDLE = raw
         else:
             RIDGE_MODEL = raw
-            RIDGE_MODEL_BUNDLE = None
+            RIDGE_MODEL_BUNDLE = {'legacy_artifact': True}
 
     if RIDGE_SIMULATION_DEFAULTS is None:
         RIDGE_SIMULATION_DEFAULTS = _build_ridge_simulation_defaults(project_root)
@@ -265,6 +367,7 @@ def landing_page(request):
     context = {
         'inflasi_pred': float(inflasi_pred) if inflasi_pred else 0.0,
         'rata_pengeluaran': "{:,.0f}".format(rata_pengeluaran).replace(',', '.'),
+        'ridge_test_r2': round(_safe_float((RIDGE_MODEL_BUNDLE or {}).get('test_r2'), 0.0) * 100, 1),
         'chart_labels': json.dumps(chart_labels),
         'ump_data': json.dumps(ump_data),
         'pdrb_data': json.dumps(pdrb_data),
@@ -342,139 +445,116 @@ def forecasting_page(request):
 
 
 def get_regression_dummy_data(inflasi_val):
-    """
-    Bangun dummy input untuk Ridge model.
-    Menggunakan metadata dari model bundle jika tersedia, agar otomatis support fitur baru.
-    """
-    load_models()
-
-    defaults = RIDGE_SIMULATION_DEFAULTS or {}
-    numeric_defaults = defaults.get('numeric_defaults', {})
-    ump_value = float(defaults.get('UMP', 3000000.0))
-    inflasi_pct = float(inflasi_val)
-    real_ump = ump_value / (1 + (inflasi_pct / 100.0))
-
-    base_values = {
-        'Provinsi': defaults.get('Provinsi', 'Jawa Timur'),
-        'TPT': float(numeric_defaults.get('TPT', 5.5)),
-        'PDRB_HargaKonstan': float(numeric_defaults.get('PDRB_HargaKonstan', 40000.0)),
-        'Inflasi_Rata_Tahunan': inflasi_pct,
-        'Gini_Rasio': float(numeric_defaults.get('Gini_Rasio', 0.30)),
-        'IPM': float(numeric_defaults.get('IPM', 72.4)),
-        'Garis_Kemiskinan': float(numeric_defaults.get('Garis_Kemiskinan', 609000.0)),
-        'Jumlah_Penduduk': float(numeric_defaults.get('Jumlah_Penduduk', 8000.0)),
-        'Pct_Populasi': float(numeric_defaults.get('Pct_Populasi', 2.8)),
-        'Pct_Akses_Air_Bersih': float(numeric_defaults.get('Pct_Akses_Air_Bersih', 87.7)),
-        'Protein_gram_per_hari': float(numeric_defaults.get('Protein_gram_per_hari', 62.3)),
-        'Inflasi_WB_Annual': float(defaults.get('Inflasi_WB_Annual', 2.7)),
-        'GDP_PerCapita_PPP': float(defaults.get('GDP_PerCapita_PPP', 13800.0)),
-        'Pct_Unemployment_WB': float(defaults.get('Pct_Unemployment_WB', 3.4)),
-        'Poverty_Headcount_Pct': float(defaults.get('Poverty_Headcount_Pct', 9.4)),
-        'Real_UMP': real_ump,
-        'Real_UMP_Growth': float(numeric_defaults.get('Real_UMP_Growth', 0.0)),
-        'PDRB_HargaKonstan_Growth': float(numeric_defaults.get('PDRB_HargaKonstan_Growth', 0.0)),
-        'TPT_Growth': float(numeric_defaults.get('TPT_Growth', 0.0)),
-        'UMP_x_PDRB': real_ump * float(numeric_defaults.get('PDRB_HargaKonstan', 40000.0)),
-        'Inflasi_x_TPT': inflasi_pct * float(numeric_defaults.get('TPT', 5.5)),
-        'Log_PDRB': float(np.log1p(float(numeric_defaults.get('PDRB_HargaKonstan', 40000.0)))),
-        'Log_UMP': float(np.log1p(real_ump)),
-    }
-    
-    # Jika model bundle punya info fitur, tambahkan default values untuk fitur lain
-    if RIDGE_MODEL_BUNDLE is not None and 'num_features' in RIDGE_MODEL_BUNDLE:
-        try:
-            num_features = RIDGE_MODEL_BUNDLE.get('num_features', [])
-            for feat in num_features:
-                if feat not in base_values:
-                    base_values[feat] = float(numeric_defaults.get(feat, 0.0))
-        except Exception:
-            pass
-    
-    return pd.DataFrame([base_values])
+    default_province = (RIDGE_SIMULATION_DEFAULTS or {}).get('Provinsi', 'Jawa Timur')
+    dummy_input, _ = _build_simulation_input(default_province, {'inflasi': inflasi_val})
+    return dummy_input
 
 def daya_beli_page(request):
     load_models()
-    
-    # Nilai default awal jika terjadi kendala load file pkl
-    slope_per_percent = -15000.0
-    base_value = 1450000.0
-    
-    if RIDGE_MODEL is not None:
-        try:
-            # Karena pakai model temanmu, kita kembalikan fungsi get_regression_dummy_data
-            # yang bisa menerima parameter string 'Provinsi'
-            dummy_0 = get_regression_dummy_data(0.0)
-            dummy_1 = get_regression_dummy_data(0.05) 
-            
-            val0 = RIDGE_MODEL.predict(dummy_0)[0]
-            val1 = RIDGE_MODEL.predict(dummy_1)[0]
-            
-            slope_per_percent = float(val1 - val0) / 5.0
-            base_value = float(val0)
-        except Exception as e:
-            # Fallback otomatis jika pipeline temanmu butuh penyesuaian kolom tambahan
-            slope_per_percent = -15000.0
-            base_value = 1450000.0
-        
+
+    baselines = _get_province_simulation_baselines()
+    province_names = sorted(baselines.keys())
+    default_province = (RIDGE_SIMULATION_DEFAULTS or {}).get('Provinsi')
+    if default_province not in baselines:
+        default_province = province_names[0] if province_names else ''
+
+    province_defaults = {}
+    for province in province_names:
+        baseline = baselines[province]
+        fields = baseline['fields']
+        province_defaults[province] = {
+            'year': baseline['baseline_year'],
+            'baseline_pengeluaran': round(_safe_float(baseline['baseline_pengeluaran']), 2),
+            'inflasi': round(_safe_float(fields.get('Inflasi_Rata_Tahunan')), 2),
+            'ump': round(_safe_float(fields.get('UMP')), 2),
+            'tpt': round(_safe_float(fields.get('TPT')), 3),
+            'pdrb_hargakonstan': round(_safe_float(fields.get('PDRB_HargaKonstan')), 2),
+        }
     context = {
-        'slope': slope_per_percent,
-        'base_value': base_value
+        'provinces': province_names,
+        'default_province': default_province,
+        'province_defaults_json': json.dumps(province_defaults),
     }
     return render(request, 'predictions/daya_beli.html', context)
-
-
 def simulate_daya_beli(request):
-    inflasi_val = request.GET.get('inflasi', 0.0)
-    provinsi_val = request.GET.get('provinsi', 'Jawa Timur') # Sekarang provinsi ini akan dibaca secara dinamis
+    provinsi = request.GET.get('provinsi', '').strip()
+    if not provinsi:
+        return JsonResponse({'error': 'Provinsi wajib dipilih'}, status=400)
+
+    inflasi_val = request.GET.get('inflasi')
+    ump_val = request.GET.get('ump')
+    tpt_val = request.GET.get('tpt')
+    pdrb_val = request.GET.get('pdrb_hargakonstan')
+
+    overrides = {}
     try:
-        inflasi_val = float(inflasi_val)
+        if inflasi_val not in (None, ''):
+            overrides['inflasi'] = float(inflasi_val)
+        if ump_val not in (None, ''):
+            overrides['ump'] = float(ump_val)
+        if tpt_val not in (None, ''):
+            overrides['tpt'] = float(tpt_val)
+        if pdrb_val not in (None, ''):
+            overrides['pdrb_hargakonstan'] = float(pdrb_val)
     except ValueError:
-        return JsonResponse({'error': 'Invalid input'}, status=400)
-        
+        return JsonResponse({'error': 'Input numerik tidak valid'}, status=400)
+
     load_models()
     if RIDGE_MODEL is None:
         return JsonResponse({'error': 'Model belum siap'}, status=500)
-        
+    if (RIDGE_MODEL_BUNDLE or {}).get('legacy_artifact'):
+        return JsonResponse(
+            {'error': 'Artifact model daya beli lama tidak kompatibel dengan inference per provinsi terbaru.'},
+            status=500,
+        )
+
     try:
-        dummy_input = get_regression_dummy_data(inflasi_val)
-        
-        # Masukkan nama provinsi dari request user ke dalam DataFrame sebelum di-predict
-        if 'Provinsi' in dummy_input.columns:
-            dummy_input['Provinsi'] = provinsi_val
-            
-        val = RIDGE_MODEL.predict(dummy_input)[0]
-        if val < 0: val = 0
-        return JsonResponse({'predicted_pengeluaran': float(val)})
-    except Exception as e:
-        # Jika gagal, jalankan estimasi matematis linear agar aplikasi tidak crash
-        fallback_val = 1450000.0 + (inflasi_val * -15000.0 * 100)
-        if fallback_val < 0: fallback_val = 0
-        return JsonResponse({'predicted_pengeluaran': float(fallback_val), 'note': 'pipeline fallback active'})
-# API endpoint ini mungkin tidak diperlukan lagi jika kita pakai slope JS murni, 
-# tapi tetap kita pertahankan untuk kebutuhan lain.
-def simulate_daya_beli(request):
-    inflasi_val = request.GET.get('inflasi', 0.0)
-    try:
-        inflasi_val = float(inflasi_val)
-    except ValueError:
-        return JsonResponse({'error': 'Invalid input'}, status=400)
-        
-    load_models()
-    if RIDGE_MODEL is None:
-        return JsonResponse({'error': 'Model belum siap'}, status=500)
-        
-    dummy_input = get_regression_dummy_data(inflasi_val)
-    try:
-        val = RIDGE_MODEL.predict(dummy_input)[0]
-        if val < 0: val = 0
-        return JsonResponse({'predicted_pengeluaran': float(val)})
+        dummy_input, baseline = _build_simulation_input(provinsi, overrides)
+        val = float(RIDGE_MODEL.predict(dummy_input)[0])
+        predicted_pengeluaran = max(val, 0.0)
+        baseline_pengeluaran = _safe_float(baseline['baseline_pengeluaran'], 0.0)
+        delta_pct = _pct_change(predicted_pengeluaran, baseline_pengeluaran, 0.0)
+
+        if delta_pct > 3:
+            status_label = 'meningkat'
+        elif delta_pct < -3:
+            status_label = 'menurun'
+        else:
+            status_label = 'stabil'
+
+        inflasi_used = _safe_float(dummy_input.at[0, 'Inflasi_Rata_Tahunan'])
+        inputs_used = {
+            'provinsi': provinsi,
+            'inflasi': round(inflasi_used, 2),
+            'ump': round(_safe_float(dummy_input.at[0, 'Real_UMP']) * (1 + (inflasi_used / 100.0)), 2),
+            'tpt': round(_safe_float(dummy_input.at[0, 'TPT']), 3),
+            'pdrb_hargakonstan': round(_safe_float(dummy_input.at[0, 'PDRB_HargaKonstan']), 2),
+        }
+        return JsonResponse({
+            'predicted_pengeluaran': round(predicted_pengeluaran, 2),
+            'province': provinsi,
+            'baseline_year': int(baseline['baseline_year']),
+            'baseline_pengeluaran': round(baseline_pengeluaran, 2),
+            'inputs_used': inputs_used,
+            'status_label': status_label,
+        })
+    except KeyError:
+        return JsonResponse({'error': 'Provinsi tidak ditemukan'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
 
-# --- Landing Page (new) ---
 def home_page(request):
-    return render(request, 'predictions/home.html')
+    load_models()
+    context = {
+        'ridge_test_r2': round(_safe_float((RIDGE_MODEL_BUNDLE or {}).get('test_r2'), 0.0) * 100, 1),
+        'province_count': len(_get_province_simulation_baselines()),
+    }
+    return render(request, 'predictions/home.html', context)
+
+
+def guide_page(request):
+    return render(request, 'predictions/guide.html')
 
 
 # --- Dataset Explorer ---
@@ -496,25 +576,90 @@ def scenarios_page(request):
 # API ENDPOINTS FOR REAL DATA
 # ============================================================
 
+def _is_number(s):
+    """Check if string looks like a number (int or float)."""
+    try:
+        float(str(s).replace(',', '').replace(' ', ''))
+        return True
+    except (ValueError, TypeError):
+        return False
+
+
 def api_dataset_sample(request):
-    """Return sample rows and column info from processed CSV files."""
-    dataset = request.GET.get('dataset', 'daya_beli')
+    """Return sample rows and column info from a dataset file.
+
+    Supports two modes:
+    - ?file=<relative path under datasets/> → read that specific CSV
+    - ?dataset=<name> → legacy alias for processed datasets (daya_beli / inflasi)
+    """
     n_rows = int(request.GET.get('n', 8))
     project_root = os.path.dirname(settings.BASE_DIR)
-    
-    if dataset == 'daya_beli':
-        path = os.path.join(project_root, 'datasets', 'processed', 'clean_daya_beli.csv')
+    datasets_root = os.path.join(project_root, 'datasets')
+
+    file_param = request.GET.get('file', '').strip()
+    dataset = request.GET.get('dataset', '').strip()
+
+    if file_param:
+        # Whitelist: only allow CSV files under datasets/ (no path traversal)
+        rel = file_param.replace('\\', '/').lstrip('/')
+        if '..' in rel.split('/'):
+            return JsonResponse({'error': 'Invalid path'}, status=400)
+        if not rel.lower().endswith('.csv'):
+            return JsonResponse({'error': 'Only CSV files are previewable'}, status=400)
+        path = os.path.join(datasets_root, rel)
+        if not os.path.isfile(path):
+            return JsonResponse({
+                'error': 'File not found. Dataset ini mungkin berformat XLSX/XLS atau terdiri dari banyak file (satu CSV per tahun).',
+                'file_format': 'XLSX' if 'XLSX' in rel.upper() or 'XLS' in rel.upper() else 'multi-file'
+            }, status=404)
+    elif dataset == 'daya_beli':
+        path = os.path.join(datasets_root, 'processed', 'clean_daya_beli.csv')
     elif dataset == 'inflasi':
-        path = os.path.join(project_root, 'datasets', 'processed', 'clean_inflasi_ts.csv')
+        path = os.path.join(datasets_root, 'processed', 'clean_inflasi_ts.csv')
     else:
-        return JsonResponse({'error': 'Unknown dataset'}, status=400)
-    
+        return JsonResponse({'error': 'Unknown dataset. Provide ?file= or ?dataset='}, status=400)
+
     if not os.path.exists(path):
         return JsonResponse({'error': 'File not found'}, status=404)
-    
+
     try:
-        df = pd.read_csv(path)
-        # Get column names and types
+        # Try to detect multi-row headers (BPS files often have 1-3 metadata rows)
+        # Strategy: read first few lines, pick the first row with most non-empty cells
+        # that is "header-like" (mostly text, no numeric values).
+        with open(path, 'r', encoding='utf-8', errors='replace') as f:
+            sample_lines = [f.readline() for _ in range(8)]
+
+        best_row = 0
+        best_score = -1
+        for i, line in enumerate(sample_lines):
+            cells = [c.strip() for c in line.rstrip('\n').split(',') if c.strip()]
+            if not cells:
+                continue
+            # Count cells that are clearly text (not parseable as float)
+            text_cells = sum(1 for c in cells if not _is_number(c))
+            # Heuristic score: prefer rows where many cells are text and row width is high
+            score = text_cells * 10 + len(cells)
+            # Penalize early empty rows
+            if i < 2 and text_cells <= 1:
+                score = -1
+            if score > best_score:
+                best_score = score
+                best_row = i
+
+        # If best score is too low, just use row 0
+        if best_score < 0:
+            best_row = 0
+
+        df = pd.read_csv(path, header=best_row)
+
+        # Rename first column if it's "Unnamed: 0" (typical for BPS wide-format files)
+        if len(df.columns) > 0 and 'Unnamed' in str(df.columns[0]):
+            df = df.rename(columns={df.columns[0]: 'Wilayah'})
+
+        # Drop remaining fully-empty columns (Unnamed: X) and fully-empty rows
+        df = df.loc[:, ~df.columns.str.contains(r'^Unnamed', na=False)]
+        df = df.dropna(how='all').reset_index(drop=True)
+
         col_names = []
         col_types = []
         for col in df.columns:
@@ -525,16 +670,16 @@ def api_dataset_sample(request):
                 col_types.append('date')
             else:
                 col_types.append('text')
-        
-        # Sample rows (first n_rows)
+
+        # Sample first n_rows, fill NaN
         rows = df.head(n_rows).fillna('').astype(str).to_dict('records')
-        
+
         return JsonResponse({
             'columns': col_names,
             'types': col_types,
             'rows': rows,
             'total_rows': len(df),
-            'dataset': dataset
+            'source_file': os.path.relpath(path, project_root).replace('\\', '/')
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

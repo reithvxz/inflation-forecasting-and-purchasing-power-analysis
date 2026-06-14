@@ -1,764 +1,656 @@
 {% extends 'predictions/base.html' %}
-{% load static %}
 
-{% block page_title %}Command Center — EcoDash{% endblock %}
+{% block page_title %}Dashboard Operasional EcoDash{% endblock %}
 
 {% block extra_head %}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <style>
-    :root {
-        --bg-dark: #FFFFFF;
-        --bg-panel: #F8F9FB;
-        --bg-card: #FFFFFF;
-        --bg-elevated: #F1F3F6;
-        --accent-primary: #2962FF;
-        --accent-primary-dim: rgba(41, 98, 255, 0.1);
-        --accent-secondary: #26A69A;
-        --accent-tertiary: #AB47BC;
-        --accent-info: #00BCD4;
-        --positive: #26A69A;
-        --negative: #EF5350;
-        --text-primary: #131722;
-        --text-secondary: #5D606B;
-        --text-tertiary: #868993;
-        --border-color: #E0E3EB;
-        --border-hover: #CFD3DC;
+    .dash-shell {
+        display: grid;
+        gap: 18px;
     }
-
-    /* ===== GRID BG ===== */
-    .grid-bg {
-        background-image:
-            linear-gradient(rgba(41,98,233,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(41,98,233,0.04) 1px, transparent 1px);
-    
-    /* ===== INFLASI OVERVIEW (M-to-M, Y-o-Y, Y-to-D) ===== */
-    .inflasi-overview {
-        display: grid; grid-template-columns: repeat(3, 1fr);
-        gap: 12px; margin-bottom: 16px;
-    }
-    .inflasi-card {
-        background: var(--bg-card); border: 1px solid var(--border-color);
-        border-radius: 8px; padding: 16px;
-        display: flex; gap: 14px; align-items: flex-start;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        position: relative; transition: all 0.15s;
-    }
-    .inflasi-card:hover { border-color: var(--border-hover); box-shadow: 0 4px 12px rgba(0,0,0,0.06); transform: translateY(-1px); }
-    .inflasi-icon {
-        width: 42px; height: 42px; border-radius: 8px;
-        display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0; font-size: 16px;
-    }
-    .inflasi-body { flex: 1; min-width: 0; }
-    .inflasi-label {
-        font-size: 11px; font-weight: 600; color: var(--text-secondary);
-        text-transform: uppercase; letter-spacing: 0.4px;
-        margin-bottom: 4px; display: flex; align-items: center; gap: 4px;
-    }
-    .tooltip-trigger {
-        cursor: help; color: var(--text-tertiary); font-size: 11px;
-        opacity: 0.7; transition: opacity 0.15s;
-    }
-    .tooltip-trigger:hover { opacity: 1; }
-    .inflasi-value {
-        font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
-        color: var(--text-primary); line-height: 1.1; margin-bottom: 4px;
-        font-variant-numeric: tabular-nums;
-    }
-    .inflasi-change {
-        font-size: 11px; font-weight: 600; color: var(--text-secondary);
-        display: flex; align-items: center; gap: 4px;
-    }
-    .inflasi-change.up { color: var(--positive); }
-    .inflasi-change.down { color: var(--negative); }
-    .inflasi-meta {
-        font-size: 10px; color: var(--text-tertiary);
-        margin-top: 6px; letter-spacing: 0.2px;
-    }
-    .inflasi-status {
-        position: absolute; top: 12px; right: 12px;
-        font-size: 10px; font-weight: 700; padding: 3px 8px;
-        border-radius: 4px; text-transform: uppercase; letter-spacing: 0.4px;
-    }
-    .inflasi-status.positive { color: var(--positive); background: rgba(38, 166, 154, 0.1); }
-    .inflasi-status.warning { color: var(--warning); background: rgba(255, 179, 0, 0.1); }
-    .inflasi-status.negative { color: var(--negative); background: rgba(239, 83, 80, 0.1); }
-    .inflasi-status.neutral { color: var(--text-secondary); background: var(--bg-elevated); }
-    
-    @media (max-width: 768px) {
-        .inflasi-overview { grid-template-columns: 1fr; }
-    }
-        background-size: 40px 40px;
-    }
-
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    @keyframes livePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
-    @keyframes borderAnim { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-    @keyframes countUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-
-    .ticker-strip {
-        display: flex; overflow: hidden; white-space: nowrap;
-        background: var(--bg-elevated); border: 1px solid var(--border-color);
-        border-radius: 6px; padding: 8px 0; margin-bottom: 20px;
-    }
-    .ticker-strip-content { display: inline-block; animation: tickerScroll 35s linear infinite; }
-    .ticker-strip-content span { display: inline-block; padding: 0 24px; font-size: 12px; color: var(--text-secondary); font-weight: 500; }
-    .ticker-strip-content .up { color: var(--positive); }
-    .ticker-strip-content .down { color: var(--negative); }
-    .ticker-strip-content strong { color: var(--text-primary); font-weight: 700; }
-
-    /* ===== WELCOME ===== */
-    .welcome-terminal {
-        position: relative; overflow: hidden;
+    .dash-orientation,
+    .inflasi-overview-card,
+    .dash-card,
+    .quick-links {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 28px 32px; margin-bottom: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        border-radius: 14px;
+        box-shadow: var(--shadow-sm);
     }
-    .welcome-terminal::before {
-        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-        background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary), var(--accent-tertiary));
-        background-size: 200% 100%; animation: borderAnim 3s ease infinite;
+    .dash-orientation {
+        display: grid;
+        grid-template-columns: 1.25fr 0.9fr;
+        gap: 18px;
+        padding: 24px;
+        background:
+            radial-gradient(circle at top right, rgba(41, 98, 255, 0.1), transparent 30%),
+            linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
     }
-    .welcome-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-    .welcome-title { display: flex; align-items: center; gap: 12px; }
-    .welcome-title h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px; }
-    .welcome-title .icon {
-        width: 40px; height: 40px; border-radius: 8px;
-        background: var(--accent-primary-dim); border: 1px solid rgba(41, 98, 255, 0.2);
-        display: flex; align-items: center; justify-content: center;
-        color: var(--accent-primary); font-size: 18px;
+    .orientation-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--accent-primary-dim);
+        color: var(--accent-primary);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
     }
-    .welcome-subtitle { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
-    .status-badges { display: flex; gap: 8px; flex-wrap: wrap; }
-    .status-badge {
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: 4px 10px; border-radius: 4px;
-        font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-        background: var(--bg-elevated); border: 1px solid var(--border-color); color: var(--text-secondary);
+    .orientation-kicker::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: currentColor;
     }
-    .status-badge.live { color: var(--positive); border-color: rgba(38, 166, 154, 0.3); background: rgba(38, 166, 154, 0.08); }
-    .status-badge.online { color: var(--accent-primary); border-color: rgba(41, 98, 255, 0.3); background: var(--accent-primary-dim); }
-    .status-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: livePulse 1.5s infinite; }
-
-    /* ===== KPI GRID ===== */
-    .terminal-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-    .terminal-kpi {
-        background: var(--bg-card); border: 1px solid var(--border-color);
-        border-radius: 8px; padding: 16px; position: relative; overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        transition: all 0.15s;
+    .dash-orientation h2 {
+        font-size: 28px;
+        line-height: 1.08;
+        letter-spacing: -0.7px;
+        margin-bottom: 10px;
     }
-    .terminal-kpi:hover { border-color: var(--border-hover); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
-    .terminal-kpi::before {
-        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-        background: linear-gradient(90deg, var(--accent-primary), transparent); opacity: 0.5;
+    .dash-orientation p,
+    .orientation-points li,
+    .dash-card p {
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.7;
     }
-    .terminal-kpi .kpi-icon-wrap {
-        width: 32px; height: 32px; border-radius: 6px; display: flex;
-        align-items: center; justify-content: center; font-size: 14px; margin-bottom: 12px;
+    .orientation-points {
+        display: grid;
+        gap: 10px;
+        margin-top: 16px;
+        padding-left: 18px;
     }
-    .terminal-kpi .kpi-label {
-        font-size: 10px; font-weight: 600; color: var(--text-secondary);
-        text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+    .orientation-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
     }
-    .terminal-kpi .kpi-number {
-        font-size: 24px; font-weight: 800; letter-spacing: -0.5px;
-        color: var(--text-primary); margin-bottom: 4px; font-variant-numeric: tabular-nums;
+    .dash-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 16px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: 0.15s ease;
     }
-    .terminal-kpi .kpi-sub { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; }
-    .terminal-kpi .kpi-sparkline { height: 32px; width: 100%; }
-    .terminal-kpi .kpi-sparkline canvas { width: 100% !important; height: 100% !important; }
-    .terminal-kpi .kpi-badge {
-        font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 3px; display: inline-flex; align-items: center; gap: 3px;
+    .dash-link.primary {
+        background: var(--accent-primary);
+        color: #fff;
     }
-    .badge-up { background: rgba(38, 166, 154, 0.1); color: var(--positive); }
-    .badge-down { background: rgba(239, 83, 80, 0.1); color: var(--negative); }
-    .badge-neutral { background: var(--accent-primary-dim); color: var(--accent-primary); }
-
-    /* ===== CHARTS ===== */
-    .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
-    .chart-panel {
-        background: var(--bg-card); border: 1px solid var(--border-color);
-        border-radius: 8px; padding: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    .dash-link.secondary {
+        background: var(--bg-panel);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
     }
-    .chart-panel h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); }
-    .chart-box { height: 220px; position: relative; }
-
-    /* ===== USD/IDR ===== */
-    .usd-idr-panel {
-        background: var(--bg-card); border: 1px solid var(--border-color);
-        border-radius: 8px; padding: 20px; margin-bottom: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    .dash-link:hover {
+        transform: translateY(-1px);
     }
-    .usd-idr-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
-    .usd-idr-title { display: flex; align-items: center; gap: 10px; }
-    .usd-idr-title .icon {
-        width: 36px; height: 36px; border-radius: 6px;
-        background: var(--accent-primary-dim); border: 1px solid rgba(41, 98, 255, 0.2);
-        display: flex; align-items: center; justify-content: center; color: var(--accent-primary); font-size: 14px;
+    .orientation-side {
+        display: grid;
+        gap: 12px;
     }
-    .usd-idr-title h3 { font-size: 14px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; }
-    .usd-idr-title p { color: var(--text-secondary); font-size: 11px; margin-top: 2px; }
-    .usd-idr-status { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .usd-idr-status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-primary); animation: livePulse 1.5s infinite; }
-    .usd-idr-body { display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
-    .usd-idr-value { font-size: 32px; font-weight: 800; color: var(--text-primary); letter-spacing: -1px; font-variant-numeric: tabular-nums; }
-    .usd-idr-change { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; margin-top: 4px; display: inline-block; }
-    .usd-idr-sparkline { height: 50px; flex: 1; min-width: 200px; }
-    .usd-idr-sparkline canvas { width: 100% !important; height: 100% !important; }
-    .usd-idr-meta { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); font-size: 11px; color: var(--text-secondary); }
-
-    /* ===== PURCHASING POWER ===== */
-    .purchasing-power-section {
-        background: var(--bg-card); border: 1px solid var(--border-color);
-        border-radius: 8px; padding: 28px; margin-bottom: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    .mini-explain {
+        padding: 16px;
+        border-radius: 12px;
+        background: #fff;
+        border: 1px solid var(--border-color);
     }
-    .pp-input-area { display: flex; align-items: center; gap: 12px; margin: 20px 0 24px 0; flex-wrap: wrap; }
-    .pp-input-area label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
-    .pp-input-area input {
-        background: var(--bg-card); border: 1px solid var(--border-color);
-        border-radius: 6px; padding: 10px 14px;
-        color: var(--text-primary); font-size: 14px; font-weight: 600;
-        font-family: inherit; width: 200px; outline: none; transition: border-color 0.15s;
+    .mini-explain strong {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 6px;
     }
-    .pp-input-area input:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--accent-primary-dim); }
-    .pp-input-area button {
-        background: var(--accent-primary); color: #fff; border: none;
-        border-radius: 6px; padding: 10px 20px; font-size: 13px; font-weight: 700;
-        cursor: pointer; font-family: inherit; transition: all 0.15s;
-        display: inline-flex; align-items: center; gap: 6px;
+    .mini-explain span {
+        font-size: 12px;
+        line-height: 1.6;
+        color: var(--text-secondary);
     }
-    .pp-input-area button:hover { background: var(--accent-primary-hover); }
-    .pp-result { display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; }
-    .pp-result-col { text-align: center; min-width: 160px; }
-    .pp-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 6px; }
-    .pp-value { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
-    .pp-value.positive { color: var(--positive); }
-    .pp-value.negative { color: var(--negative); }
-    .pp-arrow { font-size: 24px; color: var(--text-tertiary); }
-    .pp-bars { margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px; }
-    .pp-bar-row { display: flex; align-items: center; gap: 10px; }
-    .pp-bar-row .label { font-size: 11px; color: var(--text-secondary); font-weight: 600; width: 70px; }
-    .pp-bar-track { flex: 1; height: 16px; background: var(--bg-elevated); border-radius: 4px; overflow: hidden; }
-    .pp-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-    .pp-bar-fill.pos { background: linear-gradient(90deg, var(--positive), rgba(38, 166, 154, 0.6)); }
-    .pp-bar-fill.neg { background: linear-gradient(90deg, var(--negative), rgba(239, 83, 80, 0.6)); }
-    .pp-commodities { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-    .pp-commodity-card {
-        background: var(--bg-elevated); border: 1px solid var(--border-color);
-        border-radius: 6px; padding: 14px;
-        transition: all 0.15s;
+    .inflasi-overview {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
     }
-    .pp-commodity-card:hover { border-color: var(--accent-primary); }
-    .pp-commodity-name { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
-    .pp-commodity-qty { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
-    .pp-qty-before { font-size: 14px; font-weight: 700; color: var(--positive); }
-    .pp-qty-after { font-size: 14px; font-weight: 700; }
-    .pp-qty-after.loss { color: var(--negative); }
-    .pp-qty-arrow { color: var(--text-tertiary); }
-    .pp-qty-loss { font-size: 11px; color: var(--negative); font-weight: 600; margin-top: 4px; }
-    .pp-qty-price { font-size: 11px; color: var(--text-secondary); }
-
-    .section-title {
-        font-size: 13px; font-weight: 700; color: var(--text-primary);
-        text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px;
-        display: flex; align-items: center; gap: 8px;
+    .inflasi-overview-card {
+        padding: 18px;
     }
-    .section-title i { color: var(--accent-primary); }
-
-    .responsive-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-    @media (max-width: 900px) {
-        .terminal-kpi-grid { grid-template-columns: repeat(2, 1fr); }
-        .charts-row, .responsive-row { grid-template-columns: 1fr; }
+    .inflasi-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .inflasi-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--accent-primary-dim);
+        color: var(--accent-primary);
+    }
+    .inflasi-text strong {
+        display: block;
+        font-size: 13px;
+        line-height: 1.4;
+        margin-bottom: 3px;
+    }
+    .inflasi-text span {
+        display: block;
+        color: var(--text-secondary);
+        font-size: 12px;
+    }
+    .inflasi-value {
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.8px;
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+    .inflasi-foot {
+        color: var(--text-secondary);
+        font-size: 12px;
+    }
+    .kpi-grid-terminal {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+    }
+    .dash-card {
+        padding: 18px;
+    }
+    .kpi-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .kpi-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--accent-primary-dim);
+        color: var(--accent-primary);
+    }
+    .kpi-tag {
+        font-size: 10px;
+        padding: 5px 8px;
+        border-radius: 999px;
+        background: var(--bg-panel);
+        color: var(--text-secondary);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .kpi-label {
+        font-size: 11px;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-bottom: 8px;
+    }
+    .kpi-value {
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1px;
+        margin-bottom: 8px;
+    }
+    .kpi-sub {
+        color: var(--text-secondary);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+    .chart-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 0.95fr;
+        gap: 18px;
+    }
+    .chart-card,
+    .usd-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        box-shadow: var(--shadow-sm);
+        padding: 20px;
+    }
+    .chart-card h3,
+    .usd-panel h3,
+    .quick-links h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+    }
+    .chart-card p,
+    .usd-panel p,
+    .quick-links p {
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.6;
+        margin-bottom: 16px;
+    }
+    .chart-box {
+        height: 280px;
+    }
+    .usd-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: start;
+        margin-bottom: 18px;
+    }
+    .usd-value {
+        font-size: 36px;
+        font-weight: 800;
+        letter-spacing: -1px;
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+    .usd-change {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .usd-date {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 8px;
+    }
+    .usd-sparkline {
+        height: 70px;
+    }
+    .quick-links {
+        padding: 20px;
+    }
+    .quick-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+    }
+    .quick-item {
+        display: block;
+        padding: 16px;
+        border-radius: 12px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        text-decoration: none;
+        transition: 0.15s ease;
+    }
+    .quick-item:hover {
+        border-color: var(--accent-primary);
+        transform: translateY(-1px);
+    }
+    .quick-item strong {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 5px;
+        color: var(--text-primary);
+    }
+    .quick-item span {
+        color: var(--text-secondary);
+        font-size: 12px;
+        line-height: 1.6;
+    }
+    @media (max-width: 1100px) {
+        .dash-orientation,
+        .chart-grid,
+        .quick-grid {
+            grid-template-columns: 1fr;
+        }
+        .kpi-grid-terminal {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+    @media (max-width: 780px) {
+        .inflasi-overview,
+        .kpi-grid-terminal {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Ticker Strip -->
-<div class="ticker-strip">
-    <div class="ticker-strip-content">
-        <span>USD/IDR <strong>18,037</strong> <span class="up">▲ 0.59%</span></span>
-        <span>Inflasi MoM <strong>0.28%</strong> <span class="up">▲ 0.03%</span></span>
-        <span>R² Model <strong>90.8%</strong></span>
-        <span>Baseline <strong>Rp 1.45jt</strong></span>
-        <span>SDGs 8 <strong>Active</strong></span>
-        <span>LSTM <strong>Active</strong></span>
-        <span>ARIMA <strong>Active</strong></span>
-        <span>38 Provinsi <strong>Tercakup</strong></span>
-        <span>23 Dataset <strong>Tersedia</strong></span>
-        <span>USD/IDR <strong>18,037</strong> <span class="up">▲ 0.59%</span></span>
-        <span>Inflasi MoM <strong>0.28%</strong> <span class="up">▲ 0.03%</span></span>
-        <span>R² Model <strong>90.8%</strong></span>
-        <span>Baseline <strong>Rp 1.45jt</strong></span>
-        <span>SDGs 8 <strong>Active</strong></span>
-        <span>LSTM <strong>Active</strong></span>
-        <span>ARIMA <strong>Active</strong></span>
-        <span>38 Provinsi <strong>Tercakup</strong></span>
-        <span>23 Dataset <strong>Tersedia</strong></span>
-    </div>
-</div>
-
-<!-- Welcome Terminal -->
-<section class="welcome-terminal">
-    <div class="welcome-row">
-        <div class="welcome-title">
-            <div class="icon"><i class="fas fa-terminal"></i></div>
-            <div>
-                <h1>Command Center</h1>
-                <p class="welcome-subtitle">Dashboard analisis inflasi & daya beli — Update terakhir: hari ini</p>
-            </div>
-        </div>
-        <div class="status-badges">
-            <span class="status-badge live"><span class="dot"></span> Live</span>
-            <span class="status-badge online"><span class="dot"></span> System Online</span>
-            <span class="status-badge"><span class="dot"></span> LSTM Active</span>
-        </div>
-    </div>
-</section>
-
-<div class="section-title"><i class="fas fa-chart-line"></i> Key Performance Indicators</div>
-
-<!-- INFLASI OVERVIEW: M-to-M, Y-o-Y, Y-to-D -->
-<section class="inflasi-overview">
-    <div class="inflasi-card" id="inflasi-mom">
-        <div class="inflasi-icon" style="background: var(--accent-primary-dim); color: var(--accent-primary);">
-            <i class="fas fa-calendar-day"></i>
-        </div>
-        <div class="inflasi-body">
-            <div class="inflasi-label">Inflasi M-to-M <span class="tooltip-trigger" data-tooltip="Month-to-Month: perubahan dari bulan lalu">ⓘ</span></div>
-            <div class="inflasi-value" id="mom-value">—</div>
-            <div class="inflasi-change" id="mom-change">—</div>
-            <div class="inflasi-meta">Bulan terakhir: <span id="mom-date">—</span></div>
-        </div>
-    </div>
-    <div class="inflasi-card" id="inflasi-yoy">
-        <div class="inflasi-icon" style="background: rgba(38, 166, 154, 0.1); color: var(--positive);">
-            <i class="fas fa-calendar-alt"></i>
-        </div>
-        <div class="inflasi-body">
-            <div class="inflasi-label">Inflasi Y-o-Y <span class="tooltip-trigger" data-tooltip="Year-on-Year: dibanding 12 bulan lalu. Standar rilis BPS/berita">ⓘ</span></div>
-            <div class="inflasi-value" id="yoy-value">—</div>
-            <div class="inflasi-change" id="yoy-change">—</div>
-            <div class="inflasi-meta">Setahun lalu: <span id="yoy-year-ago">—</span></div>
-        </div>
-        <div class="inflasi-status" id="yoy-status">—</div>
-    </div>
-    <div class="inflasi-card" id="inflasi-ytd">
-        <div class="inflasi-icon" style="background: rgba(0, 188, 212, 0.1); color: var(--accent-info);">
-            <i class="fas fa-calendar"></i>
-        </div>
-        <div class="inflasi-body">
-            <div class="inflasi-label">Inflasi Y-to-D <span class="tooltip-trigger" data-tooltip="Year-to-Date: dibanding Januari tahun ini">ⓘ</span></div>
-            <div class="inflasi-value" id="ytd-value">—</div>
-            <div class="inflasi-change">vs Januari <span id="ytd-year">—</span></div>
-            <div class="inflasi-meta">Akumulasi tahun ini</div>
-        </div>
-    </div>
-</section>
-
-<!-- KPI Grid -->
-<section class="terminal-kpi-grid">
-    <div class="terminal-kpi" id="kpi-inflasi">
-        <div class="kpi-icon-wrap" style="background: var(--accent-primary-dim); color: var(--accent-primary);">
-            <i class="fas fa-chart-line"></i>
-        </div>
-        <div class="kpi-label">Proyeksi Inflasi (LSTM)</div>
-        <div class="kpi-number" style="color: var(--accent-primary);">{{ inflasi_pred|floatformat:2 }}%</div>
-        <div class="kpi-sub">Bulan depan</div>
-        <div class="kpi-sparkline"><canvas id="spark-inflasi"></canvas></div>
-        <span class="kpi-badge badge-up" style="margin-top: 4px;"><i class="fas fa-arrow-up" style="font-size: 8px;"></i> PyTorch Forecast</span>
-    </div>
-    <div class="terminal-kpi" id="kpi-r2">
-        <div class="kpi-icon-wrap" style="background: rgba(38, 166, 154, 0.1); color: var(--positive);">
-            <i class="fas fa-bullseye"></i>
-        </div>
-        <div class="kpi-label">Akurasi Model R²</div>
-        <div class="kpi-number" style="color: var(--positive);">90.8%</div>
-        <div class="kpi-sub">Test set accuracy</div>
-        <div class="kpi-sparkline"><canvas id="spark-r2"></canvas></div>
-        <span class="kpi-badge badge-up" style="margin-top: 4px;"><i class="fas fa-check-circle" style="font-size: 8px;"></i> Sangat Andal</span>
-    </div>
-    <div class="terminal-kpi" id="kpi-baseline">
-        <div class="kpi-icon-wrap" style="background: rgba(171, 71, 188, 0.1); color: var(--accent-tertiary);">
-            <i class="fas fa-wallet"></i>
-        </div>
-        <div class="kpi-label">Baseline Pengeluaran</div>
-        <div class="kpi-number">Rp {{ rata_pengeluaran }}</div>
-        <div class="kpi-sub">Per kapita / bulan</div>
-        <div class="kpi-sparkline"><canvas id="spark-baseline"></canvas></div>
-        <span class="kpi-badge badge-up" style="margin-top: 4px;"><i class="fas fa-arrow-up" style="font-size: 8px;"></i> SDGs 8</span>
-    </div>
-    <div class="terminal-kpi" id="kpi-usd-idr">
-        <div class="kpi-icon-wrap" style="background: rgba(239, 83, 80, 0.1); color: var(--negative);">
-            <i class="fas fa-dollar-sign"></i>
-        </div>
-        <div class="kpi-label">USD/IDR Kurs</div>
-        <div class="kpi-number" id="kpi-usd-value" style="color: var(--negative);">—</div>
-        <div class="kpi-sub" id="kpi-usd-sub">Memuat data real-time...</div>
-        <div class="kpi-sparkline"><canvas id="spark-usd"></canvas></div>
-        <span class="kpi-badge badge-down" id="kpi-usd-badge" style="margin-top: 4px;"><i class="fas fa-sync-alt" style="font-size: 8px; animation: pulse 1s infinite;"></i> Loading</span>
-    </div>
-</section>
-
-<!-- USD/IDR Live Section -->
-<section class="usd-idr-panel">
-    <div class="usd-idr-header">
-        <div class="usd-idr-title">
-            <div class="icon"><i class="fas fa-exchange-alt"></i></div>
-            <div>
-                <h3>USD/IDR Live Exchange Rate</h3>
-                <p>Kurs harian terbaru dari Frankfurter</p>
-            </div>
-        </div>
-        <div class="usd-idr-status">
-            <span class="dot"></span>
-            <span id="usd-last-updated">Memuat...</span>
-        </div>
-    </div>
-    <div class="usd-idr-body">
+<section class="dash-shell">
+    <section class="dash-orientation" id="orientation-panel">
         <div>
-            <div class="pp-label">Current Rate</div>
-            <div class="usd-idr-value" id="usd-idr-rate">Loading...</div>
-            <div id="usd-idr-change" class="usd-idr-change badge-neutral">
-                <i class="fas fa-sync-alt" style="animation: pulse 1s infinite;"></i> Memuat...
+            <div class="orientation-kicker">Orientasi singkat sebelum membaca KPI</div>
+            <h2>Mulai dari arah pergerakan harga, lalu baca dampaknya ke daya beli.</h2>
+            <p>
+                Dashboard ini merangkum tiga cara membaca inflasi: perubahan harga bulan ini, perbandingan
+                dengan tahun lalu, dan akumulasi sejak Januari. Setelah itu, lihat proyeksi inflasi,
+                kekuatan model, kurs USD/IDR, dan estimasi daya beli untuk memahami konteks ekonomi secara utuh.
+            </p>
+            <ul class="orientation-points">
+                <li><strong>Perubahan harga bulan ini</strong> cocok untuk membaca tekanan jangka sangat dekat.</li>
+                <li><strong>Perbandingan dengan bulan yang sama tahun lalu</strong> membantu melihat apakah situasi sekarang lebih panas atau lebih tenang.</li>
+                <li><strong>Akumulasi sejak Januari</strong> berguna untuk membaca arah sepanjang tahun berjalan.</li>
+            </ul>
+            <div class="orientation-actions">
+                <a class="dash-link primary" href="{% url 'guide' %}">Baca panduan lengkap</a>
+                <a class="dash-link secondary" href="{% url 'daya_beli' %}">Coba simulasi daya beli</a>
             </div>
         </div>
-        <div class="usd-idr-sparkline">
-            <canvas id="spark-usd-live"></canvas>
-        </div>
-    </div>
-</section>
-
-<!-- Charts Row -->
-<div class="charts-row">
-    <div class="chart-panel">
-        <h3><i class="fas fa-chart-bar" style="color: var(--accent-primary); margin-right: 6px;"></i> Tren Historis UMP (Rata-rata Nasional)</h3>
-        <div class="chart-box"><canvas id="overviewChart"></canvas></div>
-    </div>
-    <div class="chart-panel">
-        <h3><i class="fas fa-chart-pie" style="color: var(--accent-primary); margin-right: 6px;"></i> Proporsi Pengeluaran</h3>
-        <div class="chart-box"><canvas id="pieChart"></canvas></div>
-    </div>
-</div>
-
-<!-- Rupiah Purchasing Power Section -->
-<section class="purchasing-power-section">
-    <div class="section-title"><i class="fas fa-coins"></i> Dampak Inflasi pada Uang Anda</div>
-    <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">Inflasi mengurangi daya beli uang Anda. Berikut simulasi dampaknya:</p>
-
-    <div class="pp-input-area">
-        <label>Masukkan nominal Rupiah:</label>
-        <input type="text" id="ppNominal" value="1.000.000">
-        <button onclick="calculatePP()"><i class="fas fa-calculator"></i> Hitung Dampak</button>
-    </div>
-
-    <div class="pp-result">
-        <div class="pp-result-col">
-            <div class="pp-label">Daya Beli Saat Ini</div>
-            <div class="pp-value positive" id="ppBefore">Rp 1.000.000</div>
-        </div>
-        <div class="pp-arrow">→</div>
-        <div class="pp-result-col">
-            <div class="pp-label">Setelah Inflasi <span id="ppInflasiRate">0.21%</span></div>
-            <div class="pp-value negative" id="ppAfter">Rp 997.913</div>
-        </div>
-    </div>
-
-    <div class="pp-bars">
-        <div class="pp-bar-row">
-            <span class="label" style="color: var(--positive);">Saat ini</span>
-            <div class="pp-bar-track">
-                <div id="ppBarBefore" class="pp-bar-fill pos" style="width: 100%;"></div>
+        <div class="orientation-side">
+            <div class="mini-explain">
+                <strong>Kalau ingin baca cepat</strong>
+                <span>Lihat dulu tiga kartu inflasi di bawah, baru lanjut ke KPI besar dan panel kurs.</span>
+            </div>
+            <div class="mini-explain">
+                <strong>Kalau ingin paham istilah teknis</strong>
+                <span>Halaman Panduan menjelaskan MoM, YoY, Y-to-D, baseline, dan cara kerja model dengan bahasa yang lebih santai.</span>
+            </div>
+            <div class="mini-explain">
+                <strong>Kalau ingin eksplor skenario</strong>
+                <span>Gunakan halaman Daya Beli untuk melihat bagaimana perubahan inflasi dan indikator inti memengaruhi estimasi pengeluaran.</span>
             </div>
         </div>
-        <div class="pp-bar-row">
-            <span class="label" style="color: var(--negative);">Inflasi</span>
-            <div class="pp-bar-track">
-                <div id="ppBarAfter" class="pp-bar-fill neg" style="width: 99.79%;"></div>
+    </section>
+
+    <section class="inflasi-overview">
+        <div class="inflasi-overview-card">
+            <div class="inflasi-label">
+                <div class="inflasi-icon"><i class="fas fa-calendar-day"></i></div>
+                <div class="inflasi-text">
+                    <strong>Perubahan harga bulan ini</strong>
+                    <span>Alias inflasi MoM</span>
+                </div>
+            </div>
+            <div class="inflasi-value" id="momValue">-</div>
+            <div class="inflasi-foot">Membandingkan bulan berjalan dengan bulan sebelumnya.</div>
+        </div>
+        <div class="inflasi-overview-card">
+            <div class="inflasi-label">
+                <div class="inflasi-icon" style="background: rgba(38, 166, 154, 0.12); color: var(--positive);"><i class="fas fa-clock-rotate-left"></i></div>
+                <div class="inflasi-text">
+                    <strong>Perbandingan dengan bulan yang sama tahun lalu</strong>
+                    <span>Alias inflasi YoY</span>
+                </div>
+            </div>
+            <div class="inflasi-value" id="yoyValue">-</div>
+            <div class="inflasi-foot">Membandingkan posisi sekarang dengan titik yang sama pada tahun lalu.</div>
+        </div>
+        <div class="inflasi-overview-card">
+            <div class="inflasi-label">
+                <div class="inflasi-icon" style="background: rgba(171, 71, 188, 0.12); color: var(--accent-tertiary);"><i class="fas fa-layer-group"></i></div>
+                <div class="inflasi-text">
+                    <strong>Akumulasi sejak Januari</strong>
+                    <span>Alias inflasi Y-to-D</span>
+                </div>
+            </div>
+            <div class="inflasi-value" id="ytdValue">-</div>
+            <div class="inflasi-foot">Menjumlahkan tekanan harga sejak awal tahun sampai sekarang.</div>
+        </div>
+    </section>
+
+    <section class="kpi-grid-terminal">
+        <article class="dash-card">
+            <div class="kpi-top">
+                <div class="kpi-icon"><i class="fas fa-wave-square"></i></div>
+                <span class="kpi-tag">Forecast</span>
+            </div>
+            <div class="kpi-label">Proyeksi inflasi bulan depan</div>
+            <div class="kpi-value" style="color: var(--accent-primary);">{{ inflasi_pred|floatformat:2 }}%</div>
+            <div class="kpi-sub">Dipakai sebagai arah awal untuk membaca tekanan harga jangka pendek.</div>
+        </article>
+        <article class="dash-card">
+            <div class="kpi-top">
+                <div class="kpi-icon" style="background: rgba(38, 166, 154, 0.12); color: var(--positive);"><i class="fas fa-shield-heart"></i></div>
+                <span class="kpi-tag">Model</span>
+            </div>
+            <div class="kpi-label">Akurasi model daya beli</div>
+            <div class="kpi-value" style="color: var(--positive);">{{ ridge_test_r2|floatformat:1 }}%</div>
+            <div class="kpi-sub">Diukur pada data uji. Bagus untuk membaca arah, tetap bukan jaminan angka pasti.</div>
+        </article>
+        <article class="dash-card">
+            <div class="kpi-top">
+                <div class="kpi-icon" style="background: rgba(0, 188, 212, 0.12); color: var(--accent-info);"><i class="fas fa-wallet"></i></div>
+                <span class="kpi-tag">Household</span>
+            </div>
+            <div class="kpi-label">Estimasi daya beli rata-rata</div>
+            <div class="kpi-value" style="color: var(--text-primary);">Rp {{ rata_pengeluaran }}</div>
+            <div class="kpi-sub">Gambaran kasar pengeluaran per kapita bulanan dari baseline nasional terbaru.</div>
+        </article>
+        <article class="dash-card">
+            <div class="kpi-top">
+                <div class="kpi-icon" style="background: rgba(255, 179, 0, 0.14); color: #cf8a00;"><i class="fas fa-map-location-dot"></i></div>
+                <span class="kpi-tag">Coverage</span>
+            </div>
+            <div class="kpi-label">Provinsi tercakup</div>
+            <div class="kpi-value" style="color: #cf8a00;">38</div>
+            <div class="kpi-sub">Cakupan penuh untuk pembacaan indikator daerah dan simulasi berbasis provinsi.</div>
+        </article>
+    </section>
+
+    <section class="chart-grid">
+        <div class="chart-card">
+            <h3>Jejak rata-rata UMP dan PDRB harga konstan</h3>
+            <p>Grafik ini membantu membaca apakah pendapatan dan kapasitas ekonomi bergerak searah dalam beberapa tahun terakhir.</p>
+            <div class="chart-box"><canvas id="overviewLineChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Komposisi pengeluaran rumah tangga</h3>
+            <p>Pembagian sederhana antara konsumsi makanan dan non-makanan dari rata-rata data historis yang tersedia.</p>
+            <div class="chart-box"><canvas id="pieChart"></canvas></div>
+        </div>
+    </section>
+
+    <section class="chart-grid">
+        <div class="usd-panel">
+            <div class="usd-head">
+                <div>
+                    <h3>USD/IDR live exchange rate</h3>
+                    <p>Diambil dari endpoint harian yang sama dengan landing page publik supaya nilainya konsisten.</p>
+                </div>
+                <span class="kpi-tag">Live API</span>
+            </div>
+            <div class="usd-value" id="usdValue">Memuat...</div>
+            <div class="usd-change" id="usdChange">Menunggu data kurs</div>
+            <div class="usd-date" id="usdDate"></div>
+            <div class="usd-sparkline"><canvas id="usdSparkline"></canvas></div>
+        </div>
+
+        <div class="quick-links">
+            <h3>Jalur baca cepat</h3>
+            <p>Kalau user masih baru, tiga halaman ini biasanya paling membantu untuk memahami cerita besarnya.</p>
+            <div class="quick-grid">
+                <a class="quick-item" href="{% url 'guide' %}">
+                    <strong>Panduan</strong>
+                    <span>Mulai dari istilah dan cara membaca dashboard.</span>
+                </a>
+                <a class="quick-item" href="{% url 'forecasting' %}">
+                    <strong>Forecasting</strong>
+                    <span>Lihat proyeksi inflasi dan pembanding modelnya.</span>
+                </a>
+                <a class="quick-item" href="{% url 'daya_beli' %}">
+                    <strong>Daya Beli</strong>
+                    <span>Eksplor dampak perubahan inflasi dengan model penuh.</span>
+                </a>
             </div>
         </div>
-    </div>
-
-    <div id="ppCommodities" class="pp-commodities"></div>
+    </section>
 </section>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    function formatRupiah(num) {
-        return 'Rp ' + Math.round(num).toLocaleString('id-ID').replace(/,/g, '.');
-    }
-    function parseNominal(str) {
-        return parseInt(str.replace(/[^0-9]/g, ''), 10) || 0;
-    }
-    function formatNominalInput(input) {
-        let val = input.value.replace(/[^0-9]/g, '');
-        if (val) input.value = parseInt(val).toLocaleString('id-ID').replace(/,/g, ',');
-    }
-    document.getElementById('ppNominal').addEventListener('input', function() {
-        formatNominalInput(this);
-    });
+    const chartLabels = {{ chart_labels|safe }};
+    const umpData = {{ ump_data|safe }};
+    const pdrbData = {{ pdrb_data|safe }};
+    const pieData = {{ pie_data|safe }};
 
-    function animateBars(before, after) {
-        const pct = (after / before) * 100;
-        document.getElementById('ppBarBefore').style.width = '100%';
-        setTimeout(() => {
-            document.getElementById('ppBarAfter').style.width = pct + '%';
-        }, 100);
+    function formatRupiah(value) {
+        return 'Rp ' + Math.round(Number(value || 0)).toLocaleString('id-ID');
     }
 
-    async function calculatePP() {
-        const nominal = parseNominal(document.getElementById('ppNominal').value);
-        if (!nominal || nominal <= 0) return;
-        try {
-            const resp = await fetch('/api/commodity-prices/');
-            const data = await resp.json();
-            const inflasi = data.inflasi_prediksi / 100;
-            const afterValue = nominal * (1 - inflasi);
-            const diff = nominal - afterValue;
-            document.getElementById('ppBefore').textContent = formatRupiah(nominal);
-            document.getElementById('ppAfter').textContent = formatRupiah(afterValue);
-            document.getElementById('ppInflasiRate').textContent = data.inflasi_prediksi.toFixed(2) + '%';
-            const commodities = Object.values(data.commodities);
-            let html = '';
-            commodities.forEach(c => {
-                const beforeQty = Math.floor(nominal / c.price);
-                const afterQty = Math.floor(afterValue / c.price);
-                const qtyDiff = beforeQty - afterQty;
-                const unit = c.unit.split('/')[1];
-                html += `
-                    <div class="pp-commodity-card">
-                        <div class="pp-commodity-name">${c.name}</div>
-                        <div class="pp-commodity-qty">
-                            <span class="pp-qty-before">${beforeQty} ${unit}</span>
-                            <span class="pp-qty-arrow">→</span>
-                            <span class="pp-qty-after ${qtyDiff > 0 ? 'loss' : ''}">${afterQty} ${unit}</span>
-                        </div>
-                        <div class="pp-qty-price">Harga: ${formatRupiah(c.price)}/${unit}</div>
-                        ${qtyDiff > 0 ? '<div class="pp-qty-loss">Kehilangan ' + qtyDiff + ' ' + unit + '</div>' : ''}
-                    </div>
-                `;
-            });
-            document.getElementById('ppCommodities').innerHTML = html;
-            animateBars(nominal, afterValue);
-        } catch (err) {
-            console.error('Failed to fetch commodity prices:', err);
-        }
-    }
+    function renderOverviewCharts() {
+        const commonGrid = 'rgba(224, 227, 235, 0.75)';
 
-    async function fetchUsdIdr() {
-        try {
-            const resp = await fetch('/api/usd-idr/');
-            const data = await resp.json();
-
-            if (data.error) {
-                document.getElementById('kpi-usd-value').textContent = 'N/A';
-                document.getElementById('kpi-usd-sub').textContent = 'Data tidak tersedia';
-                document.getElementById('kpi-usd-badge').innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size: 8px;"></i> Error';
-                document.getElementById('kpi-usd-badge').className = 'kpi-badge badge-down';
-                document.getElementById('usd-idr-rate').textContent = 'N/A';
-                document.getElementById('usd-idr-change').innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size: 10px;"></i> Data tidak tersedia';
-                document.getElementById('usd-last-updated').textContent = 'Last updated: error';
-                return;
-            }
-
-            const rate = data.latest;
-            const changePercent = data.change_pct || 0;
-            const history = data.history || [];
-            const isUp = changePercent >= 0;
-            const dataType = data.data_type || 'unknown';
-            const source = data.source || 'Unknown';
-            const dailyRate = data.daily_rate;
-            const dailyDate = data.daily_date;
-            const previousDate = data.previous_date;
-            const monthlyRate = data.monthly_rate;
-            const monthlyDate = data.monthly_date;
-
-            function formatDate(dateStr) {
-                if (!dateStr) return '';
-                try {
-                    const d = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
-                    return d.toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
-                } catch { return dateStr; }
-            }
-
-            document.getElementById('kpi-usd-value').textContent = Math.round(rate).toLocaleString('id-ID');
-            const comparisonLabel = previousDate ? ' vs ' + formatDate(previousDate) : '';
-            document.getElementById('kpi-usd-sub').textContent = (isUp ? '▲' : '▼') + ' ' + Math.abs(changePercent).toFixed(2) + '%' + comparisonLabel;
-            document.getElementById('kpi-usd-badge').innerHTML = '<i class="fas fa-arrow-' + (isUp ? 'up' : 'down') + '" style="font-size: 8px;"></i> ' + (isUp ? 'Naik' : 'Turun');
-            document.getElementById('kpi-usd-badge').className = 'kpi-badge ' + (isUp ? 'badge-up' : 'badge-down');
-            document.getElementById('kpi-usd-value').style.color = isUp ? 'var(--positive)' : 'var(--negative)';
-
-            document.getElementById('usd-idr-rate').textContent = 'Rp ' + rate.toLocaleString('id-ID');
-            document.getElementById('usd-idr-rate').style.color = isUp ? 'var(--positive)' : 'var(--negative)';
-            document.getElementById('usd-idr-change').innerHTML = (isUp ? '<i class="fas fa-arrow-up" style="font-size: 10px;"></i>' : '<i class="fas fa-arrow-down" style="font-size: 10px;"></i>') + ' ' + Math.abs(changePercent).toFixed(2) + '%' + comparisonLabel;
-            document.getElementById('usd-idr-change').className = 'usd-idr-change ' + (isUp ? 'badge-up' : 'badge-down');
-            
-            let dateInfo = '';
-            if (dataType === 'daily' && dailyDate) {
-                dateInfo = 'Kurs harian: Rp ' + rate.toLocaleString('id-ID') + ' per ' + formatDate(dailyDate) + ' | Sumber: ' + source;
-            } else if (monthlyDate) {
-                dateInfo = 'Rata-rata bulanan: Rp ' + rate.toLocaleString('id-ID') + ' per ' + formatDate(monthlyDate) + ' | Sumber: ' + source;
-            } else {
-                dateInfo = 'Last updated: just now | Sumber: ' + source;
-            }
-            document.getElementById('usd-last-updated').textContent = dateInfo;
-
-            if (history.length > 1) {
-                renderSparkline('spark-usd', history, isUp);
-                renderSparkline('spark-usd-live', history, isUp);
-            }
-        } catch (err) {
-            console.error('Failed to fetch USD/IDR:', err);
-            document.getElementById('kpi-usd-value').textContent = 'Error';
-            document.getElementById('kpi-usd-sub').textContent = 'Gagal memuat data';
-            document.getElementById('kpi-usd-badge').innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size: 8px;"></i> Error';
-            document.getElementById('kpi-usd-badge').className = 'kpi-badge badge-down';
-            document.getElementById('usd-idr-rate').textContent = 'Error';
-            document.getElementById('usd-last-updated').textContent = 'Last updated: error';
-        }
-    }
-
-    function renderSparkline(canvasId, data, isUp) {
-        const canvas = document.getElementById(canvasId);
-        if (!canvas) return;
-        if (canvas._chart) canvas._chart.destroy();
-        canvas._chart = new Chart(canvas, {
+        new Chart(document.getElementById('overviewLineChart'), {
             type: 'line',
             data: {
-                labels: data.map((_, i) => i),
+                labels: chartLabels,
+                datasets: [
+                    {
+                        label: 'UMP',
+                        data: umpData,
+                        borderColor: '#2962FF',
+                        backgroundColor: 'rgba(41, 98, 255, 0.12)',
+                        fill: false,
+                        tension: 0.35,
+                        borderWidth: 2.5
+                    },
+                    {
+                        label: 'PDRB Harga Konstan',
+                        data: pdrbData,
+                        borderColor: '#26A69A',
+                        backgroundColor: 'rgba(38, 166, 154, 0.12)',
+                        fill: false,
+                        tension: 0.35,
+                        borderWidth: 2.5
+                    }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#5D606B',
+                            usePointStyle: true
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: commonGrid },
+                        ticks: { color: '#868993' }
+                    },
+                    y: {
+                        grid: { color: commonGrid },
+                        ticks: { color: '#868993' }
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('pieChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Makanan', 'Non-makanan'],
                 datasets: [{
-                    data: data,
-                    borderColor: isUp ? '#26A69A' : '#EF5350',
-                    borderWidth: 1.5,
-                    pointRadius: 0,
-                    tension: 0.4,
-                    fill: true,
-                    backgroundColor: isUp ? 'rgba(38, 166, 154, 0.08)' : 'rgba(239, 83, 80, 0.08)'
+                    data: pieData,
+                    backgroundColor: ['#2962FF', '#26A69A'],
+                    borderWidth: 0
                 }]
             },
             options: {
-                responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { x: { display: false }, y: { display: false } }
+                cutout: '68%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#5D606B',
+                            usePointStyle: true,
+                            padding: 18
+                        }
+                    }
+                }
             }
         });
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        calculatePP();
-        fetchUsdIdr();
-        setInterval(fetchUsdIdr, 60000);
-
-        const labels = {{ chart_labels|safe }};
-        const umpData = {{ ump_data|safe }};
-        const pieData = {{ pie_data|safe }};
-
-        if (labels && labels.length > 0) {
-            const ctx1 = document.getElementById('overviewChart').getContext('2d');
-            const gradient = ctx1.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(41, 98, 255, 0.5)');
-            gradient.addColorStop(1, 'rgba(41, 98, 255, 0.05)');
-            new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Rata-rata UMP (Rupiah)',
-                        data: umpData,
-                        backgroundColor: gradient,
-                        borderColor: '#2962FF',
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#5D606B' } },
-                        y: { 
-                            grid: { color: 'rgba(224, 227, 235, 0.8)', drawBorder: false }, 
-                            ticks: { color: '#5D606B', callback: function(v) { return 'Rp ' + (v / 1000000).toFixed(1) + ' Jt'; } } 
-                        }
-                    }
+    function renderUsdSparkline(values) {
+        new Chart(document.getElementById('usdSparkline'), {
+            type: 'line',
+            data: {
+                labels: values.map((_, idx) => idx + 1),
+                datasets: [{
+                    data: values,
+                    borderColor: '#2962FF',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0.35,
+                    fill: true,
+                    backgroundColor: 'rgba(41, 98, 255, 0.10)'
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
                 }
-            });
+            }
+        });
+    }
+
+    async function hydrateInflationSummary() {
+        const response = await fetch('/api/inflasi-summary/');
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Gagal memuat ringkasan inflasi');
+        }
+        const momValue = Number(data?.mom?.value);
+        const yoyValue = Number(data?.yoy?.value);
+        const ytdValue = Number(data?.ytd?.value);
+
+        document.getElementById('momValue').textContent =
+            Number.isFinite(momValue) ? `${momValue.toFixed(2)}%` : '-';
+        document.getElementById('yoyValue').textContent =
+            Number.isFinite(yoyValue) ? `${yoyValue.toFixed(2)}%` : '-';
+        document.getElementById('ytdValue').textContent =
+            Number.isFinite(ytdValue) ? `${ytdValue.toFixed(2)}%` : '-';
+    }
+
+    async function hydrateUsdPanel() {
+        const response = await fetch('/api/usd-idr/');
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Gagal memuat kurs USD/IDR');
         }
 
-        if (pieData && pieData.length === 2) {
-            const ctx2 = document.getElementById('pieChart').getContext('2d');
-            new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Makanan', 'Non-Makanan'],
-                    datasets: [{
-                        data: pieData,
-                        backgroundColor: ['#26A69A', '#2962FF'],
-                        borderColor: ['#FFFFFF', '#FFFFFF'],
-                        borderWidth: 2,
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: '#5D606B', boxWidth: 12 } }
-                    }
-                }
-            });
-        }
+        document.getElementById('usdValue').textContent = formatRupiah(data.latest);
+        document.getElementById('usdDate').textContent = `Update harian: ${data.daily_date || data.date_label || '-'}`;
 
-        // Default sparklines
-        renderSparkline('spark-inflasi', [0.20, 0.22, 0.25, 0.23, 0.28, 0.30, 0.28, 0.21], true);
-        renderSparkline('spark-r2', [85, 87, 88, 90, 89, 91, 90.8], true);
-        renderSparkline('spark-baseline', [1400000, 1410000, 1420000, 1430000, 1440000, 1445000, 1450000], true);
+        const changeEl = document.getElementById('usdChange');
+        const changePct = Number(data.change_pct || 0);
+        const isUp = changePct > 0;
+        changeEl.textContent = `${isUp ? 'Naik' : changePct < 0 ? 'Turun' : 'Stabil'} ${Math.abs(changePct).toFixed(2)}% dari hari sebelumnya`;
+        changeEl.style.background = isUp ? 'rgba(239, 83, 80, 0.12)' : changePct < 0 ? 'rgba(38, 166, 154, 0.12)' : 'rgba(41, 98, 255, 0.12)';
+        changeEl.style.color = isUp ? '#EF5350' : changePct < 0 ? '#26A69A' : '#2962FF';
+
+        if (Array.isArray(data.history) && data.history.length) {
+            renderUsdSparkline(data.history);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        renderOverviewCharts();
+        try {
+            await Promise.all([hydrateInflationSummary(), hydrateUsdPanel()]);
+        } catch (error) {
+            console.error(error);
+        }
     });
-
-    // Load Inflasi Summary (M-to-M, Y-o-Y, Y-to-D)
-    fetch('/api/inflasi-summary/')
-        .then(r => r.json())
-        .then(data => {
-            if (data.error) return;
-            
-            // M-to-M
-            const mom = data.mom;
-            document.getElementById('mom-value').textContent = mom.value.toFixed(2) + '%';
-            document.getElementById('mom-change').textContent = 
-                (mom.change >= 0 ? '▲ +' : '▼ ') + mom.change.toFixed(2) + ' dari bulan lalu';
-            document.getElementById('mom-change').className = 'inflasi-change ' + (mom.change >= 0 ? 'up' : 'down');
-            document.getElementById('mom-date').textContent = data.as_of;
-            
-            // Y-o-Y
-            const yoy = data.yoy;
-            document.getElementById('yoy-value').textContent = yoy.value.toFixed(2) + '%';
-            const yoyChange = yoy.change;
-            document.getElementById('yoy-change').textContent = 
-                (yoyChange >= 0 ? '▲ +' : '▼ ') + yoyChange.toFixed(2) + ' dari bulan lalu';
-            document.getElementById('yoy-change').className = 'inflasi-change ' + (yoyChange >= 0 ? 'up' : 'down');
-            document.getElementById('yoy-year-ago').textContent = 
-                yoy.year_ago !== null ? yoy.year_ago.toFixed(2) + '%' : '—';
-            
-            // Status Y-o-Y
-            const statusEl = document.getElementById('yoy-status');
-            statusEl.textContent = data.status;
-            statusEl.className = 'inflasi-status ' + data.status_color;
-            
-            // Y-to-D
-            const ytd = data.ytd;
-            document.getElementById('ytd-value').textContent = ytd.value.toFixed(2) + '%';
-            document.getElementById('ytd-year').textContent = new Date(data.as_of).getFullYear();
-        })
-        .catch(err => console.error('Failed to load inflasi summary:', err));
 </script>
 {% endblock %}
