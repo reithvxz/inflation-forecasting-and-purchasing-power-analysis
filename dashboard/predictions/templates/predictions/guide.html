@@ -6,240 +6,376 @@
 <style>
     .guide-shell {
         display: grid;
-        gap: 18px;
+        gap: 22px;
     }
+
     .guide-hero,
-    .guide-card,
-    .guide-tab-panel {
+    .guide-tab-rail,
+    .guide-panel,
+    .guide-surface,
+    .guide-strip,
+    .guide-audit-surface {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 14px;
+        border-radius: 20px;
         box-shadow: var(--shadow-sm);
     }
+
     .guide-hero {
-        padding: 30px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 22px;
+        padding: 28px;
         background:
-            radial-gradient(circle at top right, rgba(41, 98, 255, 0.1), transparent 30%),
+            radial-gradient(circle at top right, rgba(41, 98, 255, 0.10), transparent 28%),
             linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
     }
+
     .guide-kicker {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 6px 10px;
+        padding: 7px 11px;
+        margin-bottom: 14px;
         border-radius: 999px;
-        background: var(--accent-primary-dim);
+        background: rgba(41, 98, 255, 0.08);
         color: var(--accent-primary);
         font-size: 11px;
-        font-weight: 700;
+        font-weight: 760;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 14px;
     }
+
     .guide-kicker::before {
         content: "";
-        width: 7px;
-        height: 7px;
+        width: 6px;
+        height: 6px;
         border-radius: 999px;
         background: currentColor;
     }
+
     .guide-hero h2 {
-        font-size: 30px;
-        line-height: 1.1;
-        letter-spacing: -0.8px;
-        margin-bottom: 12px;
+        margin: 0 0 10px;
+        font-size: clamp(30px, 3.6vw, 42px);
+        line-height: 1.06;
+        letter-spacing: -0.05em;
     }
+
     .guide-hero p,
-    .guide-card p,
-    .guide-card li,
-    .guide-card span,
-    .guide-tab-panel p {
+    .guide-panel p,
+    .guide-panel li,
+    .guide-surface p,
+    .guide-surface span,
+    .guide-audit-surface p,
+    .guide-audit-surface li {
         color: var(--text-secondary);
-        line-height: 1.7;
         font-size: 14px;
+        line-height: 1.7;
     }
-    .guide-cta {
+
+    .guide-hero-rail {
+        display: grid;
+        gap: 12px;
+    }
+
+    .hero-rail-item {
+        padding: 15px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        background: #ffffff;
+    }
+
+    .hero-rail-item span {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--text-tertiary);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .hero-rail-item strong {
+        display: block;
+        color: var(--text-primary);
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .guide-actions {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
-        margin-top: 20px;
+        margin-top: 18px;
     }
+
     .guide-link {
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: 8px;
         padding: 11px 16px;
-        border-radius: 10px;
-        font-weight: 700;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 720;
         text-decoration: none;
-        transition: 0.15s ease;
+        transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
     }
+
     .guide-link.primary {
         background: var(--accent-primary);
-        color: #fff;
+        color: #ffffff;
+        box-shadow: 0 12px 22px rgba(41, 98, 255, 0.18);
     }
+
     .guide-link.secondary {
-        background: var(--bg-panel);
+        background: #ffffff;
         color: var(--text-primary);
         border: 1px solid var(--border-color);
     }
+
     .guide-link:hover {
         transform: translateY(-1px);
     }
+
+    .guide-tab-rail {
+        position: sticky;
+        top: 78px;
+        z-index: 20;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(18px);
+    }
+
     .guide-tabs {
         display: inline-flex;
+        gap: 8px;
         padding: 4px;
+        border-radius: 999px;
         background: var(--bg-panel);
         border: 1px solid var(--border-color);
-        border-radius: 999px;
-        width: fit-content;
     }
+
     .guide-tab {
         border: 0;
         background: transparent;
         color: var(--text-secondary);
         padding: 10px 16px;
         border-radius: 999px;
-        font-weight: 700;
         font-size: 13px;
+        font-weight: 760;
         cursor: pointer;
-        transition: 0.15s ease;
+        transition: all 0.16s ease;
         font-family: inherit;
     }
+
     .guide-tab.active {
+        color: #ffffff;
         background: var(--accent-primary);
-        color: #fff;
-        box-shadow: 0 8px 18px rgba(41, 98, 255, 0.18);
+        box-shadow: 0 10px 20px rgba(41, 98, 255, 0.18);
     }
-    .guide-tab-panel {
+
+    .guide-panel {
         display: none;
         padding: 24px;
     }
-    .guide-tab-panel.active {
-        display: block;
-    }
-    .guide-panel-head {
+
+    .guide-panel.active {
         display: grid;
-        gap: 8px;
-        margin-bottom: 18px;
-    }
-    .guide-panel-head h3 {
-        font-size: 24px;
-        letter-spacing: -0.04em;
-    }
-    .guide-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 18px;
     }
-    .guide-card {
-        padding: 24px;
+
+    .panel-head {
+        display: grid;
+        gap: 8px;
     }
-    .guide-card h4 {
+
+    .panel-head h3 {
+        margin: 0;
+        font-size: 26px;
+        letter-spacing: -0.04em;
+    }
+
+    .guide-reading-layout,
+    .guide-technical-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(420px, 0.9fr);
+        gap: 18px;
+        align-items: start;
+    }
+
+    .guide-surface,
+    .guide-audit-surface {
+        padding: 22px;
+    }
+
+    .guide-surface h4,
+    .guide-audit-surface h4 {
+        margin: 0 0 10px;
         font-size: 18px;
-        margin-bottom: 12px;
-        letter-spacing: -0.3px;
+        letter-spacing: -0.02em;
     }
-    .guide-note {
-        margin-top: 12px;
-        padding: 14px 16px;
-        border-left: 4px solid var(--accent-warning);
-        background: rgba(255, 179, 0, 0.08);
-        border-radius: 0 12px 12px 0;
+
+    .guide-surface-head {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 14px;
     }
+
+    .guide-section-label {
+        color: var(--text-tertiary);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .guide-strip {
+        padding: 16px 18px;
+        background:
+            linear-gradient(180deg, #ffffff 0%, rgba(41, 98, 255, 0.05) 100%);
+        border-color: rgba(41, 98, 255, 0.16);
+    }
+
+    .guide-strip h4 {
+        margin: 0 0 6px;
+        font-size: 16px;
+    }
+
     .term-list,
     .model-family-list,
     .feature-rationale-list,
-    .audit-horizon-list,
-    .feature-list {
+    .feature-list,
+    .guide-rail-list,
+    .audit-horizon-list {
         display: grid;
-        gap: 12px;
-        margin-top: 12px;
+        gap: 10px;
+        margin-top: 14px;
     }
+
     .term-item,
     .model-family-item,
     .feature-rationale-item,
+    .feature-item,
+    .guide-rail-item,
     .audit-horizon-item,
-    .feature-item {
+    .flow-step {
         padding: 14px 16px;
+        border-radius: 16px;
         border: 1px solid var(--border-color);
-        border-radius: 12px;
         background: var(--bg-panel);
     }
+
     .term-item strong,
     .model-family-item strong,
     .feature-rationale-item strong,
-    .audit-horizon-item strong,
-    .feature-item strong {
+    .feature-item strong,
+    .guide-rail-item strong,
+    .audit-horizon-item strong {
         display: block;
         margin-bottom: 6px;
         color: var(--text-primary);
     }
+
     .model-family-meta,
     .feature-meta,
     .audit-meta {
-        color: var(--text-secondary);
-        font-size: 12px;
-        margin-bottom: 8px;
+        color: var(--text-tertiary);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
+        margin-bottom: 8px;
     }
+
+    .guide-rail {
+        display: grid;
+        gap: 18px;
+        position: sticky;
+        top: 150px;
+    }
+
     .flow-steps {
         display: grid;
-        gap: 12px;
-        margin-top: 12px;
+        gap: 10px;
+        margin-top: 14px;
     }
+
     .flow-step {
         display: grid;
-        grid-template-columns: 42px 1fr;
+        grid-template-columns: 42px minmax(0, 1fr);
         gap: 12px;
         align-items: start;
     }
+
     .flow-step-index {
+        display: grid;
+        place-items: center;
         width: 42px;
         height: 42px;
-        border-radius: 12px;
-        background: var(--accent-primary-dim);
+        border-radius: 14px;
+        background: rgba(41, 98, 255, 0.10);
         color: var(--accent-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        font-size: 15px;
         font-weight: 800;
     }
+
     .guide-metric-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px;
-        margin-top: 12px;
+        margin-top: 14px;
     }
+
     .guide-metric {
-        padding: 14px;
-        border-radius: 12px;
-        background: var(--bg-panel);
+        padding: 14px 16px;
+        border-radius: 16px;
         border: 1px solid var(--border-color);
+        background: var(--bg-panel);
     }
-    .guide-metric span {
-        display: block;
-    }
+
     .guide-metric .label {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--text-tertiary);
+        display: block;
         margin-bottom: 6px;
+        color: var(--text-tertiary);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
     }
+
     .guide-metric .value {
-        font-size: 20px;
-        font-weight: 800;
+        display: block;
         color: var(--text-primary);
+        font-size: 22px;
+        font-weight: 800;
         letter-spacing: -0.04em;
+        font-variant-numeric: tabular-nums;
     }
+
+    .guide-note {
+        margin-top: 14px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid rgba(216, 155, 29, 0.18);
+        background: rgba(216, 155, 29, 0.07);
+    }
+
+    .guide-reading-layout .guide-surface:first-child,
+    .guide-technical-layout .guide-surface:first-child,
+    .guide-audit-surface {
+        min-height: 100%;
+    }
+
     .audit-table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 12px;
         font-size: 13px;
     }
+
     .audit-table th,
     .audit-table td {
         padding: 10px 8px;
@@ -247,26 +383,49 @@
         text-align: left;
         vertical-align: top;
     }
+
     .audit-table th {
         color: var(--text-secondary);
         font-size: 11px;
+        font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
     }
+
     .audit-delta-positive {
         color: var(--positive);
         font-weight: 700;
     }
+
     .audit-delta-negative {
         color: var(--negative);
         font-weight: 700;
     }
+
     .audit-delta-neutral {
         color: var(--text-secondary);
         font-weight: 700;
     }
-    @media (max-width: 980px) {
-        .guide-grid,
+
+    @media (max-width: 1120px) {
+        .guide-hero,
+        .guide-reading-layout,
+        .guide-technical-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .guide-rail {
+            position: static;
+        }
+    }
+
+    @media (max-width: 840px) {
+        .guide-metric-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 620px) {
         .guide-metric-grid {
             grid-template-columns: 1fr;
         }
@@ -276,316 +435,366 @@
 
 {% block content %}
 <section class="guide-shell">
-    <div class="guide-hero">
-        <div class="guide-kicker">Panduan operasional EcoDash</div>
-        <h2>Pisahkan pembacaan indikator dan metodologi model secara lebih tegas.</h2>
-        <p>
-            Halaman ini dibagi menjadi dua jalur. Tab pertama membantu membaca indikator secara operasional,
-            sedangkan tab kedua menjelaskan struktur data, keluarga model, fitur aktif, dan batasan metodologis
-            dari artefak yang dipakai antarmuka publik.
-        </p>
-        <div class="guide-cta">
-            <a class="guide-link primary" href="{% url 'landing' %}">Buka dashboard</a>
-            <a class="guide-link secondary" href="{% url 'daya_beli' %}">Buka simulasi proksi daya beli</a>
+    <section class="guide-hero">
+        <div>
+            <div class="guide-kicker">Knowledge surface</div>
+            <h2>Pisahkan jalur pembacaan indikator dan audit metodologi secara lebih terkurasi.</h2>
+            <p>
+                Halaman ini dibagi ke dua jalur kerja. <strong>Panduan Pembacaan</strong> membantu membaca KPI,
+                forecast, kurs, dan proksi daya beli secara operasional. <strong>Panduan Teknis</strong> menjelaskan
+                struktur data, keluarga model, audit fitur, serta batas metodologis dari artefak aktif.
+            </p>
+            <div class="guide-actions">
+                <a class="guide-link primary" href="{% url 'landing' %}">Buka dashboard</a>
+                <a class="guide-link secondary" href="{% url 'forecasting' %}">Buka forecasting</a>
+                <a class="guide-link secondary" href="{% url 'daya_beli' %}">Buka proksi daya beli</a>
+            </div>
+        </div>
+        <div class="guide-hero-rail">
+            <div class="hero-rail-item">
+                <span>Mode pembacaan</span>
+                <strong>Tab pertama untuk membaca arah indikator, tab kedua untuk menjelaskan bagaimana angka itu dibangun.</strong>
+            </div>
+            <div class="hero-rail-item">
+                <span>Standar istilah</span>
+                <strong>Forecast inflasi dipisahkan dari proksi daya beli agar interpretasi publik tetap akurat dan konsisten.</strong>
+            </div>
+        </div>
+    </section>
+
+    <div class="guide-tab-rail">
+        <div class="guide-tabs" role="tablist" aria-label="Tipe panduan">
+            <button class="guide-tab active" type="button" data-tab="reading">Pembacaan Indikator</button>
+            <button class="guide-tab" type="button" data-tab="technical">Panduan Teknis</button>
         </div>
     </div>
 
-    <div class="guide-tabs" role="tablist" aria-label="Tipe panduan">
-        <button class="guide-tab active" type="button" data-tab="reading">Panduan Pembacaan</button>
-        <button class="guide-tab" type="button" data-tab="technical">Panduan Teknis</button>
-    </div>
-
-    <div class="guide-tab-panel active" id="guide-reading">
-        <div class="guide-panel-head">
-            <h3>Panduan Pembacaan</h3>
-            <p>Gunakan tab ini saat tujuan utama Anda adalah membaca KPI, forecast, kurs, dan proksi daya beli dengan cepat dan konsisten.</p>
+    <section class="guide-panel active" id="guide-reading">
+        <div class="panel-head">
+            <h3>Pembacaan Indikator</h3>
+            <p>Gunakan jalur ini ketika fokus utama Anda adalah membaca indikator dan menarik insight cepat dari permukaan operasional EcoDash.</p>
         </div>
-        <div class="guide-grid">
-            <div class="guide-card">
-                <h4>1. Apa yang dibaca dari project ini</h4>
+
+        <div class="guide-reading-layout">
+            <div class="guide-surface">
+                <div class="guide-surface-head">
+                    <span class="guide-section-label">Primary reading lane</span>
+                    <h4>1. Apa yang dibaca dari project ini</h4>
+                </div>
                 <p>
-                    EcoDash merangkum dua keluaran utama: forecast inflasi multi-horizon dan estimasi pengeluaran
-                    riil per kapita per bulan yang dipakai sebagai proksi daya beli. Dashboard ini diposisikan
-                    sebagai alat pembacaan arah, bukan sekadar tampilan angka.
+                    EcoDash mempublikasikan dua keluaran inti. Pertama, <strong>forecast inflasi multi-horizon</strong> untuk membaca arah tekanan harga.
+                    Kedua, <strong>estimasi pengeluaran riil per kapita</strong> yang dipakai sebagai <strong>proksi daya beli</strong> untuk membaca implikasi wilayah.
                 </p>
-                <div class="guide-note">
-                    Headline forecast membantu membaca arah tekanan harga. Modul daya beli membantu membaca implikasi
-                    wilayah dari perubahan inflasi dan indikator inti.
+                <div class="guide-strip" style="margin-top: 14px;">
+                    <h4>Urutan baca yang disarankan</h4>
+                    <p>Mulai dari KPI inflasi aktual, lanjut ke headline forecast horizon aktif, kemudian baca kurs USD/IDR dan proksi daya beli sebagai konteks keputusan.</p>
                 </div>
-            </div>
 
-            <div class="guide-card">
-                <h4>2. Istilah inti yang wajib dipahami</h4>
-                <div class="term-list">
-                    <div class="term-item">
-                        <strong>MoM</strong>
-                        Perubahan harga bulan ini dibanding bulan sebelumnya.
-                    </div>
-                    <div class="term-item">
-                        <strong>YoY</strong>
-                        Perubahan harga dibanding bulan yang sama pada tahun lalu.
-                    </div>
-                    <div class="term-item">
-                        <strong>Y-to-D</strong>
-                        Akumulasi perubahan harga sejak Januari sampai bulan berjalan.
-                    </div>
-                    <div class="term-item">
-                        <strong>Baseline</strong>
-                        Titik awal data terbaru yang dipakai model sebelum input simulasi diubah.
-                    </div>
-                    <div class="term-item">
-                        <strong>Prediksi</strong>
-                        Estimasi berbasis pola historis, bukan angka pasti masa depan.
-                    </div>
-                    <div class="term-item">
-                        <strong>Proksi daya beli</strong>
-                        Pembacaan pengeluaran riil per kapita yang dipakai untuk mendekati kapasitas konsumsi rumah tangga.
-                    </div>
-                </div>
-            </div>
-
-            <div class="guide-card">
-                <h4>3. Cara membaca dashboard secara berurutan</h4>
                 <div class="flow-steps">
                     <div class="flow-step">
                         <div class="flow-step-index">1</div>
                         <div>
-                            <strong>Baca indikator inflasi inti</strong>
-                            <p>Mulai dari MoM, YoY, dan Y-to-D untuk memahami posisi tekanan harga saat ini.</p>
+                            <strong>Baca indikator harga aktual</strong>
+                            <p>Mulai dari MoM, YoY, dan Y-to-D untuk memahami posisi tekanan harga saat ini sebelum masuk ke proyeksi.</p>
                         </div>
                     </div>
                     <div class="flow-step">
                         <div class="flow-step-index">2</div>
                         <div>
                             <strong>Baca headline forecast</strong>
-                            <p>Lanjutkan ke headline horizon publik untuk membaca arah inflasi jangka dekat.</p>
+                            <p>Gunakan horizon 1 bulan untuk pembacaan taktis, lalu 3-12 bulan untuk konteks arah kebijakan yang lebih panjang.</p>
                         </div>
                     </div>
                     <div class="flow-step">
                         <div class="flow-step-index">3</div>
                         <div>
-                            <strong>Periksa kurs dan proksi daya beli</strong>
-                            <p>Kurs memberi konteks eksternal, sementara modul daya beli menunjukkan implikasi skenario ke wilayah.</p>
+                            <strong>Tambahkan konteks eksternal dan wilayah</strong>
+                            <p>Kurs USD/IDR memberi pembacaan eksternal, sementara proksi daya beli menunjukkan implikasi wilayah dari perubahan indikator inti.</p>
                         </div>
                     </div>
                     <div class="flow-step">
                         <div class="flow-step-index">4</div>
                         <div>
-                            <strong>Masuk ke forecast atau simulasi</strong>
-                            <p>Buka modul Forecasting untuk horizon lebih panjang, atau modul Daya Beli untuk eksplorasi skenario wilayah.</p>
+                            <strong>Gunakan modul lanjutan</strong>
+                            <p>Masuk ke Forecasting, Compare, Map, atau Daya Beli ketika perlu audit yang lebih mendalam.</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="guide-card">
-                <h4>4. Batasan pembacaan hasil</h4>
-                <p>
-                    Forecast dan simulasi membantu membaca arah dan rentang kemungkinan. Hasilnya tidak boleh
-                    diperlakukan sebagai kepastian numerik, terutama saat horizon makin panjang atau saat kondisi
-                    ekonomi berubah oleh shock yang belum terekam di data historis.
-                </p>
-                <div class="guide-note">
-                    Praktik pembacaan yang sehat adalah menggunakan dashboard untuk orientasi, pembandingan, dan
-                    evaluasi skenario, bukan untuk mengunci angka sampai digit terakhir.
+            <aside class="guide-rail">
+                <div class="guide-surface">
+                    <div class="guide-surface-head">
+                        <span class="guide-section-label">Istilah inti</span>
+                        <h4>2. Istilah inti yang wajib dipahami</h4>
+                    </div>
+                    <div class="term-list">
+                        <div class="term-item">
+                            <strong>MoM</strong>
+                            Perubahan harga bulan ini dibanding bulan sebelumnya.
+                        </div>
+                        <div class="term-item">
+                            <strong>YoY</strong>
+                            Perubahan harga dibanding bulan yang sama pada tahun lalu.
+                        </div>
+                        <div class="term-item">
+                            <strong>Y-to-D</strong>
+                            Akumulasi perubahan harga sejak Januari sampai bulan berjalan.
+                        </div>
+                        <div class="term-item">
+                            <strong>Baseline</strong>
+                            Titik awal data terbaru yang dipakai model sebelum input simulasi diubah.
+                        </div>
+                        <div class="term-item">
+                            <strong>Prediksi</strong>
+                            Estimasi berbasis pola historis, bukan angka pasti masa depan.
+                        </div>
+                        <div class="term-item">
+                            <strong>Proksi daya beli</strong>
+                            Pembacaan pengeluaran riil per kapita yang dipakai untuk mendekati kapasitas konsumsi rumah tangga.
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="guide-tab-panel" id="guide-technical">
-        <div class="guide-panel-head">
+                <div class="guide-surface">
+                    <div class="guide-surface-head">
+                        <span class="guide-section-label">Batas pembacaan</span>
+                        <h4>3. Batasan pembacaan hasil</h4>
+                    </div>
+                    <div class="guide-rail-list">
+                        <div class="guide-rail-item">
+                            <strong>Forecast bukan angka pasti</strong>
+                            Rentang estimasi tetap perlu dibaca bersama headline karena horizon yang lebih panjang membawa ketidakpastian yang lebih besar.
+                        </div>
+                        <div class="guide-rail-item">
+                            <strong>Simulasi wilayah dibaca sebagai arah</strong>
+                            Modul proksi daya beli lebih tepat dipakai untuk membaca sensitivitas dan perubahan relatif, bukan menetapkan angka final kebijakan.
+                        </div>
+                    </div>
+                    <div class="guide-note">
+                        Praktik pembacaan yang sehat adalah memakai dashboard untuk orientasi, komparasi, dan evaluasi skenario, bukan untuk mengunci angka sampai digit terakhir.
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    <section class="guide-panel" id="guide-technical">
+        <div class="panel-head">
             <h3>Panduan Teknis</h3>
-            <p>Gunakan tab ini saat Anda perlu menjelaskan struktur data, model yang dipakai, pemilihan fitur, dan keterbatasan artefak aktif.</p>
+            <p>Gunakan jalur ini saat Anda perlu menjelaskan sumber data, keluarga model, fitur aktif, audit kontribusi, dan limitasi artefak publik.</p>
         </div>
-        <div class="guide-grid">
-            <div class="guide-card">
-                <h4>1. Keluarga model inflasi yang dipakai</h4>
-                <p>
-                    Halaman forecasting tidak bergantung pada satu model tunggal. Beberapa keluarga model dievaluasi,
-                    lalu antarmuka publik hanya menampilkan model yang paling kompetitif pada horizon terkait.
-                </p>
-                <div class="model-family-list">
-                    {% for item in model_family_notes %}
-                    <div class="model-family-item">
-                        <strong>{{ item.name }}</strong>
-                        <div class="model-family-meta">{{ item.family }}</div>
-                        <p><strong>Input utama:</strong> {{ item.inputs }}</p>
-                        <p><strong>Kapan dipakai:</strong> {{ item.when_used }}</p>
-                        <p><strong>Kekuatan:</strong> {{ item.strength }}</p>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
 
-            <div class="guide-card">
-                <h4>2. Fitur inti SARIMAX untuk model inflasi</h4>
-                <p>
-                    Regressor SARIMAX pada artefak aktif tidak dipilih hanya dari asumsi teori. Shortlist ekonomi
-                    diuji kembali melalui evaluasi out-of-sample dan audit ablation per fitur.
-                </p>
-                <div class="feature-rationale-list">
-                    {% for item in sarimax_feature_audit.notes %}
-                    <div class="feature-rationale-item">
-                        <strong>{{ item.label }} ({{ item.feature }})</strong>
-                        <p>{{ item.reason }}</p>
+        <div class="guide-technical-layout">
+            <div style="display: grid; gap: 18px;">
+                <div class="guide-surface">
+                    <div class="guide-surface-head">
+                        <span class="guide-section-label">Technical lane</span>
+                        <h4>1. Keluarga model inflasi yang dipakai</h4>
                     </div>
-                    {% endfor %}
-                </div>
-                <div class="guide-note">
-                    Shortlist awal tetap berbasis teori ekonomi, tetapi justifikasi akhirnya dikunci melalui evaluasi out-of-sample, bukan asumsi saja.
-                </div>
-            </div>
-
-            <div class="guide-card">
-                <h4>3. Ringkasan teknis model proksi daya beli</h4>
-                {% if ridge_model_summary.available %}
-                <p>{{ ridge_model_summary.model_note }}</p>
-                <div class="guide-metric-grid">
-                    <div class="guide-metric">
-                        <span class="label">Cakupan data</span>
-                        <span class="value">{{ ridge_model_summary.data_scope.year_min }}-{{ ridge_model_summary.data_scope.year_max }}</span>
-                    </div>
-                    <div class="guide-metric">
-                        <span class="label">Provinsi</span>
-                        <span class="value">{{ ridge_model_summary.data_scope.province_count }}</span>
-                    </div>
-                    <div class="guide-metric">
-                        <span class="label">MAE uji</span>
-                        <span class="value">Rp {{ ridge_model_summary.test_metrics.mae|floatformat:0 }}</span>
-                    </div>
-                    <div class="guide-metric">
-                        <span class="label">Walk-forward MAE</span>
-                        <span class="value">Rp {{ ridge_model_summary.walk_forward.mae|floatformat:0 }}</span>
-                    </div>
-                </div>
-                <div class="guide-note">
-                    Target model ini adalah <strong>{{ ridge_model_summary.target_label|lower }}</strong>, yang diantarmukakan sebagai proksi daya beli, bukan ukuran teoritis daya beli murni.
-                </div>
-                {% else %}
-                <p>{{ ridge_model_summary.message }}</p>
-                {% endif %}
-            </div>
-
-            <div class="guide-card">
-                <h4>4. Fitur model daya beli yang dipakai</h4>
-                {% if ridge_model_summary.available %}
-                <div class="feature-meta">Input wilayah</div>
-                <div class="feature-list">
-                    {% for item in ridge_model_summary.categorical_features %}
-                    <div class="feature-item">
-                        <strong>{{ item.label }} ({{ item.feature }})</strong>
-                        <p>{{ item.reason }}</p>
-                    </div>
-                    {% endfor %}
-                </div>
-
-                <div class="feature-meta" style="margin-top: 14px;">Fitur inti</div>
-                <div class="feature-list">
-                    {% for item in ridge_model_summary.core_features %}
-                    <div class="feature-item">
-                        <strong>{{ item.label }} ({{ item.feature }})</strong>
-                        <p>{{ item.reason }}</p>
-                    </div>
-                    {% endfor %}
-                </div>
-
-                <div class="feature-meta" style="margin-top: 14px;">Fitur turunan</div>
-                <div class="feature-list">
-                    {% for item in ridge_model_summary.derived_features %}
-                    <div class="feature-item">
-                        <strong>{{ item.label }} ({{ item.feature }})</strong>
-                        <p>{{ item.reason }}</p>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <p>Metadata fitur model daya beli belum tersedia.</p>
-                {% endif %}
-            </div>
-
-            <div class="guide-card">
-                <h4>5. Audit kontribusi fitur SARIMAX</h4>
-                {% if sarimax_feature_audit.available %}
-                <p>
-                    Tabel berikut menunjukkan apa yang terjadi jika satu fitur dihapus dari SARIMAX sementara fitur lain dipertahankan.
-                    Jika MAE naik setelah fitur dihapus, fitur tersebut membantu model.
-                </p>
-                <div class="audit-meta">
-                    <strong>Metode:</strong> {{ sarimax_feature_audit.methodology.selection_basis }}<br>
-                    <strong>Metrik utama:</strong> {{ sarimax_feature_audit.methodology.metric_primary }}<br>
-                    <strong>Catatan:</strong> {{ sarimax_feature_audit.methodology.note }}
-                </div>
-                <div class="audit-horizon-list">
-                    {% for horizon in sarimax_feature_audit.horizons %}
-                    <div class="audit-horizon-item">
-                        <strong>{{ horizon.label }}</strong>
-                        <p>
-                            Regresor dasar:
-                            {% for reg in horizon.base_regressors %}
-                                <code>{{ reg }}</code>{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        </p>
-                        <div class="audit-meta">
-                            MAE model penuh: {{ horizon.base_metrics.mae }} |
-                            RMSE: {{ horizon.base_metrics.rmse }} |
-                            sMAPE: {{ horizon.base_metrics.smape }}%
+                    <p>
+                        Halaman forecasting tidak bertumpu pada satu model tunggal. Beberapa keluarga model diuji,
+                        lalu antarmuka publik hanya menampilkan kandidat paling kompetitif pada horizon terkait.
+                    </p>
+                    <div class="model-family-list">
+                        {% for item in model_family_notes %}
+                        <div class="model-family-item">
+                            <strong>{{ item.name }}</strong>
+                            <div class="model-family-meta">{{ item.family }}</div>
+                            <p><strong>Input utama:</strong> {{ item.inputs }}</p>
+                            <p><strong>Kapan dipakai:</strong> {{ item.when_used }}</p>
+                            <p><strong>Kekuatan:</strong> {{ item.strength }}</p>
                         </div>
-                        <table class="audit-table">
-                            <thead>
-                                <tr>
-                                    <th>Fitur</th>
-                                    <th>Alasan ekonomi</th>
-                                    <th>MAE saat dihapus</th>
-                                    <th>Delta MAE</th>
-                                    <th>Interpretasi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for row in horizon.rows %}
-                                <tr>
-                                    <td><strong>{{ row.label }}</strong><br><span>{{ row.feature }}</span></td>
-                                    <td>{{ row.reason }}</td>
-                                    <td>{% if row.status == 'ok' %}{{ row.dropped_mae }}{% else %}-{% endif %}</td>
-                                    <td>
-                                        {% if row.status == 'ok' %}
-                                            <span class="{% if row.delta_mae > 0.01 %}audit-delta-positive{% elif row.delta_mae < -0.01 %}audit-delta-negative{% else %}audit-delta-neutral{% endif %}">
-                                                {{ row.delta_mae }}
-                                            </span>
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ row.interpretation }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
-                {% else %}
-                <p>{{ sarimax_feature_audit.message }}</p>
-                {% endif %}
+
+                <div class="guide-surface">
+                    <div class="guide-surface-head">
+                        <span class="guide-section-label">Feature audit</span>
+                        <h4>2. Fitur inti SARIMAX untuk model inflasi</h4>
+                    </div>
+                    <p>
+                        Regressor SARIMAX pada artefak aktif tidak dipilih hanya dari asumsi teori. Shortlist ekonomi
+                        diuji kembali melalui evaluasi out-of-sample dan audit ablation per fitur.
+                    </p>
+                    <div class="feature-rationale-list">
+                        {% for item in sarimax_feature_audit.notes %}
+                        <div class="feature-rationale-item">
+                            <strong>{{ item.label }} ({{ item.feature }})</strong>
+                            <p>{{ item.reason }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="guide-note">
+                        Shortlist awal tetap berbasis teori ekonomi, tetapi justifikasi akhirnya dikunci melalui evaluasi out-of-sample, bukan asumsi saja.
+                    </div>
+                </div>
+
+                <div class="guide-audit-surface">
+                    <div class="guide-surface-head">
+                        <span class="guide-section-label">Technical audit</span>
+                        <h4>5. Audit kontribusi fitur SARIMAX</h4>
+                    </div>
+                    {% if sarimax_feature_audit.available %}
+                    <p>
+                        Tabel berikut menunjukkan apa yang terjadi jika satu fitur dihapus dari SARIMAX sementara fitur lain dipertahankan.
+                        Jika MAE naik setelah fitur dihapus, fitur tersebut membantu model.
+                    </p>
+                    <div class="audit-meta">
+                        <strong>Metode:</strong> {{ sarimax_feature_audit.methodology.selection_basis }} |
+                        <strong>Metrik utama:</strong> {{ sarimax_feature_audit.methodology.metric_primary }} |
+                        <strong>Catatan:</strong> {{ sarimax_feature_audit.methodology.note }}
+                    </div>
+                    <div class="audit-horizon-list">
+                        {% for horizon in sarimax_feature_audit.horizons %}
+                        <div class="audit-horizon-item">
+                            <strong>{{ horizon.label }}</strong>
+                            <p>
+                                Regresor dasar:
+                                {% for reg in horizon.base_regressors %}
+                                    <code>{{ reg }}</code>{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                            <div class="audit-meta">
+                                MAE model penuh: {{ horizon.base_metrics.mae }} |
+                                RMSE: {{ horizon.base_metrics.rmse }} |
+                                sMAPE: {{ horizon.base_metrics.smape }}%
+                            </div>
+                            <table class="audit-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fitur</th>
+                                        <th>Alasan ekonomi</th>
+                                        <th>MAE saat dihapus</th>
+                                        <th>Delta MAE</th>
+                                        <th>Interpretasi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in horizon.rows %}
+                                    <tr>
+                                        <td><strong>{{ row.label }}</strong><br><span>{{ row.feature }}</span></td>
+                                        <td>{{ row.reason }}</td>
+                                        <td>{% if row.status == 'ok' %}{{ row.dropped_mae }}{% else %}-{% endif %}</td>
+                                        <td>
+                                            {% if row.status == 'ok' %}
+                                                <span class="{% if row.delta_mae > 0.01 %}audit-delta-positive{% elif row.delta_mae < -0.01 %}audit-delta-negative{% else %}audit-delta-neutral{% endif %}">
+                                                    {{ row.delta_mae }}
+                                                </span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ row.interpretation }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p>{{ sarimax_feature_audit.message }}</p>
+                    {% endif %}
+                </div>
             </div>
 
-            <div class="guide-card">
-                <h4>6. Batasan metodologis model proksi daya beli</h4>
-                {% if ridge_model_summary.available %}
-                <div class="feature-list">
-                    {% for item in ridge_model_summary.limitations %}
-                    <div class="feature-item">
-                        <strong>Catatan {{ forloop.counter }}</strong>
-                        <p>{{ item }}</p>
+            <aside class="guide-rail">
+                <div class="guide-surface">
+                    <div class="guide-surface-head">
+                        <span class="guide-section-label">Model ringkas</span>
+                        <h4>3. Ringkasan teknis model proksi daya beli</h4>
                     </div>
-                    {% endfor %}
+                    {% if ridge_model_summary.available %}
+                    <p>{{ ridge_model_summary.model_note }}</p>
+                    <div class="guide-metric-grid">
+                        <div class="guide-metric">
+                            <span class="label">Cakupan data</span>
+                            <span class="value">{{ ridge_model_summary.data_scope.year_min }}-{{ ridge_model_summary.data_scope.year_max }}</span>
+                        </div>
+                        <div class="guide-metric">
+                            <span class="label">Provinsi</span>
+                            <span class="value">{{ ridge_model_summary.data_scope.province_count }}</span>
+                        </div>
+                        <div class="guide-metric">
+                            <span class="label">MAE uji</span>
+                            <span class="value">Rp {{ ridge_model_summary.test_metrics.mae|floatformat:0 }}</span>
+                        </div>
+                        <div class="guide-metric">
+                            <span class="label">Walk-forward MAE</span>
+                            <span class="value">Rp {{ ridge_model_summary.walk_forward.mae|floatformat:0 }}</span>
+                        </div>
+                    </div>
+                    <div class="guide-note">
+                        Target model ini adalah <strong>{{ ridge_model_summary.target_label|lower }}</strong>, yang diantarmukakan sebagai proksi daya beli, bukan ukuran teoritis daya beli murni.
+                    </div>
+                    {% else %}
+                    <p>{{ ridge_model_summary.message }}</p>
+                    {% endif %}
                 </div>
-                {% else %}
-                <p>Batasan metodologis model daya beli belum tersedia.</p>
-                {% endif %}
-            </div>
+
+                <div class="guide-surface">
+                    <div class="guide-surface-head">
+                        <span class="guide-section-label">Feature inventory</span>
+                        <h4>4. Fitur model daya beli yang dipakai</h4>
+                    </div>
+                    {% if ridge_model_summary.available %}
+                    <div class="feature-meta">Input wilayah</div>
+                    <div class="feature-list">
+                        {% for item in ridge_model_summary.categorical_features %}
+                        <div class="feature-item">
+                            <strong>{{ item.label }} ({{ item.feature }})</strong>
+                            <p>{{ item.reason }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="feature-meta" style="margin-top: 14px;">Fitur inti</div>
+                    <div class="feature-list">
+                        {% for item in ridge_model_summary.core_features %}
+                        <div class="feature-item">
+                            <strong>{{ item.label }} ({{ item.feature }})</strong>
+                            <p>{{ item.reason }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="feature-meta" style="margin-top: 14px;">Fitur turunan</div>
+                    <div class="feature-list">
+                        {% for item in ridge_model_summary.derived_features %}
+                        <div class="feature-item">
+                            <strong>{{ item.label }} ({{ item.feature }})</strong>
+                            <p>{{ item.reason }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p>Metadata fitur model daya beli belum tersedia.</p>
+                    {% endif %}
+                </div>
+
+                <div class="guide-surface">
+                    <div class="guide-surface-head">
+                        <span class="guide-section-label">Limitasi</span>
+                        <h4>6. Batasan metodologis model proksi daya beli</h4>
+                    </div>
+                    {% if ridge_model_summary.available %}
+                    <div class="feature-list">
+                        {% for item in ridge_model_summary.limitations %}
+                        <div class="feature-item">
+                            <strong>Catatan {{ forloop.counter }}</strong>
+                            <p>{{ item }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p>Batasan metodologis model daya beli belum tersedia.</p>
+                    {% endif %}
+                </div>
+            </aside>
         </div>
-    </div>
+    </section>
 </section>
 {% endblock %}
 

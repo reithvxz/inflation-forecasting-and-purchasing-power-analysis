@@ -1,403 +1,723 @@
 {% extends 'predictions/base.html' %}
 {% load static %}
 
-{% block page_title %}Analisis Perbandingan Provinsi{% endblock %}
+{% block page_title %}Comparison Workspace Wilayah{% endblock %}
 
 {% block extra_head %}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <style>
-    .compare-header {
-        text-align: center;
-        margin-bottom: 32px;
-    }
-    .compare-header h1 {
-        font-size: 28px;
-        font-weight: 800;
-        color: var(--text-primary);
-        margin-bottom: 8px;
-    }
-    .compare-header p {
-        color: var(--text-secondary);
-        font-size: 15px;
-        max-width: 640px;
-        margin: 0 auto;
-        line-height: 1.6;
-    }
-    .compare-controls {
-        display: flex;
-        gap: 20px;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-        align-items: end;
-    }
-    .control-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    .control-group label {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .control-group select {
-        padding: 10px 14px;
-        border-radius: 6px;
-        background: var(--bg-elevated);
-        border: 1px solid var(--border-color);
-        color: var(--text-primary);
-        font-size: 14px;
-        font-family: 'Inter', sans-serif;
-        min-width: 200px;
-        cursor: pointer;
-    }
-    .control-group select:focus {
-        border-color: var(--accent-primary);
-        outline: none;
-        box-shadow: 0 0 0 3px var(--accent-primary-dim);
-    }
-    .btn-compare {
-        padding: 10px 22px;
-        border-radius: 6px;
-        background: var(--accent-primary);
-        color: #fff;
-        border: none;
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        font-family: 'Inter', sans-serif;
-    }
-    .btn-compare:hover {
-        background: var(--accent-primary-hover);
-        box-shadow: 0 4px 12px var(--accent-primary-glow);
-        transform: translateY(-1px);
-    }
-    .btn-reset {
-        padding: 10px 18px;
-        border-radius: 6px;
-        background: transparent;
-        color: var(--text-secondary);
-        border: 1px solid var(--border-color);
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        font-family: 'Inter', sans-serif;
-    }
-    .btn-reset:hover {
-        border-color: var(--negative);
-        color: var(--negative);
-        background: var(--negative-dim);
-    }
-
-    .metric-context-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-left: 4px solid var(--accent-primary);
-        border-radius: 8px;
-        padding: 20px 24px;
-        margin-bottom: 24px;
-        display: none;
-    }
-    .metric-context-card .mcc-label {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--accent-primary);
-        margin-bottom: 4px;
-    }
-    .metric-context-card .mcc-desc {
-        font-size: 14px;
-        color: var(--text-secondary);
-        line-height: 1.6;
-    }
-
-    .compare-grid {
+    .compare-shell {
         display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 16px;
-        margin-bottom: 16px;
+        gap: 22px;
     }
-    .chart-panel {
+
+    .compare-hero,
+    .compare-rail,
+    .compare-stage,
+    .compare-panel,
+    .compare-context-strip,
+    .compare-analysis {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 20px;
+        border-radius: 20px;
+        box-shadow: var(--shadow-sm);
     }
-    .chart-panel h3 {
-        font-size: 15px;
-        font-weight: 600;
-        margin-bottom: 16px;
-        color: var(--text-primary);
+
+    .compare-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 22px;
+        padding: 28px;
+        background:
+            radial-gradient(circle at top right, rgba(41, 98, 255, 0.10), transparent 28%),
+            linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
     }
-    .chart-box {
-        height: 400px;
-        position: relative;
+
+    .compare-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 11px;
+        border-radius: 999px;
+        background: rgba(171, 71, 188, 0.10);
+        color: #8d42ff;
+        font-size: 11px;
+        font-weight: 760;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 14px;
     }
-    .radar-panel {
-        background: var(--bg-card);
+
+    .compare-kicker::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: currentColor;
+    }
+
+    .compare-hero h2 {
+        margin: 0 0 10px;
+        font-size: clamp(30px, 3.5vw, 42px);
+        line-height: 1.06;
+        letter-spacing: -0.05em;
+    }
+
+    .compare-hero p {
+        margin: 0;
+        max-width: 760px;
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.72;
+    }
+
+    .compare-hero-meta {
+        display: grid;
+        gap: 12px;
+    }
+
+    .hero-meta-item {
+        padding: 15px 16px;
+        border-radius: 16px;
         border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 16px;
+        background: #ffffff;
     }
-    .radar-panel h3 {
-        font-size: 15px;
-        font-weight: 600;
-        margin-bottom: 16px;
+
+    .hero-meta-item span {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--text-tertiary);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .hero-meta-item strong {
+        display: block;
         color: var(--text-primary);
+        font-size: 14px;
+        line-height: 1.5;
     }
-    .radar-box {
-        height: 450px;
-        position: relative;
-        max-width: 600px;
-        margin: 0 auto;
+
+    .compare-workspace {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr) 340px;
+        gap: 18px;
+        align-items: start;
     }
-    .ranking-panel {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 20px;
+
+    .compare-rail,
+    .compare-stage,
+    .compare-analysis {
+        padding: 22px;
     }
-    .ranking-panel h3 {
-        font-size: 15px;
-        font-weight: 600;
-        margin-bottom: 16px;
-        color: var(--text-primary);
+
+    .compare-rail {
+        position: sticky;
+        top: 92px;
+        display: grid;
+        gap: 18px;
     }
-    .ranking-list {
-        display: flex;
-        flex-direction: column;
+
+    .rail-head,
+    .stage-head,
+    .analysis-head {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .rail-label,
+    .panel-label {
+        color: var(--text-tertiary);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .rail-head h3,
+    .stage-head h3,
+    .analysis-head h3,
+    .compare-panel h3 {
+        margin: 0;
+        font-size: 18px;
+        letter-spacing: -0.02em;
+    }
+
+    .rail-head p,
+    .stage-head p,
+    .analysis-head p,
+    .compare-panel p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.68;
+    }
+
+    .compare-controls {
+        display: grid;
+        gap: 14px;
+    }
+
+    .control-block {
+        display: grid;
+        gap: 10px;
+    }
+
+    .control-block-label,
+    .control-group label {
+        color: var(--text-secondary);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .province-grid {
+        display: grid;
+        gap: 10px;
+    }
+
+    .control-group {
+        display: grid;
         gap: 8px;
     }
-    .rank-item {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 12px 14px;
-        background: var(--bg-elevated);
-        border-radius: 6px;
+
+    .control-group select {
+        width: 100%;
+        padding: 11px 14px;
+        border-radius: 12px;
         border: 1px solid var(--border-color);
-        transition: all 0.15s ease;
+        background: var(--bg-panel);
+        color: var(--text-primary);
+        font: 600 13px 'Inter', sans-serif;
+        cursor: pointer;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
-    .rank-item:hover {
+
+    .control-group select:focus {
+        outline: none;
         border-color: var(--accent-primary);
-        background: var(--bg-hover);
+        box-shadow: 0 0 0 4px rgba(41, 98, 255, 0.10);
+        background: #ffffff;
     }
-    .rank-num {
-        width: 30px;
-        height: 30px;
-        border-radius: 6px;
+
+    .control-actions {
         display: flex;
+        gap: 10px;
+    }
+
+    .btn-compare,
+    .btn-reset {
+        flex: 1;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: 8px;
+        padding: 11px 16px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        font: 700 13px 'Inter', sans-serif;
+        cursor: pointer;
+        transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+    }
+
+    .btn-compare {
+        background: var(--accent-primary);
+        color: #fff;
+        box-shadow: 0 12px 22px rgba(41, 98, 255, 0.18);
+    }
+
+    .btn-compare:hover {
+        transform: translateY(-1px);
+        background: var(--accent-primary-hover);
+    }
+
+    .btn-reset {
+        background: #ffffff;
+        border-color: var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .btn-reset:hover {
+        transform: translateY(-1px);
+        border-color: rgba(239, 83, 80, 0.25);
+        color: var(--negative);
+    }
+
+    .compare-note {
+        padding: 14px 15px;
+        border-radius: 14px;
+        border: 1px solid rgba(171, 71, 188, 0.18);
+        background: rgba(171, 71, 188, 0.06);
+        color: var(--text-secondary);
+        font-size: 12px;
+        line-height: 1.65;
+    }
+
+    .compare-stage {
+        display: grid;
+        gap: 16px;
+    }
+
+    .compare-context-strip {
+        display: none;
+        padding: 16px 18px;
+        border-color: rgba(41, 98, 255, 0.16);
+        background:
+            linear-gradient(180deg, #ffffff 0%, rgba(41, 98, 255, 0.05) 100%);
+    }
+
+    .compare-context-strip.is-visible {
+        display: grid;
+        gap: 6px;
+    }
+
+    .compare-context-strip .mcc-label {
+        color: var(--accent-primary);
+        font-size: 14px;
+        font-weight: 760;
+    }
+
+    .compare-context-strip .mcc-desc {
+        color: var(--text-secondary);
         font-size: 13px;
+        line-height: 1.66;
+    }
+
+    .compare-panel {
+        padding: 22px;
+    }
+
+    .chart-panel {
+        overflow: hidden;
+    }
+
+    .chart-box {
+        height: 460px;
+        margin-top: 18px;
+    }
+
+    .compare-status-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: var(--bg-panel);
+        color: var(--text-secondary);
+        font-size: 11px;
         font-weight: 700;
     }
-    .rank-num.gold { background: var(--warning-dim); color: var(--accent-warning); }
-    .rank-num.silver { background: rgba(192,192,192,0.15); color: #c0c0c0; }
-    .rank-num.bronze { background: rgba(205,127,50,0.15); color: #cd7f32; }
-    .rank-num.normal { background: var(--bg-elevated); color: var(--text-secondary); }
-    .rank-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--text-primary); }
-    .rank-val { font-size: 15px; font-weight: 700; color: var(--accent-primary); font-variant-numeric: tabular-nums; }
-    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
-    .empty-state i { font-size: 36px; margin-bottom: 12px; opacity: 0.4; color: var(--text-secondary); }
-    .empty-state p { font-size: 13px; color: var(--text-secondary); }
-    .loading-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
-    .loading-state i { font-size: 24px; margin-bottom: 8px; animation: spin 1s linear infinite; color: var(--accent-primary); }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    .error-state { text-align: center; padding: 40px 20px; color: var(--negative); }
 
-    .insight-section {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 16px;
-        display: none;
-    }
-    .insight-section h3 {
-        font-size: 15px;
-        font-weight: 600;
-        margin-bottom: 16px;
+    .status-pill strong {
         color: var(--text-primary);
+        font-weight: 800;
     }
-    .insight-section h3 i { color: var(--accent-warning); }
+
+    .compare-analysis {
+        display: grid;
+        gap: 16px;
+    }
+
+    .ranking-panel,
+    .insight-section,
+    .radar-panel {
+        display: grid;
+        gap: 14px;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .ranking-list,
     .insight-list {
-        display: flex;
-        flex-direction: column;
+        display: grid;
         gap: 8px;
     }
-    .insight-item {
-        display: flex;
-        align-items: flex-start;
+
+    .rank-item {
+        display: grid;
+        grid-template-columns: 30px minmax(0, 1fr) auto;
+        align-items: center;
         gap: 12px;
         padding: 12px 14px;
-        background: var(--bg-elevated);
-        border-radius: 6px;
+        border-radius: 14px;
         border: 1px solid var(--border-color);
-        font-size: 13px;
-        color: var(--text-secondary);
-        line-height: 1.6;
+        background: var(--bg-panel);
+        transition: border-color 0.16s ease, transform 0.16s ease, background 0.16s ease;
     }
+
+    .rank-item:hover {
+        transform: translateY(-1px);
+        border-color: rgba(41, 98, 255, 0.16);
+        background: #ffffff;
+    }
+
+    .rank-num {
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .rank-num.gold {
+        background: rgba(255, 179, 0, 0.14);
+        color: #c88807;
+    }
+
+    .rank-num.silver {
+        background: rgba(120, 123, 134, 0.14);
+        color: #7a7f88;
+    }
+
+    .rank-num.bronze {
+        background: rgba(171, 71, 188, 0.12);
+        color: #8d42ff;
+    }
+
+    .rank-num.normal {
+        background: rgba(41, 98, 255, 0.08);
+        color: var(--accent-primary);
+    }
+
+    .rank-name {
+        overflow: hidden;
+        color: var(--text-primary);
+        font-size: 13px;
+        font-weight: 700;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .rank-val {
+        color: var(--accent-primary);
+        font-size: 14px;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .insight-section {
+        display: none;
+    }
+
+    .insight-item {
+        display: grid;
+        grid-template-columns: 22px minmax(0, 1fr);
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 179, 0, 0.18);
+        background: rgba(255, 179, 0, 0.06);
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.62;
+    }
+
     .insight-item i {
         color: var(--accent-warning);
-        margin-top: 2px;
-        flex-shrink: 0;
+        margin-top: 3px;
     }
-    .insight-item strong { color: var(--text-primary); }
 
-    @media (max-width: 900px) {
-        .compare-grid { grid-template-columns: 1fr; }
-        .compare-controls { flex-direction: column; }
-        .control-group select { min-width: 100%; }
+    .insight-item strong {
+        color: var(--text-primary);
+    }
+
+    .radar-panel .analysis-head {
+        margin-bottom: 0;
+    }
+
+    .radar-box {
+        height: 380px;
+        padding: 8px 0 4px;
+    }
+
+    .empty-state,
+    .loading-state,
+    .error-state {
+        display: grid;
+        place-items: center;
+        gap: 10px;
+        min-height: 220px;
+        padding: 24px;
+        text-align: center;
+        border-radius: 16px;
+        border: 1px dashed var(--border-color);
+        background: rgba(248, 251, 255, 0.72);
+        color: var(--text-secondary);
+    }
+
+    .empty-state i,
+    .loading-state i,
+    .error-state i {
+        font-size: 26px;
+        opacity: 0.72;
+    }
+
+    .loading-state i {
+        color: var(--accent-primary);
+        animation: spin 1s linear infinite;
+    }
+
+    .error-state {
+        color: var(--negative);
+        background: rgba(239, 83, 80, 0.05);
+        border-color: rgba(239, 83, 80, 0.18);
+    }
+
+    @keyframes spin {
+        100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 1180px) {
+        .compare-workspace {
+            grid-template-columns: 1fr;
+        }
+
+        .compare-rail {
+            position: static;
+        }
+    }
+
+    @media (max-width: 980px) {
+        .compare-hero {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 720px) {
+        .control-actions {
+            flex-direction: column;
+        }
+
+        .chart-box,
+        .radar-box {
+            height: 320px;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="compare-header">
-    <h1><i class="fas fa-balance-scale" style="color:var(--accent-primary)"></i> Analisis Perbandingan Provinsi</h1>
-    <p>Bandingkan indikator ekonomi makro antar provinsi Indonesia. Pilih provinsi dan metrik untuk melihat tren, ranking, dan profil multi-dimensi.</p>
-</div>
-
-<div class="compare-controls">
-    <div class="control-group">
-        <label>Provinsi (pilih hingga 5)</label>
-        <select id="prov1"><option value="">-- Pilih Provinsi 1 --</option></select>
-    </div>
-    <div class="control-group">
-        <label>&nbsp;</label>
-        <select id="prov2"><option value="">-- Pilih Provinsi 2 --</option></select>
-    </div>
-    <div class="control-group">
-        <label>&nbsp;</label>
-        <select id="prov3"><option value="">-- Pilih Provinsi 3 --</option></select>
-    </div>
-    <div class="control-group">
-        <label>&nbsp;</label>
-        <select id="prov4"><option value="">-- Pilih Provinsi 4 --</option></select>
-    </div>
-    <div class="control-group">
-        <label>&nbsp;</label>
-        <select id="prov5"><option value="">-- Pilih Provinsi 5 --</option></select>
-    </div>
-    <div class="control-group">
-        <label>Metrik</label>
-        <select id="metric">
-            <option value="Total_Pengeluaran_Riil">Daya Beli Riil</option>
-            <option value="Total_Pengeluaran">Pengeluaran Nominal</option>
-            <option value="UMP">Upah Minimum Provinsi</option>
-            <option value="PDRB_HargaKonstan">PDRB Per Kapita</option>
-            <option value="TPT">Tingkat Pengangguran (TPT)</option>
-            <option value="IPM">Indeks Pembangunan Manusia</option>
-            <option value="Gini_Rasio">Gini Ratio</option>
-            <option value="Garis_Kemiskinan">Garis Kemiskinan</option>
-            <option value="Pct_Penduduk_Miskin">% Penduduk Miskin</option>
-            <option value="Jumlah_Penduduk">Jumlah Penduduk</option>
-        </select>
-    </div>
-    <div class="control-group">
-        <label>&nbsp;</label>
-        <div style="display:flex;gap:10px;">
-            <button class="btn-compare" onclick="runCompare()"><i class="fas fa-chart-line"></i> Bandingkan</button>
-            <button class="btn-reset" onclick="resetCompare()"><i class="fas fa-undo"></i> Reset</button>
+<section class="compare-shell">
+    <section class="compare-hero">
+        <div>
+            <div class="compare-kicker">Regional comparison workspace</div>
+            <h2>Bandingkan arah ekonomi antarwilayah dalam satu permukaan kerja.</h2>
+            <p>
+                Halaman ini merangkum tren, ranking, dan profil multi-dimensi hingga lima provinsi sekaligus.
+                Fokus utamanya adalah membantu pembacaan perbedaan posisi wilayah tanpa memecah analisis ke banyak halaman.
+            </p>
         </div>
-    </div>
-</div>
-
-<div id="metricContext" class="metric-context-card">
-    <div class="mcc-label" id="metricContextLabel"></div>
-    <div class="mcc-desc" id="metricContextDesc"></div>
-</div>
-
-<div class="compare-grid">
-    <div class="chart-panel">
-        <h3><i class="fas fa-chart-line" style="color:var(--accent-primary)"></i> Tren Perbandingan</h3>
-        <div class="chart-box"><canvas id="compareChart"></canvas></div>
-    </div>
-    <div class="ranking-panel">
-        <h3><i class="fas fa-trophy" style="color:var(--accent-warning)"></i> Ranking</h3>
-        <div class="ranking-list" id="rankingList">
-            <div class="empty-state">
-                <i class="fas fa-arrow-up"></i>
-                <p>Pilih provinsi dan metrik, lalu klik "Bandingkan"</p>
+        <div class="compare-hero-meta">
+            <div class="hero-meta-item">
+                <span>Ruang kerja utama</span>
+                <strong>Line chart untuk membaca pergeseran tren lintas tahun dan lintas wilayah.</strong>
+            </div>
+            <div class="hero-meta-item">
+                <span>Lapisan analisis</span>
+                <strong>Ranking, insight otomatis, dan radar diposisikan sebagai rail analisis pendamping.</strong>
             </div>
         </div>
-    </div>
-</div>
+    </section>
 
-<div id="insightSection" class="insight-section">
-    <h3><i class="fas fa-lightbulb"></i> Insight</h3>
-    <div class="insight-list" id="insightText"></div>
-</div>
+    <section class="compare-workspace">
+        <aside class="compare-rail">
+            <div class="rail-head">
+                <span class="rail-label">Control rail</span>
+                <h3>Atur cakupan pembanding</h3>
+                <p>Pilih hingga lima provinsi dan satu metrik utama untuk membentuk workspace analisis aktif.</p>
+            </div>
 
-<div class="radar-panel">
-    <h3><i class="fas fa-bullseye" style="color:var(--accent-primary)"></i> Profil Multi-Dimensi (Radar)</h3>
-    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;margin-top:-12px;">Skor dinormalisasi 0-100 per dimensi agar bisa dibandingkan dalam satu grafik.</p>
-    <div class="radar-box"><canvas id="radarChart"></canvas></div>
-</div>
+            <div class="compare-controls">
+                <div class="control-block">
+                    <div class="control-block-label">Wilayah yang dibandingkan</div>
+                    <div class="province-grid">
+                        <div class="control-group">
+                            <label for="prov1">Provinsi 1</label>
+                            <select id="prov1"><option value="">Pilih provinsi</option></select>
+                        </div>
+                        <div class="control-group">
+                            <label for="prov2">Provinsi 2</label>
+                            <select id="prov2"><option value="">Pilih provinsi</option></select>
+                        </div>
+                        <div class="control-group">
+                            <label for="prov3">Provinsi 3</label>
+                            <select id="prov3"><option value="">Pilih provinsi</option></select>
+                        </div>
+                        <div class="control-group">
+                            <label for="prov4">Provinsi 4</label>
+                            <select id="prov4"><option value="">Pilih provinsi</option></select>
+                        </div>
+                        <div class="control-group">
+                            <label for="prov5">Provinsi 5</label>
+                            <select id="prov5"><option value="">Pilih provinsi</option></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-block">
+                    <div class="control-group">
+                        <label for="metric">Metrik aktif</label>
+                        <select id="metric">
+                            <option value="Total_Pengeluaran_Riil">Pengeluaran Riil per Kapita</option>
+                            <option value="Total_Pengeluaran">Pengeluaran Nominal</option>
+                            <option value="UMP">Upah Minimum Provinsi</option>
+                            <option value="PDRB_HargaKonstan">PDRB Harga Konstan</option>
+                            <option value="TPT">Tingkat Pengangguran Terbuka</option>
+                            <option value="IPM">Indeks Pembangunan Manusia</option>
+                            <option value="Gini_Rasio">Gini Ratio</option>
+                            <option value="Garis_Kemiskinan">Garis Kemiskinan</option>
+                            <option value="Pct_Penduduk_Miskin">% Penduduk Miskin</option>
+                            <option value="Jumlah_Penduduk">Jumlah Penduduk</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-actions">
+                    <button class="btn-compare" type="button" onclick="runCompare()">
+                        <i class="fas fa-chart-line"></i>
+                        Jalankan
+                    </button>
+                    <button class="btn-reset" type="button" onclick="resetCompare()">
+                        <i class="fas fa-undo"></i>
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <div class="compare-note">
+                Radar chart memakai normalisasi lintas dimensi agar perbedaan struktur wilayah tetap dapat dibaca dalam satu kanvas yang sama.
+            </div>
+        </aside>
+
+        <div class="compare-stage">
+            <div id="metricContext" class="compare-context-strip">
+                <div class="mcc-label" id="metricContextLabel"></div>
+                <div class="mcc-desc" id="metricContextDesc"></div>
+            </div>
+
+            <article class="compare-panel chart-panel">
+                <div class="stage-head">
+                    <span class="panel-label">Main comparison surface</span>
+                    <h3>Tren perbandingan wilayah</h3>
+                    <p>Gunakan panel ini untuk membaca pergeseran antarprovinsi dari tahun ke tahun pada metrik yang dipilih.</p>
+                </div>
+                <div class="compare-status-bar">
+                    <span class="status-pill"><strong>Prioritas:</strong> pembacaan tren historis</span>
+                    <span class="status-pill"><strong>Output:</strong> line chart lintas provinsi</span>
+                </div>
+                <div class="chart-box"><canvas id="compareChart"></canvas></div>
+            </article>
+        </div>
+
+        <aside class="compare-analysis">
+            <section class="compare-panel ranking-panel">
+                <div class="analysis-head">
+                    <span class="panel-label">Secondary analysis rail</span>
+                    <h3>Ranking terbaru</h3>
+                    <p>Peringkat memakai observasi terakhir yang tersedia untuk setiap provinsi pada metrik aktif.</p>
+                </div>
+                <div class="ranking-list" id="rankingList">
+                    <div class="empty-state">
+                        <i class="fas fa-signal"></i>
+                        <p>Pilih cakupan wilayah dan jalankan perbandingan untuk membentuk ranking aktif.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="insightSection" class="compare-panel insight-section">
+                <div class="analysis-head">
+                    <span class="panel-label">Analyst takeaway</span>
+                    <h3>Insight utama</h3>
+                    <p>Ringkasan ini menyorot posisi tertinggi, selisih terlebar, dan titik tengah pembanding.</p>
+                </div>
+                <div class="insight-list" id="insightText"></div>
+            </section>
+
+            <section class="compare-panel radar-panel">
+                <div class="analysis-head">
+                    <span class="panel-label">Comparative layer</span>
+                    <h3>Profil multi-dimensi</h3>
+                    <p>Radar dipakai sebagai pembanding pendukung untuk membaca struktur relatif antarwilayah, bukan sebagai headline utama.</p>
+                </div>
+                <div class="radar-box"><canvas id="radarChart"></canvas></div>
+            </section>
+        </aside>
+    </section>
+</section>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-const COLORS = ['#2962FF','#26A69A','#FFB300','#AB47BC','#00BCD4'];
-const PROVINCE_SELECTS = ['prov1','prov2','prov3','prov4','prov5'];
+const COLORS = ['#2962FF', '#26A69A', '#8D42FF', '#D89B1D', '#00A2FF'];
+const PROVINCE_SELECTS = ['prov1', 'prov2', 'prov3', 'prov4', 'prov5'];
 let lineChart = null;
 let radarChart = null;
 
 const METRIC_INFO = {
     'Total_Pengeluaran_Riil': {
-        label: 'Daya Beli Riil',
+        label: 'Pengeluaran Riil per Kapita',
         unit: 'Rp', format: 'currency',
-        desc: 'Estimasi pengeluaran riil per kapita per bulan setelah penyesuaian inflasi. Lebih tepat untuk membaca kapasitas belanja aktual dibanding nominal murni.'
+        desc: 'Estimasi pengeluaran riil per kapita per bulan setelah penyesuaian inflasi. Metrik ini paling dekat dengan pembacaan proksi daya beli wilayah.'
     },
     'Total_Pengeluaran': {
         label: 'Pengeluaran Nominal',
         unit: 'Rp', format: 'currency',
-        desc: 'Rata-rata total pengeluaran per kapita per bulan (makanan + bukan makanan) dalam Rupiah sebelum penyesuaian inflasi.'
+        desc: 'Rata-rata total pengeluaran per kapita per bulan sebelum penyesuaian inflasi. Dipakai untuk membaca nilai nominal konsumsi wilayah.'
     },
     'UMP': {
         label: 'Upah Minimum Provinsi',
         unit: 'Rp', format: 'currency',
-        desc: 'Upah Minimum Provinsi per bulan dalam Rupiah. Dasar penghitungan upah buruh/pekerja di setiap provinsi.'
+        desc: 'Standar pendapatan minimum formal yang menjadi salah satu jangkar pembanding struktur pasar tenaga kerja wilayah.'
     },
     'PDRB_HargaKonstan': {
-        label: 'PDRB Per Kapita',
+        label: 'PDRB Harga Konstan',
         unit: 'Rp', format: 'currency',
-        desc: 'Produk Domestik Regional Bruto per kapita harga konstan (Ribu Rupiah). Indikator pertumbuhan ekonomi daerah.'
+        desc: 'Produk domestik regional bruto harga konstan. Berguna untuk membaca kapasitas ekonomi wilayah secara riil.'
     },
     'TPT': {
         label: 'Tingkat Pengangguran Terbuka',
         unit: '%', format: 'percent',
-        desc: 'Persentase angkatan kerja yang tidak memiliki pekerjaan. Semakin rendah = semakin baik.'
+        desc: 'Persentase angkatan kerja yang belum terserap. Nilai lebih tinggi menandakan tekanan pasar kerja yang lebih berat.'
     },
     'IPM': {
         label: 'Indeks Pembangunan Manusia',
         unit: '', format: 'number',
-        desc: 'Indeks Pembangunan Manusia (skala 0-100). Gabungan dari harapan hidup, pendidikan, dan penghasilan.'
+        desc: 'Indeks komposit kualitas pembangunan manusia yang merangkum dimensi kesehatan, pendidikan, dan pendapatan.'
     },
     'Gini_Rasio': {
         label: 'Gini Ratio',
         unit: '', format: 'number',
-        desc: 'Rasio ketimpangan pendapatan (skala 0-1). Semakin rendah = semakin merata distribusi pendapatan.'
+        desc: 'Indikator ketimpangan distribusi pengeluaran. Nilai lebih tinggi menunjukkan ketimpangan yang lebih besar.'
     },
     'Garis_Kemiskinan': {
         label: 'Garis Kemiskinan',
         unit: 'Rp', format: 'currency',
-        desc: 'Batas pengeluaran minimum per kapita per bulan (Rupiah) untuk kebutuhan dasar.'
+        desc: 'Ambang pengeluaran minimum per kapita untuk memenuhi kebutuhan dasar pada wilayah tertentu.'
     },
     'Pct_Penduduk_Miskin': {
         label: '% Penduduk Miskin',
         unit: '%', format: 'percent',
-        desc: 'Persentase penduduk yang pengeluarannya di bawah garis kemiskinan.'
+        desc: 'Persentase penduduk dengan pengeluaran di bawah garis kemiskinan pada wilayah aktif.'
     },
     'Jumlah_Penduduk': {
         label: 'Jumlah Penduduk',
         unit: 'Ribu Jiwa', format: 'number',
-        desc: 'Total jumlah penduduk (ribu jiwa).'
+        desc: 'Ukuran populasi wilayah yang berguna sebagai konteks skala saat membaca perbedaan indikator lainnya.'
     }
 };
 
@@ -408,8 +728,8 @@ function formatValue(val, metric) {
     const fmt = info ? info.format : 'number';
 
     if (fmt === 'currency') {
-        if (num >= 1000000) return 'Rp ' + (num / 1000000).toFixed(2).replace('.', ',') + ' Juta';
-        if (num >= 1000) return 'Rp ' + (num / 1000).toFixed(0) + ' Ribu';
+        if (num >= 1000000) return 'Rp ' + (num / 1000000).toFixed(2).replace('.', ',') + ' jt';
+        if (num >= 1000) return 'Rp ' + (num / 1000).toFixed(0) + ' rb';
         return 'Rp ' + num.toFixed(0);
     }
     if (fmt === 'percent') return num.toFixed(2).replace('.', ',') + '%';
@@ -419,10 +739,13 @@ function formatValue(val, metric) {
 function showMetricContext(metric) {
     const card = document.getElementById('metricContext');
     const info = METRIC_INFO[metric];
-    if (!info) { card.style.display = 'none'; return; }
+    if (!info) {
+        card.classList.remove('is-visible');
+        return;
+    }
     document.getElementById('metricContextLabel').textContent = info.label;
     document.getElementById('metricContextDesc').textContent = info.desc;
-    card.style.display = 'block';
+    card.classList.add('is-visible');
 }
 
 function generateInsight(provs, data, metric, info) {
@@ -430,55 +753,62 @@ function generateInsight(provs, data, metric, info) {
     const container = document.getElementById('insightText');
     const items = [];
 
-    const ranked = provs.map(prov => {
+    const ranked = provs.map((prov) => {
         const pd = data[prov] || { years: [], values: [] };
         const lastIdx = pd.values.length - 1;
-        return { name: prov, value: lastIdx >= 0 ? pd.values[lastIdx] : null, year: lastIdx >= 0 ? pd.years[lastIdx] : null };
-    }).filter(r => r.value !== null).sort((a, b) => b.value - a.value);
+        return {
+            name: prov,
+            value: lastIdx >= 0 ? pd.values[lastIdx] : null,
+            year: lastIdx >= 0 ? pd.years[lastIdx] : null
+        };
+    }).filter((r) => r.value !== null).sort((a, b) => b.value - a.value);
 
-    if (ranked.length === 0) { section.style.display = 'none'; return; }
+    if (ranked.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
 
     const best = ranked[0];
     const worst = ranked[ranked.length - 1];
-    const vals = ranked.map(r => r.value);
+    const vals = ranked.map((r) => r.value);
     const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
 
-    items.push(`<div class="insight-item"><i class="fas fa-crown"></i><div><strong>${best.name}</strong> memiliki <strong>${info.label}</strong> tertinggi di angka <strong>${formatValue(best.value, metric)}</strong>${best.year ? ' (' + best.year + ')' : ''}.</div></div>`);
+    items.push(`<div class="insight-item"><i class="fas fa-crown"></i><div><strong>${best.name}</strong> mencatat <strong>${info.label}</strong> tertinggi sebesar <strong>${formatValue(best.value, metric)}</strong>${best.year ? ' pada ' + best.year : ''}.</div></div>`);
 
     if (ranked.length >= 2) {
         const diff = best.value - worst.value;
         const pct = worst.value !== 0 ? ((diff / Math.abs(worst.value)) * 100) : 0;
-        items.push(`<div class="insight-item"><i class="fas fa-arrows-alt-h"></i><div>Selisih terbesar antara <strong>${best.name}</strong> dan <strong>${worst.name}</strong>: <strong>${formatValue(diff, metric)}</strong> (${pct.toFixed(1).replace('.', ',')}%).</div></div>`);
+        items.push(`<div class="insight-item"><i class="fas fa-arrows-left-right"></i><div>Rentang antara <strong>${best.name}</strong> dan <strong>${worst.name}</strong> mencapai <strong>${formatValue(diff, metric)}</strong> atau <strong>${pct.toFixed(1).replace('.', ',')}%</strong>.</div></div>`);
     }
 
-    items.push(`<div class="insight-item"><i class="fas fa-calculator"></i><div>Rata-rata dari ${ranked.length} provinsi yang dipilih: <strong>${formatValue(avg, metric)}</strong>.</div></div>`);
+    items.push(`<div class="insight-item"><i class="fas fa-chart-column"></i><div>Rata-rata dari ${ranked.length} wilayah pembanding berada di <strong>${formatValue(avg, metric)}</strong>.</div></div>`);
 
     if (ranked.length >= 3) {
         const mid = ranked[Math.floor(ranked.length / 2)];
-        items.push(`<div class="insight-item"><i class="fas fa-chart-bar"></i><div>Posisi tengah ditempati oleh <strong>${mid.name}</strong> dengan nilai <strong>${formatValue(mid.value, metric)}</strong>.</div></div>`);
+        items.push(`<div class="insight-item"><i class="fas fa-compass"></i><div>Titik tengah komparasi ditempati <strong>${mid.name}</strong> dengan nilai <strong>${formatValue(mid.value, metric)}</strong>.</div></div>`);
     }
 
     container.innerHTML = items.join('');
-    section.style.display = 'block';
+    section.style.display = 'grid';
 }
 
 async function loadProvinces() {
     try {
         const resp = await fetch('/api/provinces/');
         const json = await resp.json();
-        const provinces = json.provinces || [];
-        PROVINCE_SELECTS.forEach(id => {
+        const provinces = (json.provinces || []).filter((name) => name !== 'Indonesia');
+        PROVINCE_SELECTS.forEach((id) => {
             const sel = document.getElementById(id);
             sel.innerHTML = sel.options[0].outerHTML;
-            provinces.forEach(p => {
-                const o = document.createElement('option');
-                o.value = p;
-                o.textContent = p;
-                sel.appendChild(o);
+            provinces.forEach((province) => {
+                const option = document.createElement('option');
+                option.value = province;
+                option.textContent = province;
+                sel.appendChild(option);
             });
         });
-    } catch (e) {
-        console.error('Failed to load provinces', e);
+    } catch (error) {
+        console.error('Failed to load provinces', error);
     }
 }
 
@@ -489,7 +819,7 @@ document.getElementById('metric').addEventListener('change', function() {
 });
 
 function getSelectedProvinces() {
-    return PROVINCE_SELECTS.map(id => document.getElementById(id).value).filter(Boolean);
+    return PROVINCE_SELECTS.map((id) => document.getElementById(id).value).filter(Boolean);
 }
 
 function setLoading(elementId, message) {
@@ -500,7 +830,7 @@ function setLoading(elementId, message) {
         </div>`;
 }
 
-function setEmpty(elementId, message, icon='fa-arrow-up') {
+function setEmpty(elementId, message, icon = 'fa-signal') {
     document.getElementById(elementId).innerHTML = `
         <div class="empty-state">
             <i class="fas ${icon}"></i>
@@ -511,7 +841,7 @@ function setEmpty(elementId, message, icon='fa-arrow-up') {
 function setError(elementId, message) {
     document.getElementById(elementId).innerHTML = `
         <div class="error-state">
-            <i class="fas fa-exclamation-circle"></i>
+            <i class="fas fa-circle-exclamation"></i>
             <p>${message}</p>
         </div>`;
 }
@@ -519,14 +849,17 @@ function setError(elementId, message) {
 async function runCompare() {
     const provs = getSelectedProvinces();
     const metric = document.getElementById('metric').value;
-    if (provs.length === 0) { alert('Pilih minimal 1 provinsi'); return; }
+    if (provs.length === 0) {
+        alert('Pilih minimal satu provinsi terlebih dahulu.');
+        return;
+    }
 
     showMetricContext(metric);
-    setLoading('rankingList', 'Memuat data...');
+    setLoading('rankingList', 'Memuat pembanding wilayah...');
 
     try {
         const params = new URLSearchParams();
-        provs.forEach(p => params.append('provinsi', p));
+        provs.forEach((p) => params.append('provinsi', p));
         params.append('metric', metric);
         const resp = await fetch('/api/province-data/?' + params.toString());
         if (!resp.ok) throw new Error('API error ' + resp.status);
@@ -540,11 +873,15 @@ async function runCompare() {
                 label: prov,
                 data: provData.values,
                 borderColor: COLORS[i % COLORS.length],
-                backgroundColor: COLORS[i % COLORS.length] + '20',
-                tension: 0.4,
-                pointRadius: 6,
-                pointHoverRadius: 8,
-                borderWidth: 3
+                backgroundColor: COLORS[i % COLORS.length] + '12',
+                tension: 0.32,
+                pointRadius: 3,
+                pointHoverRadius: 6,
+                pointBackgroundColor: COLORS[i % COLORS.length],
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 1.6,
+                borderWidth: 2.6,
+                fill: false
             };
         });
 
@@ -564,14 +901,25 @@ async function runCompare() {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: { intersect: false, mode: 'index' },
                 plugins: {
-                    legend: { labels: { color: '#5D606B', font: { weight: 600, size: 12 } } },
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#5D606B',
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            padding: 18,
+                            font: { weight: 600, size: 11 }
+                        }
+                    },
                     tooltip: {
                         backgroundColor: 'rgba(255, 255, 255, 0.98)',
                         titleColor: '#131722',
                         bodyColor: '#5D606B',
                         borderColor: '#E0E3EB',
                         borderWidth: 1,
+                        padding: 12,
                         callbacks: {
                             label: function(context) {
                                 return context.dataset.label + ': ' + formatValue(context.parsed.y, metric);
@@ -580,14 +928,22 @@ async function runCompare() {
                     }
                 },
                 scales: {
-                    x: { ticks: { color: '#5D606B' }, grid: { color: 'rgba(224, 227, 235, 0.8)' } },
-                    y: { ticks: { color: '#5D606B', callback: v => formatValue(v, metric) }, grid: { color: 'rgba(224, 227, 235, 0.8)' } }
-                },
-                interaction: { intersect: false, mode: 'index' }
+                    x: {
+                        ticks: { color: '#7D8797' },
+                        grid: { color: 'rgba(224, 227, 235, 0.72)', drawBorder: false }
+                    },
+                    y: {
+                        ticks: {
+                            color: '#7D8797',
+                            callback: (value) => formatValue(value, metric)
+                        },
+                        grid: { color: 'rgba(224, 227, 235, 0.72)', drawBorder: false }
+                    }
+                }
             }
         });
 
-        const ranked = provs.map(prov => {
+        const ranked = provs.map((prov) => {
             const provData = data[prov] || { years: [], values: [] };
             const lastIdx = provData.values.length - 1;
             const value = lastIdx >= 0 ? provData.values[lastIdx] : null;
@@ -600,18 +956,23 @@ async function runCompare() {
         });
 
         const list = document.getElementById('rankingList');
-        list.innerHTML = ranked.map((r, i) => {
-            const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal';
-            const valStr = formatValue(r.value, metric);
-            return `<div class="rank-item"><div class="rank-num ${cls}">${i + 1}</div><div class="rank-name">${r.name}</div><div class="rank-val">${valStr}</div></div>`;
+        list.innerHTML = ranked.map((item, index) => {
+            const cls = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'normal';
+            return `
+                <div class="rank-item">
+                    <div class="rank-num ${cls}">${index + 1}</div>
+                    <div class="rank-name">${item.name}</div>
+                    <div class="rank-val">${formatValue(item.value, metric)}</div>
+                </div>
+            `;
         }).join('');
 
         generateInsight(provs, data, metric, info);
         await loadRadarChart(provs);
 
-    } catch (e) {
-        console.error(e);
-        setError('rankingList', 'Gagal memuat data. Silakan coba lagi.');
+    } catch (error) {
+        console.error(error);
+        setError('rankingList', 'Data perbandingan tidak berhasil dimuat. Silakan coba lagi.');
         document.getElementById('insightSection').style.display = 'none';
     }
 }
@@ -631,52 +992,50 @@ async function loadRadarChart(provs) {
             'IPM': { label: 'IPM', format: 'number', invert: false },
             'PDRB_HargaKonstan': { label: 'PDRB/Kapita', format: 'currency', invert: false },
             'UMP': { label: 'UMP', format: 'currency', invert: false },
-            'TPT': { label: 'TPT', format: 'percent', invert: true },  // lower = better
-            'Gini_Rasio': { label: 'Gini', format: 'number', invert: true },  // lower = better
-            'Total_Pengeluaran_Riil': { label: 'Daya Beli Riil', format: 'currency', invert: false }
+            'TPT': { label: 'TPT', format: 'percent', invert: true },
+            'Gini_Rasio': { label: 'Gini', format: 'number', invert: true },
+            'Total_Pengeluaran_Riil': { label: 'Pengeluaran Riil', format: 'currency', invert: false }
         };
-        const dims = Object.keys(dimensionMap).filter(k => {
-            return provs.some(p => allProvData[p] && k in allProvData[p]);
-        });
 
-        if (dims.length === 0) return;
+        const dims = Object.keys(dimensionMap).filter((key) => provs.some((p) => allProvData[p] && key in allProvData[p]));
+        if (!dims.length) return;
 
-        // Hitung min/max dari SEMUA provinsi (bukan cuma yang dipilih) agar skala konsisten
         const dimStats = {};
-        dims.forEach(dim => {
-            let min = Infinity, max = -Infinity;
-            Object.values(allProvData).forEach(pd => {
-                const v = pd[dim];
-                if (v !== null && v !== undefined && !isNaN(v)) {
-                    if (v < min) min = v;
-                    if (v > max) max = v;
+        dims.forEach((dim) => {
+            let min = Infinity;
+            let max = -Infinity;
+            Object.values(allProvData).forEach((provinceData) => {
+                const value = provinceData[dim];
+                if (value !== null && value !== undefined && !isNaN(value)) {
+                    if (value < min) min = value;
+                    if (value > max) max = value;
                 }
             });
             dimStats[dim] = { min, max };
         });
 
-        const datasets = provs.map((prov, i) => {
+        const datasets = provs.map((prov, index) => {
             const provData = allProvData[prov] || {};
-            const data = dims.map(dim => {
+            const data = dims.map((dim) => {
                 const val = provData[dim];
                 if (val === undefined || val === null || isNaN(val)) return 0;
                 const { min, max } = dimStats[dim];
                 if (min === Infinity || max === -Infinity) return 0;
                 if (max === min) return 50;
-                const invert = dimensionMap[dim] && dimensionMap[dim].invert;
-                return invert
-                    ? ((max - val) / (max - min)) * 100  // lower is better
-                    : ((val - min) / (max - min)) * 100; // higher is better
+                return dimensionMap[dim].invert
+                    ? ((max - val) / (max - min)) * 100
+                    : ((val - min) / (max - min)) * 100;
             });
+
             return {
                 label: prov,
                 data,
-                borderColor: COLORS[i % COLORS.length],
-                backgroundColor: COLORS[i % COLORS.length] + '30',
-                pointBackgroundColor: COLORS[i % COLORS.length],
+                borderColor: COLORS[index % COLORS.length],
+                backgroundColor: COLORS[index % COLORS.length] + '20',
+                pointBackgroundColor: COLORS[index % COLORS.length],
                 pointBorderColor: '#fff',
                 pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: COLORS[i % COLORS.length],
+                pointHoverBorderColor: COLORS[index % COLORS.length],
                 borderWidth: 2
             };
         });
@@ -686,14 +1045,23 @@ async function loadRadarChart(provs) {
         radarChart = new Chart(ctx, {
             type: 'radar',
             data: {
-                labels: dims.map(d => dimensionMap[d].label),
+                labels: dims.map((d) => dimensionMap[d].label),
                 datasets
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { labels: { color: '#5D606B', font: { weight: 600, size: 12 } } },
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#5D606B',
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            padding: 18,
+                            font: { weight: 600, size: 11 }
+                        }
+                    },
                     tooltip: {
                         backgroundColor: 'rgba(255, 255, 255, 0.98)',
                         titleColor: '#131722',
@@ -705,37 +1073,41 @@ async function loadRadarChart(provs) {
                                 const dimKey = dims[context.dataIndex];
                                 const rawVal = allProvData[context.dataset.label] ? allProvData[context.dataset.label][dimKey] : null;
                                 const dimInfo = dimensionMap[dimKey];
-                                const rawStr = formatValue(rawVal, dimInfo.format);
-                                return context.dataset.label + ': ' + rawStr + ' (skor: ' + Math.round(context.raw) + ')';
+                                return context.dataset.label + ': ' + formatValue(rawVal, dimInfo) + ' | skor ' + Math.round(context.raw);
                             }
                         }
                     }
                 },
                 scales: {
                     r: {
-                        angleLines: { color: 'rgba(224, 227, 235, 0.8)' },
-                        grid: { color: 'rgba(224, 227, 235, 0.8)' },
-                        pointLabels: { color: '#5D606B', font: { weight: 600, size: 12 } },
-                        ticks: { color: '#5D606B', backdropColor: 'transparent' }
+                        angleLines: { color: 'rgba(224, 227, 235, 0.72)' },
+                        grid: { color: 'rgba(224, 227, 235, 0.72)' },
+                        pointLabels: { color: '#5D606B', font: { weight: 600, size: 11 } },
+                        ticks: { color: '#868993', backdropColor: 'transparent' }
                     }
                 }
             }
         });
-
-    } catch (e) {
-        console.error('Radar chart error', e);
+    } catch (error) {
+        console.error('Radar chart error', error);
     }
 }
 
 function resetCompare() {
-    PROVINCE_SELECTS.forEach(id => {
+    PROVINCE_SELECTS.forEach((id) => {
         document.getElementById(id).selectedIndex = 0;
     });
     document.getElementById('metric').selectedIndex = 0;
-    if (lineChart) { lineChart.destroy(); lineChart = null; }
-    if (radarChart) { radarChart.destroy(); radarChart = null; }
-    setEmpty('rankingList', 'Pilih provinsi dan metrik, lalu klik "Bandingkan"');
-    document.getElementById('metricContext').style.display = 'none';
+    if (lineChart) {
+        lineChart.destroy();
+        lineChart = null;
+    }
+    if (radarChart) {
+        radarChart.destroy();
+        radarChart = null;
+    }
+    setEmpty('rankingList', 'Pilih wilayah dan jalankan perbandingan untuk membentuk ranking aktif.');
+    document.getElementById('metricContext').classList.remove('is-visible');
     document.getElementById('insightSection').style.display = 'none';
 }
 </script>

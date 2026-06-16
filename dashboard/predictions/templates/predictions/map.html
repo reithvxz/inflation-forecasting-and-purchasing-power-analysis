@@ -11,7 +11,88 @@
     .map-page {
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 18px;
+    }
+
+    .map-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 22px;
+        padding: 26px 28px;
+        border: 1px solid var(--border-color, #e0e3eb);
+        border-radius: 20px;
+        background:
+            radial-gradient(circle at top right, rgba(141, 66, 255, 0.10), transparent 28%),
+            linear-gradient(180deg, #ffffff 0%, #fbf9ff 100%);
+        box-shadow: 0 10px 32px rgba(19, 23, 34, 0.05);
+    }
+
+    .map-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 11px;
+        margin-bottom: 14px;
+        border-radius: 999px;
+        background: rgba(141, 66, 255, 0.10);
+        color: #8d42ff;
+        font-size: 11px;
+        font-weight: 760;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .map-kicker::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: currentColor;
+    }
+
+    .map-hero h2 {
+        margin: 0 0 10px;
+        color: var(--text-primary, #131722);
+        font-size: clamp(30px, 3.4vw, 40px);
+        line-height: 1.06;
+        letter-spacing: -0.05em;
+    }
+
+    .map-hero p {
+        margin: 0;
+        max-width: 760px;
+        color: var(--text-secondary, #5d606b);
+        font-size: 14px;
+        line-height: 1.72;
+    }
+
+    .map-hero-rail {
+        display: grid;
+        gap: 12px;
+    }
+
+    .map-hero-rail-item {
+        padding: 15px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--border-color, #e0e3eb);
+        background: #ffffff;
+    }
+
+    .map-hero-rail-item span {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--text-tertiary, #868993);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .map-hero-rail-item strong {
+        display: block;
+        color: var(--text-primary, #131722);
+        font-size: 14px;
+        line-height: 1.5;
     }
 
     .map-toolbar {
@@ -19,11 +100,11 @@
         align-items: center;
         justify-content: space-between;
         gap: 18px;
-        padding: 14px 16px;
+        padding: 16px 18px;
         border: 1px solid var(--border-color, #e0e3eb);
-        border-radius: 14px;
+        border-radius: 18px;
         background: var(--bg-card, #fff);
-        box-shadow: 0 4px 16px rgba(19, 23, 34, 0.04);
+        box-shadow: 0 6px 20px rgba(19, 23, 34, 0.05);
     }
 
     .map-toolbar-main {
@@ -72,10 +153,26 @@
     .data-status {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         color: var(--text-secondary, #5d606b);
         font-size: 12px;
         white-space: nowrap;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.84);
+        border: 1px solid rgba(16, 24, 40, 0.06);
+    }
+
+    .data-status strong {
+        color: var(--text-primary, #131722);
+        font-weight: 700;
+    }
+
+    .data-status-sep {
+        width: 4px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(93, 96, 107, 0.45);
     }
 
     .data-status-dot {
@@ -121,7 +218,8 @@
         position: relative;
         min-width: 0;
         background:
-            radial-gradient(circle at 70% 20%, rgba(41, 98, 255, 0.08), transparent 34%),
+            radial-gradient(circle at 70% 20%, rgba(76, 111, 255, 0.12), transparent 34%),
+            radial-gradient(circle at 20% 80%, rgba(22, 184, 166, 0.08), transparent 28%),
             #edf3f8;
     }
 
@@ -184,7 +282,7 @@
     .legend-gradient {
         height: 8px;
         border-radius: 999px;
-        background: linear-gradient(90deg, #e6efff 0%, #a9caff 23%, #5c9df5 46%, #1f74d1 68%, #0b9c98 84%, #f0b44d 100%);
+        background: linear-gradient(90deg, #edf2ff 0%, #c7d5ff 18%, #8ca8ff 38%, #5c7cff 58%, #2ab7a9 82%, #f0b44d 100%);
     }
 
     .legend-labels {
@@ -272,6 +370,15 @@
         font-weight: 700;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    .summary-caption {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border-color, #e0e3eb);
+        color: var(--text-secondary, #5d606b);
+        font-size: 11px;
+        line-height: 1.65;
     }
 
     .ranking-header {
@@ -419,6 +526,10 @@
     }
 
     @media (max-width: 1050px) {
+        .map-hero {
+            grid-template-columns: 1fr;
+        }
+
         .map-workspace {
             grid-template-columns: 1fr;
         }
@@ -499,6 +610,27 @@
 
 {% block content %}
 <div class="map-page">
+    <section class="map-hero">
+        <div>
+            <div class="map-kicker">Geo-analytics workspace</div>
+            <h2>Baca struktur regional Indonesia lewat peta yang sinkron dengan indikator dan tahun aktif.</h2>
+            <p>
+                Halaman ini merangkum distribusi indikator ekonomi per provinsi, lengkap dengan tahun aktif, ranking wilayah,
+                median nasional, dan rentang nilai sehingga pembacaan intensitas tidak berhenti di warna peta saja.
+            </p>
+        </div>
+        <div class="map-hero-rail">
+            <div class="map-hero-rail-item">
+                <span>Stage utama</span>
+                <strong>Choropleth dan heat glow disusun sebagai kanvas analisis, bukan sekadar ilustrasi wilayah.</strong>
+            </div>
+            <div class="map-hero-rail-item">
+                <span>Analyst rail</span>
+                <strong>Panel kanan merangkum provinsi tertinggi, median nasional, rentang aktif, dan status tahun data.</strong>
+            </div>
+        </div>
+    </section>
+
     <section class="map-toolbar" aria-label="Kontrol peta ekonomi">
         <div class="map-toolbar-main">
             <div class="metric-field">
@@ -558,7 +690,7 @@
 <script>
 const GEOJSON_URL = "{% static 'predictions/geo/indonesia_provinces.geojson' %}";
 const MAP_BOUNDS_PADDING = [18, 18];
-const COLOR_SCALE = ['#e6efff', '#a9caff', '#5c9df5', '#1f74d1', '#0b9c98', '#f0b44d'];
+const COLOR_SCALE = ['#EEF2FF', '#C4D7FF', '#8FB4FF', '#5E87FF', '#3E63F4', '#18B8A6', '#F0B44D'];
 
 const METRIC_INFO = {
     Total_Pengeluaran_Riil: { label: 'Daya Beli Riil', description: 'Pengeluaran riil per kapita per bulan setelah penyesuaian inflasi', format: 'currency' },
@@ -585,6 +717,10 @@ let selectedYear = '';
 let availableYears = [];
 let activeMetric = 'Total_Pengeluaran_Riil';
 let activeStats = null;
+let activeQuantiles = [];
+let coverageCount = 0;
+let coverageTotal = 0;
+let missingProvinces = [];
 const provinceLayers = {};
 
 function formatValue(value, metric = activeMetric) {
@@ -637,6 +773,12 @@ function calculateStats(values) {
     };
 }
 
+function calculateQuantileBreaks(values) {
+    const ascending = values.map((item) => item.value).sort((a, b) => a - b);
+    if (!ascending.length) return [];
+    return [0, 0.16, 0.33, 0.5, 0.67, 0.84, 1].map((pct) => quantile(ascending, pct));
+}
+
 function hexToRgb(hex) {
     const clean = hex.replace('#', '');
     const bigint = parseInt(clean, 16);
@@ -669,19 +811,21 @@ function normalizedValue(value) {
     return Math.min(1, Math.max(0, (value - activeStats.min) / range));
 }
 
-function colorForValue(value) {
-    const normalized = normalizedValue(value);
-    if (normalized === null) return '#dfe5ec';
-
-    if (normalized >= 1) {
-        return COLOR_SCALE[COLOR_SCALE.length - 1];
+function colorIndexForValue(value) {
+    if (!Number.isFinite(value)) return -1;
+    if (!activeQuantiles.length) return 0;
+    for (let index = activeQuantiles.length - 1; index >= 0; index -= 1) {
+        if (value >= activeQuantiles[index]) {
+            return Math.min(index, COLOR_SCALE.length - 1);
+        }
     }
+    return 0;
+}
 
-    const scaled = normalized * (COLOR_SCALE.length - 1);
-    const lowerIndex = Math.floor(scaled);
-    const upperIndex = Math.min(COLOR_SCALE.length - 1, lowerIndex + 1);
-    const localAmount = scaled - lowerIndex;
-    return interpolateColor(COLOR_SCALE[lowerIndex], COLOR_SCALE[upperIndex], localAmount);
+function colorForValue(value) {
+    const colorIndex = colorIndexForValue(value);
+    if (colorIndex < 0) return '#dfe5ec';
+    return COLOR_SCALE[colorIndex];
 }
 
 function polygonStyle(feature) {
@@ -756,7 +900,7 @@ function updateLegend() {
     document.getElementById('mapLegend').innerHTML = `
         <div class="legend-heading">
             <span>${METRIC_INFO[activeMetric].label}</span>
-            <span>${selectedYear || latestYear || 'Data terbaru'}</span>
+            <span>Tahun ${selectedYear || latestYear || 'terbaru'}</span>
         </div>
         <div class="legend-gradient"></div>
         <div class="legend-labels">
@@ -770,6 +914,12 @@ function updateLegend() {
 function updateSummary(values) {
     const highest = values[0];
     const lowest = values[values.length - 1];
+    const dataCoverageLabel = coverageTotal && coverageCount
+        ? `Cakupan ${coverageCount} dari ${coverageTotal} provinsi`
+        : `Cakupan ${values.length} provinsi`;
+    const missingNote = missingProvinces.length
+        ? ` ${missingProvinces.length} provinsi belum tersedia pada tahun aktif: ${missingProvinces.join(', ')}.`
+        : '';
     document.getElementById('mapSummary').innerHTML = `
         <span class="insight-eyebrow">Ringkasan nasional</span>
         <h2 class="insight-title">${METRIC_INFO[activeMetric].label}</h2>
@@ -785,6 +935,17 @@ function updateSummary(values) {
                 <span class="range-label">Terendah</span>
                 <span class="range-value" title="${lowest.province}">${lowest.province}</span>
             </div>
+            <div class="range-item">
+                <span class="range-label">Median nasional</span>
+                <span class="range-value">${formatValue(activeStats.median)}</span>
+            </div>
+            <div class="range-item">
+                <span class="range-label">Rentang aktif</span>
+                <span class="range-value">${formatValue(activeStats.min)} - ${formatValue(activeStats.max)}</span>
+            </div>
+        </div>
+        <div class="summary-caption">
+            ${dataCoverageLabel} | Tahun aktif ${selectedYear || latestYear || 'terbaru'}. Klik ranking di panel kanan untuk memfokuskan tampilan ke provinsi terkait.${missingNote}
         </div>
     `;
 }
@@ -825,7 +986,10 @@ function updateHeatGlow(values) {
             const layer = provinceLayers[item.province];
             if (!layer) return null;
             const center = layer.getBounds().getCenter();
-            const intensity = normalizedValue(item.value);
+            const colorIndex = colorIndexForValue(item.value);
+            const intensity = colorIndex < 0
+                ? null
+                : Math.max(0.12, ((colorIndex + 1) / COLOR_SCALE.length) * 0.92);
             if (intensity === null || intensity < 0.08) return null;
             return [center.lat, center.lng, Math.max(0.12, intensity * 0.85)];
         })
@@ -843,12 +1007,13 @@ function updateHeatGlow(values) {
         minOpacity: 0.05,
         maxZoom: 7,
         gradient: {
-            0.0: '#e6efff',
-            0.24: '#a9caff',
-            0.48: '#5c9df5',
-            0.72: '#1f74d1',
-            0.88: '#0b9c98',
-            1.0: '#f0b44d'
+            0.0: '#EEF2FF',
+            0.14: '#C4D7FF',
+            0.32: '#8FB4FF',
+            0.54: '#5E87FF',
+            0.74: '#3E63F4',
+            0.88: '#18B8A6',
+            1.0: '#F0B44D'
         }
     }).addTo(map);
 }
@@ -858,6 +1023,7 @@ function updateMap() {
     if (!values.length || !geoJsonLayer) return;
 
     activeStats = calculateStats(values);
+    activeQuantiles = calculateQuantileBreaks(values);
     const ranks = Object.fromEntries(values.map((item, index) => [item.province, index + 1]));
 
     geoJsonLayer.setStyle(polygonStyle);
@@ -894,6 +1060,23 @@ function populateYearOptions() {
     yearSelect.value = String(selectedYear || latestYear || '');
 }
 
+function renderDataStatus(mode = 'ready', yearLabel = '', count = 0, total = 0) {
+    const el = document.getElementById('dataStatusText');
+    if (!el) return;
+    if (mode === 'loading') {
+        el.innerHTML = `<strong>Memuat</strong><span class="data-status-sep"></span><span>Data tahun ${yearLabel}</span>`;
+        return;
+    }
+    if (mode === 'error') {
+        el.innerHTML = `<strong>Data tidak tersedia</strong>`;
+        return;
+    }
+    const coverageText = total && total > count
+        ? `Cakupan ${count} dari ${total} provinsi`
+        : `Cakupan ${count} provinsi`;
+    el.innerHTML = `<strong>${coverageText}</strong><span class="data-status-sep"></span><span>Tahun ${yearLabel}</span>`;
+}
+
 async function refreshMetricSnapshot(year = null) {
     const params = new URLSearchParams();
     if (year !== null && year !== undefined && year !== '') {
@@ -910,10 +1093,17 @@ async function refreshMetricSnapshot(year = null) {
     latestYear = metrics.latest_year || '';
     selectedYear = metrics.selected_year || latestYear || '';
     availableYears = metrics.available_years || (selectedYear ? [selectedYear] : []);
+    coverageCount = Number(metrics.coverage_count || 0);
+    coverageTotal = Number(metrics.coverage_total || 0);
+    missingProvinces = metrics.missing_provinces || [];
     populateYearOptions();
     updateMap();
-    document.getElementById('dataStatusText').textContent =
-        `${Object.keys(provinceData).length} provinsi - data ${selectedYear || latestYear || 'terbaru'}`;
+    renderDataStatus(
+        'ready',
+        selectedYear || latestYear || 'terbaru',
+        coverageCount || Object.keys(provinceData).length,
+        coverageTotal || Object.keys(provinceData).length
+    );
 }
 
 async function initializeMap() {
@@ -960,7 +1150,7 @@ async function initializeMap() {
         const loading = document.getElementById('mapLoading');
         loading.textContent = 'Data peta gagal dimuat. Silakan muat ulang halaman.';
         loading.classList.add('is-error');
-        document.getElementById('dataStatusText').textContent = 'Data tidak tersedia';
+        renderDataStatus('error');
     }
 }
 
@@ -971,11 +1161,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('mapYear').addEventListener('change', async (event) => {
         try {
-            document.getElementById('dataStatusText').textContent = `Memuat data ${event.target.value}...`;
+            renderDataStatus('loading', event.target.value);
             await refreshMetricSnapshot(event.target.value);
         } catch (error) {
             console.error('Failed to update map year:', error);
-            document.getElementById('dataStatusText').textContent = 'Data tahun tidak tersedia';
+            renderDataStatus('error');
         }
     });
     document.getElementById('resetMapView').addEventListener('click', resetMapView);

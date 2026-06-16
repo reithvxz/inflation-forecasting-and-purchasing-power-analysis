@@ -257,6 +257,50 @@ class GuideAndDashboardTests(TestCase):
         self.assertEqual(data["date"], data["as_of"])
 
 
+class ComparisonAndScenarioTests(TestCase):
+    def test_compare_page_renders_workspace_controls(self):
+        response = self.client.get(reverse("compare"))
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="prov1"', html)
+        self.assertIn('id="metric"', html)
+        self.assertIn('id="compareChart"', html)
+        self.assertIn('id="rankingList"', html)
+        self.assertIn('id="radarChart"', html)
+
+    def test_scenarios_page_uses_api_backed_analysis(self):
+        response = self.client.get(reverse("scenarios"))
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("/api/scenario-analysis/", html)
+        self.assertNotIn("Math.random", html)
+        self.assertContains(response, "Scenario Analysis")
+        self.assertContains(response, "proksi daya beli")
+
+    def test_scenario_analysis_api_returns_deterministic_contract(self):
+        response = self.client.get(reverse("api_scenario_analysis"), {"scenario_id": "inflation_shock"})
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data["scenario_id"], "inflation_shock")
+        self.assertIn("baseline_value", data)
+        self.assertIn("scenario_value", data)
+        self.assertIn("change_pct", data)
+        self.assertIn("series", data)
+        self.assertIn("province_impacts", data)
+        self.assertGreaterEqual(len(data["province_impacts"]), 10)
+        self.assertIn("no-store", response["Cache-Control"])
+
+    def test_province_apis_exclude_indonesia_from_provincial_surfaces(self):
+        province_list = self.client.get(reverse("api_province_list")).json()
+        metrics_latest = self.client.get(reverse("api_metrics_latest")).json()
+
+        self.assertNotIn("Indonesia", province_list["provinces"])
+        self.assertNotIn("Indonesia", metrics_latest["provinces"])
+
+
 class EconomicMapPageTests(TestCase):
     def test_map_uses_province_polygons_and_insight_panel(self):
         response = self.client.get(reverse("map"))
@@ -293,3 +337,16 @@ class EconomicMapPageTests(TestCase):
         self.assertEqual(selected_payload["latest_year"], 2025)
         self.assertEqual(selected_payload["available_years"], [2021, 2022, 2023, 2024, 2025])
         self.assertNotEqual(selected_payload["provinces"], latest_payload["provinces"])
+
+    def test_metrics_latest_api_includes_nominal_metric_and_coverage_metadata(self):
+        response = self.client.get(reverse("api_metrics_latest"))
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        sample_row = next(iter(data["provinces"].values()))
+        self.assertIn("Total_Pengeluaran_Riil", sample_row)
+        self.assertIn("Total_Pengeluaran", sample_row)
+        self.assertIn("coverage_count", data)
+        self.assertIn("coverage_total", data)
+        self.assertIn("missing_provinces", data)
+        self.assertLessEqual(data["coverage_count"], data["coverage_total"])

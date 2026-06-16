@@ -510,6 +510,113 @@ def _get_actual_province_count():
     return len([name for name in baselines.keys() if name != 'Indonesia'])
 
 
+SCENARIO_LIBRARY = {
+    'inflation_shock': {
+        'title': 'Tekanan inflasi tahunan naik 1,5 poin',
+        'description': 'Skenario ini membaca dampak ketika tekanan harga meningkat sementara variabel pendapatan dan aktivitas ekonomi mengikuti baseline aktif.',
+        'accent': 'amber',
+        'assumptions': [
+            'Inflasi tahunan +1,5 poin',
+            'UMP mengikuti baseline wilayah',
+            'TPT tetap',
+            'PDRB harga konstan tetap',
+        ],
+        'overrides': {'inflasi_delta': 1.5},
+        'interpretation_template': 'Kenaikan tekanan harga tanpa penyesuaian pendapatan biasanya mempersempit ruang konsumsi riil, sehingga proksi daya beli cenderung {direction}.',
+    },
+    'income_support': {
+        'title': 'Kompensasi pendapatan: UMP naik 8%',
+        'description': 'Skenario ini membaca respons proksi daya beli ketika pendapatan minimum wilayah menguat, dengan tekanan harga mengikuti baseline aktif.',
+        'accent': 'teal',
+        'assumptions': [
+            'UMP +8%',
+            'Inflasi tahunan tetap',
+            'TPT tetap',
+            'PDRB harga konstan tetap',
+        ],
+        'overrides': {'ump_multiplier': 1.08},
+        'interpretation_template': 'Penguatan pendapatan minimum memberi bantalan pada konsumsi riil, sehingga proksi daya beli nasional cenderung {direction}.',
+    },
+    'balanced_support': {
+        'title': 'Pendapatan menguat, inflasi ikut naik',
+        'description': 'Skenario gabungan untuk menguji apakah penguatan pendapatan masih mampu menutup tambahan tekanan harga dalam horizon pendek.',
+        'accent': 'blue',
+        'assumptions': [
+            'UMP +8%',
+            'Inflasi tahunan +1,0 poin',
+            'TPT tetap',
+            'PDRB harga konstan tetap',
+        ],
+        'overrides': {'ump_multiplier': 1.08, 'inflasi_delta': 1.0},
+        'interpretation_template': 'Ketika pendapatan dan inflasi naik bersama, hasil akhir bergantung pada apakah pertumbuhan pendapatan bersih masih cukup untuk menjaga konsumsi riil. Dalam skenario aktif, arah nasional cenderung {direction}.',
+    },
+    'growth_slowdown': {
+        'title': 'Perlambatan pertumbuhan wilayah',
+        'description': 'Skenario ini menekan output riil wilayah dan menaikkan TPT untuk membaca tekanan simultan dari sisi pertumbuhan dan pasar tenaga kerja.',
+        'accent': 'violet',
+        'assumptions': [
+            'PDRB harga konstan -8%',
+            'TPT +0,8 poin',
+            'Inflasi tahunan tetap',
+            'UMP tetap',
+        ],
+        'overrides': {'pdrb_multiplier': 0.92, 'tpt_delta': 0.8},
+        'interpretation_template': 'Ketika output riil melemah dan pengangguran naik, ruang konsumsi rumah tangga biasanya tertekan. Dalam simulasi aktif, proksi daya beli nasional cenderung {direction}.',
+    },
+}
+
+
+def _build_scenario_overrides(province, scenario_spec):
+    baselines = _get_province_simulation_baselines()
+    baseline_fields = (baselines.get(province) or {}).get('fields') or {}
+    scenario_rules = scenario_spec.get('overrides') or {}
+    overrides = {}
+
+    baseline_annual_inflation = _safe_float(
+        baseline_fields.get('Inflasi_WB_Annual'),
+        baseline_fields.get('Inflasi_Rata_Tahunan'),
+    )
+    baseline_ump = _safe_float(baseline_fields.get('UMP'), 0.0)
+    baseline_tpt = _safe_float(baseline_fields.get('TPT'), 0.0)
+    baseline_pdrb = _safe_float(baseline_fields.get('PDRB_HargaKonstan'), 0.0)
+
+    if 'inflasi_abs' in scenario_rules:
+        overrides['inflasi'] = _safe_float(scenario_rules.get('inflasi_abs'))
+    elif 'inflasi_delta' in scenario_rules:
+        overrides['inflasi'] = baseline_annual_inflation + _safe_float(scenario_rules.get('inflasi_delta'))
+
+    if 'ump_multiplier' in scenario_rules:
+        overrides['ump'] = max(0.0, baseline_ump * _safe_float(scenario_rules.get('ump_multiplier'), 1.0))
+    elif 'ump_delta_pct' in scenario_rules:
+        overrides['ump'] = max(0.0, baseline_ump * (1 + (_safe_float(scenario_rules.get('ump_delta_pct')) / 100.0)))
+
+    if 'tpt_abs' in scenario_rules:
+        overrides['tpt'] = max(0.0, _safe_float(scenario_rules.get('tpt_abs')))
+    elif 'tpt_delta' in scenario_rules:
+        overrides['tpt'] = max(0.0, baseline_tpt + _safe_float(scenario_rules.get('tpt_delta')))
+
+    if 'pdrb_multiplier' in scenario_rules:
+        overrides['pdrb_hargakonstan'] = max(0.0, baseline_pdrb * _safe_float(scenario_rules.get('pdrb_multiplier'), 1.0))
+    elif 'pdrb_delta_pct' in scenario_rules:
+        overrides['pdrb_hargakonstan'] = max(0.0, baseline_pdrb * (1 + (_safe_float(scenario_rules.get('pdrb_delta_pct')) / 100.0)))
+
+    return overrides
+
+
+def _predict_simulation_value(province, overrides=None):
+    dummy_input, baseline = _build_simulation_input(province, overrides or {})
+    predicted_value = max(float(RIDGE_MODEL.predict(dummy_input)[0]), 0.0)
+    return predicted_value, baseline, dummy_input
+
+
+def _scenario_direction_label(change_pct):
+    if change_pct >= 2.5:
+        return 'menguat'
+    if change_pct <= -2.5:
+        return 'melemah'
+    return 'relatif stabil'
+
+
 def _build_simulation_input(province, overrides=None):
     load_models(load_inflation=False)
     baselines = _get_province_simulation_baselines()
@@ -1105,9 +1212,9 @@ def api_province_list(request):
     if not os.path.exists(path):
         return JsonResponse({'provinces': []})
     try:
-        df = pd.read_csv(path)
+        df = prepare_daya_beli_dataframe(pd.read_csv(path))
         if 'Provinsi' in df.columns:
-            provinces = sorted(df['Provinsi'].unique().tolist())
+            provinces = sorted([name for name in df['Provinsi'].unique().tolist() if name != 'Indonesia'])
         else:
             provinces = []
         return JsonResponse({'provinces': provinces})
@@ -1129,14 +1236,16 @@ def api_province_data(request):
         df = prepare_daya_beli_dataframe(pd.read_csv(path))
         if 'Provinsi' not in df.columns or 'Tahun' not in df.columns:
             return JsonResponse({'error': 'Required columns missing'}, status=500)
-        
+
         if metric not in df.columns:
             metric = TARGET_COLUMN
-        
+
+        df = df[df['Provinsi'] != 'Indonesia']
+
         # Filter by provinces if specified
         if provinces:
             df = df[df['Provinsi'].isin(provinces)]
-        
+
         # Group by province and year
         result = {}
         for prov in df['Provinsi'].unique():
@@ -1225,9 +1334,10 @@ def api_all_metrics_latest(request):
             if parsed_year in available_years:
                 selected_year = parsed_year
 
-        selected_rows = df[df['Tahun'] == selected_year]
-        
-        metrics = [TARGET_COLUMN, 'UMP', 'PDRB_HargaKonstan', 'TPT', 'IPM', 'Gini_Rasio', 
+        provincial_df = df[df['Provinsi'] != 'Indonesia']
+        selected_rows = provincial_df[provincial_df['Tahun'] == selected_year]
+
+        metrics = [TARGET_COLUMN, NOMINAL_TARGET_COLUMN, 'UMP', 'PDRB_HargaKonstan', 'TPT', 'IPM', 'Gini_Rasio', 
                    'Pct_Penduduk_Miskin', 'Inflasi_Rata_Tahunan']
         available = [m for m in metrics if m in selected_rows.columns]
         
@@ -1236,7 +1346,11 @@ def api_all_metrics_latest(request):
             prov = row['Provinsi']
             result[prov] = {m: float(row[m]) if pd.notna(row[m]) else 0 for m in available}
             result[prov]['Tahun'] = int(row['Tahun'])
-        
+
+        all_provinces = sorted(provincial_df['Provinsi'].dropna().unique().tolist())
+        selected_provinces = sorted(selected_rows['Provinsi'].dropna().unique().tolist())
+        missing_provinces = [name for name in all_provinces if name not in selected_provinces]
+
         return _json_no_store(
             {
                 'latest_year': int(latest_year),
@@ -1244,10 +1358,94 @@ def api_all_metrics_latest(request):
                 'available_years': available_years,
                 'provinces': result,
                 'metrics': available,
+                'coverage_count': len(selected_provinces),
+                'coverage_total': len(all_provinces),
+                'missing_provinces': missing_provinces,
             }
         )
     except Exception as e:
         return _json_no_store({'error': str(e)}, status=500)
+
+
+def api_scenario_analysis(request):
+    """Return deterministic scenario analysis derived from the active ridge model."""
+    load_models(load_inflation=False)
+    if RIDGE_MODEL is None:
+        return _json_no_store({'error': 'Model proksi daya beli belum siap.'}, status=500)
+    if (RIDGE_MODEL_BUNDLE or {}).get('legacy_artifact'):
+        return _json_no_store({'error': 'Artifact model lama tidak kompatibel dengan analisis skenario aktif.'}, status=500)
+
+    scenario_id = request.GET.get('scenario_id', 'inflation_shock')
+    scenario_spec = SCENARIO_LIBRARY.get(scenario_id)
+    if scenario_spec is None:
+        return _json_no_store(
+            {
+                'error': 'Scenario tidak ditemukan',
+                'available_scenarios': list(SCENARIO_LIBRARY.keys()),
+            },
+            status=404,
+        )
+
+    baselines = _get_province_simulation_baselines()
+    province_names = sorted([name for name in baselines.keys() if name != 'Indonesia'])
+
+    try:
+        baseline_value, baseline_meta, _ = _predict_simulation_value('Indonesia')
+        national_overrides = _build_scenario_overrides('Indonesia', scenario_spec)
+        scenario_value, _, _ = _predict_simulation_value('Indonesia', national_overrides)
+        national_change_pct = _pct_change(scenario_value, baseline_value, 0.0)
+
+        province_impacts = []
+        for province in province_names:
+            province_baseline_value, _, _ = _predict_simulation_value(province)
+            province_overrides = _build_scenario_overrides(province, scenario_spec)
+            province_scenario_value, _, _ = _predict_simulation_value(province, province_overrides)
+            province_change_pct = _pct_change(province_scenario_value, province_baseline_value, 0.0)
+            province_impacts.append(
+                {
+                    'province': province,
+                    'baseline_value': round(province_baseline_value, 2),
+                    'scenario_value': round(province_scenario_value, 2),
+                    'change_pct': round(province_change_pct, 2),
+                }
+            )
+
+        province_impacts.sort(key=lambda item: abs(item['change_pct']), reverse=True)
+        featured_impacts = province_impacts[:8]
+        direction_label = _scenario_direction_label(national_change_pct)
+        featured_year = int(_safe_float(baseline_meta.get('baseline_year'), 0))
+
+        payload = {
+            'scenario_id': scenario_id,
+            'title': scenario_spec['title'],
+            'description': scenario_spec['description'],
+            'baseline_year': featured_year,
+            'baseline_value': round(baseline_value, 2),
+            'scenario_value': round(scenario_value, 2),
+            'change_pct': round(national_change_pct, 2),
+            'status_label': direction_label,
+            'coverage_label': f'Agregat nasional dengan pembanding {len(province_impacts)} provinsi.',
+            'assumptions': scenario_spec.get('assumptions', []),
+            'series': {
+                'labels': [item['province'] for item in featured_impacts],
+                'baseline': [item['baseline_value'] for item in featured_impacts],
+                'scenario': [item['scenario_value'] for item in featured_impacts],
+                'change_pct': [item['change_pct'] for item in featured_impacts],
+                'focus': 'Provinsi dengan perubahan relatif paling menonjol',
+            },
+            'province_impacts': province_impacts,
+            'interpretation': scenario_spec['interpretation_template'].format(direction=direction_label),
+            'limitations': [
+                'Analisis memakai model ridge aktif dengan baseline wilayah terbaru yang tersedia pada data 2021-2025.',
+                'Output dibaca sebagai estimasi pengeluaran riil per kapita per bulan, lalu diinterpretasikan sebagai proksi daya beli.',
+                'Skenario ini membantu membaca arah dan sensitivitas relatif, bukan menetapkan angka kebijakan sampai digit terakhir.',
+            ],
+        }
+        return _json_no_store(payload)
+    except KeyError as error:
+        return _json_no_store({'error': str(error)}, status=404)
+    except Exception as error:
+        return _json_no_store({'error': str(error)}, status=500)
 
 
 def api_usd_idr_latest(request):

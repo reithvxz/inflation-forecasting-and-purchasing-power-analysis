@@ -15,6 +15,7 @@ urlpatterns = [
     path('api/provinces/', views.api_province_list, name='api_province_list'),
     path('api/province-data/', views.api_province_data, name='api_province_data'),
     path('api/metrics-latest/', views.api_all_metrics_latest, name='api_metrics_latest'),
+    path('api/scenario-analysis/', views.api_scenario_analysis, name='api_scenario_analysis'),
     path('api/commodity-prices/', views.api_commodity_prices, name='api_commodity_prices'),
     path('api/usd-idr/', views.api_usd_idr_latest, name='api_usd_idr_latest'),
     path('api/arima-forecast/', views.api_arima_forecast, name='api_arima_forecast'),

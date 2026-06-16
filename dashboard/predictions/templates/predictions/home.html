@@ -11,39 +11,39 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-dark: #ffffff;
-            --bg-panel: #f8f9fb;
-            --bg-card: #ffffff;
-            --bg-elevated: #f1f3f6;
-            --bg-hover: rgba(41, 98, 255, 0.06);
+            --bg-page: #f4f7fb;
+            --bg-surface: #ffffff;
+            --bg-surface-soft: #f8fbff;
+            --bg-surface-muted: #eef3f8;
+            --bg-hero: #0f1726;
+            --bg-hero-soft: #162238;
             --accent-primary: #2962ff;
-            --accent-primary-hover: #1e53e5;
-            --accent-primary-dim: rgba(41, 98, 255, 0.10);
-            --accent-primary-glow: rgba(41, 98, 255, 0.30);
-            --accent-secondary: #26a69a;
-            --accent-tertiary: #ab47bc;
-            --accent-warning: #ffb300;
-            --accent-info: #00bcd4;
-            --positive: #26a69a;
-            --negative: #ef5350;
-            --text-primary: #131722;
-            --text-secondary: #5d606b;
-            --text-tertiary: #868993;
-            --border-color: #e0e3eb;
-            --border-hover: #cfd3dc;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 10px 24px rgba(0, 0, 0, 0.06), 0 4px 10px rgba(0, 0, 0, 0.04);
+            --accent-primary-soft: rgba(41, 98, 255, 0.12);
+            --accent-teal: #26a69a;
+            --accent-teal-soft: rgba(38, 166, 154, 0.12);
+            --accent-violet: #8e5cf6;
+            --accent-violet-soft: rgba(142, 92, 246, 0.12);
+            --accent-amber: #d89b1d;
+            --accent-amber-soft: rgba(216, 155, 29, 0.12);
+            --text-primary: #101828;
+            --text-secondary: #4a5565;
+            --text-muted: #7d8797;
+            --text-inverse: #f4f7fb;
+            --border-color: rgba(16, 24, 40, 0.08);
+            --border-strong: rgba(16, 24, 40, 0.14);
+            --shadow-soft: 0 10px 30px rgba(16, 24, 40, 0.06);
+            --shadow-medium: 0 24px 60px rgba(15, 23, 38, 0.14);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--bg-panel);
+            background: var(--bg-page);
             color: var(--text-primary);
             overflow-x: hidden;
         }
-        a { text-decoration: none; color: inherit; }
+        a { color: inherit; text-decoration: none; }
 
         .lp-nav {
             position: fixed;
@@ -54,542 +54,633 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 32px;
             height: 58px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: var(--shadow-sm);
+            padding: 0 28px;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(22px);
+            border-bottom: 1px solid rgba(16, 24, 40, 0.06);
         }
         .lp-logo {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding-right: 20px;
-            border-right: 1px solid var(--border-color);
-            height: 34px;
+            gap: 12px;
         }
         .lp-logo-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-info));
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
-            font-weight: 800;
+            color: #ffffff;
             font-size: 14px;
-            box-shadow: 0 0 12px var(--accent-primary-glow);
+            font-weight: 800;
+            background: linear-gradient(135deg, #2962ff, #4f83ff);
+            box-shadow: 0 14px 24px rgba(41, 98, 255, 0.22);
         }
         .lp-logo h2 {
             font-size: 18px;
-            font-weight: 700;
-            letter-spacing: -0.3px;
-            color: var(--text-primary);
+            font-weight: 760;
+            letter-spacing: -0.03em;
         }
         .lp-nav-links {
             display: flex;
+            align-items: center;
             gap: 4px;
             list-style: none;
         }
         .lp-nav-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             padding: 8px 14px;
-            border-radius: 8px;
+            border-radius: 999px;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 650;
             color: var(--text-secondary);
-            transition: all 0.15s ease;
+            transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
         }
         .lp-nav-links a:hover {
-            background: var(--bg-hover);
             color: var(--text-primary);
+            background: rgba(41, 98, 255, 0.06);
         }
         .lp-nav-links a.nav-cta {
+            color: #ffffff;
             background: var(--accent-primary);
-            color: #fff;
-            box-shadow: 0 10px 18px rgba(41, 98, 255, 0.22);
+            box-shadow: 0 12px 24px rgba(41, 98, 255, 0.24);
         }
-
-        .ticker-wrap {
-            overflow: hidden;
-            white-space: nowrap;
-            margin-top: 58px;
-            background: var(--bg-dark);
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-            padding: 10px 0;
+        .lp-nav-links a.nav-cta:hover {
+            transform: translateY(-1px);
+            background: #2056ef;
         }
-        .ticker-content {
-            display: inline-block;
-            animation: ticker 38s linear infinite;
-        }
-        .ticker-content span {
-            display: inline-block;
-            padding: 0 20px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-        .ticker-content .up { color: var(--positive); }
-        .ticker-content .down { color: var(--negative); }
 
         .hero {
             position: relative;
-            min-height: calc(100vh - 58px);
-            padding: 84px 36px 72px;
-            overflow: hidden;
+            padding: 96px 32px 72px;
+            min-height: calc(100svh - 58px);
             background:
-                radial-gradient(circle at 18% 20%, rgba(41, 98, 255, 0.10), transparent 28%),
-                radial-gradient(circle at 82% 22%, rgba(0, 188, 212, 0.08), transparent 24%),
-                linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
+                radial-gradient(circle at 16% 18%, rgba(41, 98, 255, 0.10), transparent 28%),
+                radial-gradient(circle at 84% 22%, rgba(38, 166, 154, 0.08), transparent 24%),
+                linear-gradient(180deg, #ffffff 0%, #f4f7fb 100%);
+            overflow: hidden;
         }
-        .hero-grid {
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(16, 24, 40, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16, 24, 40, 0.03) 1px, transparent 1px);
+            background-size: 92px 92px;
+            mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0));
+            pointer-events: none;
+        }
+        .hero-shell {
             position: relative;
             z-index: 2;
-            max-width: 1320px;
+            max-width: 1360px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
-            gap: 28px;
+            grid-template-columns: minmax(0, 0.84fr) minmax(420px, 1.16fr);
+            gap: 42px;
             align-items: center;
         }
         .hero-copy {
-            max-width: 700px;
+            max-width: 600px;
         }
-        .hero-badge {
+        .hero-kicker {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 7px 16px;
+            gap: 10px;
+            padding: 8px 15px;
+            margin-bottom: 22px;
             border-radius: 999px;
-            background: var(--accent-primary-dim);
-            border: 1px solid rgba(41, 98, 255, 0.24);
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid rgba(41, 98, 255, 0.16);
             color: var(--accent-primary);
             font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 22px;
-            letter-spacing: 0.04em;
+            font-weight: 760;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            box-shadow: var(--shadow-soft);
         }
-        .hero-badge .dot {
+        .hero-kicker::before {
+            content: "";
             width: 7px;
             height: 7px;
-            border-radius: 50%;
+            border-radius: 999px;
             background: currentColor;
-            animation: pulse 1.5s infinite;
+            animation: pulse 1.6s infinite;
         }
         .hero h1 {
-            font-size: clamp(44px, 5.7vw, 74px);
-            font-weight: 800;
-            line-height: 1.01;
-            letter-spacing: -2.8px;
+            font-size: clamp(48px, 6vw, 82px);
+            line-height: 0.98;
+            letter-spacing: -0.06em;
+            font-weight: 820;
             margin-bottom: 18px;
             color: var(--text-primary);
         }
         .hero h1 .accent {
-            background: linear-gradient(90deg, #2962ff, #00bcd4);
+            display: block;
+            background: linear-gradient(90deg, #2962ff, #26a69a);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .hero p {
+        .hero-copy p {
+            max-width: 560px;
             font-size: 17px;
+            line-height: 1.72;
             color: var(--text-secondary);
-            max-width: 620px;
-            margin-bottom: 30px;
-            line-height: 1.75;
+            margin-bottom: 28px;
         }
-        .hero-buttons {
+        .hero-actions {
             display: flex;
-            gap: 12px;
             flex-wrap: wrap;
+            gap: 12px;
             margin-bottom: 18px;
         }
         .btn-hero {
-            padding: 12px 22px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 700;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.16s ease;
+            gap: 9px;
+            padding: 13px 22px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 720;
+            transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
         }
         .btn-hero.primary {
+            color: #ffffff;
             background: var(--accent-primary);
-            color: #fff;
-            box-shadow: 0 12px 22px rgba(41, 98, 255, 0.26);
+            box-shadow: 0 16px 28px rgba(41, 98, 255, 0.22);
         }
         .btn-hero.primary:hover {
-            background: var(--accent-primary-hover);
             transform: translateY(-1px);
+            background: #2056ef;
         }
         .btn-hero.secondary {
-            background: #fff;
             color: var(--text-primary);
-            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(16, 24, 40, 0.10);
         }
         .btn-hero.secondary:hover {
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
+            transform: translateY(-1px);
+            border-color: rgba(41, 98, 255, 0.18);
+            background: #ffffff;
         }
-        .hero-note {
-            color: var(--text-tertiary);
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            color: var(--text-muted);
             font-size: 12px;
             line-height: 1.6;
         }
-
-        .hero-terminal {
-            position: relative;
-            padding: 0;
-            overflow: hidden;
-            border: 1px solid rgba(19, 23, 34, 0.08);
-            border-radius: 24px;
-            background: linear-gradient(180deg, #131722 0%, #162036 100%);
-            box-shadow: 0 22px 42px rgba(19, 23, 34, 0.18);
-            color: #e8eefc;
+        .hero-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .terminal-header {
+        .hero-meta span::before {
+            content: "";
+            width: 5px;
+            height: 5px;
+            border-radius: 999px;
+            background: rgba(16, 24, 40, 0.34);
+        }
+
+        .hero-visual {
+            position: relative;
+            min-height: 560px;
+            padding: 28px;
+            border-radius: 30px;
+            background:
+                radial-gradient(circle at top left, rgba(41, 98, 255, 0.16), transparent 32%),
+                linear-gradient(180deg, #0f1726 0%, #152236 100%);
+            color: var(--text-inverse);
+            box-shadow: var(--shadow-medium);
+            overflow: hidden;
+        }
+        .hero-visual::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 72px 72px;
+            opacity: 0.24;
+            pointer-events: none;
+        }
+        .visual-head,
+        .visual-foot,
+        .visual-ledger {
+            position: relative;
+            z-index: 2;
+        }
+        .visual-head {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 18px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-            background: rgba(255, 255, 255, 0.03);
+            gap: 14px;
+            margin-bottom: 34px;
         }
-        .terminal-dots { display: flex; gap: 6px; }
-        .terminal-dots span {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            display: block;
-        }
-        .terminal-dots span:nth-child(1) { background: #ff6b6b; }
-        .terminal-dots span:nth-child(2) { background: #ffd166; }
-        .terminal-dots span:nth-child(3) { background: #06d6a0; }
-        .terminal-header strong {
-            font-size: 12px;
-            letter-spacing: 0.04em;
-            color: rgba(232, 238, 252, 0.78);
-        }
-        .terminal-body {
-            padding: 18px;
-            display: grid;
-            gap: 12px;
-        }
-        .terminal-row {
-            display: grid;
-            grid-template-columns: 1fr auto auto;
-            gap: 12px;
+        .visual-kicker {
+            display: inline-flex;
             align-items: center;
-            padding: 12px 14px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        .terminal-row-label {
-            color: rgba(232, 238, 252, 0.72);
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .terminal-row-value {
-            font-size: 15px;
-            font-weight: 800;
-            letter-spacing: -0.03em;
-        }
-        .terminal-row-change {
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.07);
+            color: rgba(244, 247, 251, 0.84);
             font-size: 11px;
             font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
-        .terminal-row-change.up { color: #56d69d; }
-        .terminal-row-change.down { color: #ff8b87; }
-        .terminal-row-change.flat { color: #89a8ff; }
-        .terminal-panels {
+        .visual-kicker::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #5ea6ff;
+        }
+        .visual-stamp {
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(244, 247, 251, 0.54);
+        }
+        .visual-main {
+            position: relative;
+            z-index: 2;
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-            margin-top: 4px;
+            grid-template-columns: minmax(0, 1fr) 240px;
+            gap: 18px;
+            align-items: end;
+            margin-bottom: 24px;
         }
-        .terminal-panel {
-            padding: 14px;
+        .visual-primary small {
+            display: block;
+            color: rgba(244, 247, 251, 0.62);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 10px;
+        }
+        .visual-primary strong {
+            display: block;
+            font-size: clamp(60px, 7vw, 98px);
+            line-height: 0.96;
+            letter-spacing: -0.08em;
+            margin-bottom: 14px;
+        }
+        .visual-primary p {
+            max-width: 430px;
+            color: rgba(244, 247, 251, 0.70);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        .visual-secondary {
+            display: grid;
+            gap: 12px;
+        }
+        .visual-secondary-row {
+            padding: 14px 16px;
             border-radius: 16px;
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .terminal-panel small {
+        .visual-secondary-row small {
             display: block;
-            color: rgba(232, 238, 252, 0.60);
+            color: rgba(244, 247, 251, 0.56);
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 0.08em;
             margin-bottom: 6px;
         }
-        .terminal-panel strong {
+        .visual-secondary-row strong {
             display: block;
-            font-size: 26px;
+            font-size: 24px;
+            font-weight: 780;
             letter-spacing: -0.04em;
             margin-bottom: 4px;
         }
-        .terminal-panel span {
+        .visual-secondary-row span {
             display: block;
+            color: rgba(244, 247, 251, 0.68);
             font-size: 12px;
-            color: rgba(232, 238, 252, 0.70);
+            line-height: 1.55;
+        }
+        .visual-chart {
+            position: relative;
+            z-index: 2;
+            height: 230px;
+            margin-bottom: 24px;
+        }
+        .visual-ledger {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .visual-ledger-item {
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.10);
+        }
+        .visual-ledger-item span {
+            display: block;
+            color: rgba(244, 247, 251, 0.54);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 7px;
+        }
+        .visual-ledger-item strong {
+            display: block;
+            font-size: 16px;
+            font-weight: 760;
+        }
+        .visual-ledger-item p {
+            margin-top: 4px;
+            color: rgba(244, 247, 251, 0.64);
+            font-size: 12px;
             line-height: 1.55;
         }
 
         .section {
-            padding: 84px 32px;
-            position: relative;
-            background: var(--bg-panel);
+            padding: 0 32px 88px;
         }
-        .section.alt { background: var(--bg-dark); }
-        .section-inner {
-            max-width: 1280px;
+        .section-shell {
+            max-width: 1360px;
             margin: 0 auto;
         }
-        .section-header {
-            text-align: center;
-            margin-bottom: 46px;
+        .section-head {
+            margin-bottom: 28px;
         }
-        .section-header .tag {
+        .section-tag {
             display: inline-block;
-            padding: 5px 12px;
-            border-radius: 6px;
-            background: var(--accent-primary-dim);
-            color: var(--accent-primary);
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
+            padding: 7px 12px;
             margin-bottom: 12px;
-        }
-        .section-header h2 {
-            font-size: clamp(28px, 3vw, 40px);
-            font-weight: 750;
-            letter-spacing: -0.7px;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-        }
-        .section-header p {
-            font-size: 15px;
-            color: var(--text-secondary);
-            max-width: 680px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-
-        .hero-quickstrip {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 12px;
-            max-width: 720px;
-        }
-        .hero-quickitem {
-            padding: 14px 16px;
-            border-radius: 14px;
-            background: rgba(255, 255, 255, 0.82);
-            border: 1px solid rgba(41, 98, 255, 0.12);
-            box-shadow: var(--shadow-sm);
-        }
-        .hero-quickitem strong {
-            display: block;
-            font-size: 15px;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            margin-bottom: 4px;
-        }
-        .hero-quickitem span {
-            display: block;
-            color: var(--text-secondary);
-            font-size: 12px;
-            line-height: 1.55;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 16px;
-        }
-        .stat-card,
-        .feature-card,
-        .flow-container,
-        .footer-strip {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            box-shadow: var(--shadow-sm);
-        }
-        .stat-card {
-            padding: 20px;
-            transition: all 0.18s ease;
-        }
-        .stat-card.primary {
-            grid-column: span 2;
-            background:
-                radial-gradient(circle at top right, rgba(41, 98, 255, 0.10), transparent 34%),
-                linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
-            border-color: rgba(41, 98, 255, 0.18);
-            box-shadow: var(--shadow-md);
-        }
-        .stat-card.primary .stat-note {
-            max-width: 420px;
-        }
-        .stat-card.semantic-teal {
-            background: linear-gradient(180deg, #ffffff 0%, rgba(38, 166, 154, 0.05) 100%);
-            border-color: rgba(38, 166, 154, 0.16);
-        }
-        .stat-card.semantic-violet {
-            background: linear-gradient(180deg, #ffffff 0%, rgba(171, 71, 188, 0.05) 100%);
-            border-color: rgba(171, 71, 188, 0.16);
-        }
-        .stat-card:hover,
-        .feature-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--accent-primary);
-            box-shadow: var(--shadow-md);
-        }
-        .stat-label {
-            font-size: 11px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        .stat-value {
-            font-size: 30px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            margin-bottom: 4px;
-            color: var(--text-primary);
-            font-variant-numeric: tabular-nums;
-        }
-        .stat-change {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-        .stat-change.up { color: var(--positive); }
-        .stat-change.down { color: var(--negative); }
-        .stat-change.flat { color: var(--accent-primary); }
-        .stat-note {
-            margin-top: 8px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            line-height: 1.55;
-        }
-        .stat-spark { height: 30px; margin-top: 10px; }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-        }
-        .feature-card {
-            padding: 24px;
-            transition: all 0.18s ease;
-        }
-        .feature-card.priority {
-            border-color: rgba(41, 98, 255, 0.18);
-            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-        }
-        .feature-icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 12px;
-            background: var(--accent-primary-dim);
+            border-radius: 999px;
+            background: rgba(41, 98, 255, 0.08);
             color: var(--accent-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            margin-bottom: 16px;
+            font-size: 11px;
+            font-weight: 760;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
         }
-        .feature-card h3 {
-            font-size: 16px;
-            font-weight: 700;
+        .section-head h2 {
+            font-size: clamp(30px, 4vw, 46px);
+            line-height: 1.04;
+            letter-spacing: -0.05em;
             margin-bottom: 10px;
-            color: var(--text-primary);
         }
-        .feature-card p {
-            font-size: 13px;
+        .section-head p {
+            max-width: 720px;
             color: var(--text-secondary);
-            line-height: 1.6;
+            font-size: 15px;
+            line-height: 1.72;
         }
 
-        .flow-container {
-            padding: 30px 28px;
-            overflow: hidden;
-        }
-        .flow-grid {
+        .insight-shell {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 16px;
-            align-items: stretch;
-        }
-        .flow-step {
-            position: relative;
-            padding: 20px 18px;
-            border-radius: 12px;
-            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-            border: 1px solid #e9edf4;
-        }
-        .flow-step::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            right: -14px;
-            width: 28px;
-            height: 2px;
-            background: linear-gradient(90deg, rgba(41, 98, 255, 0.18), rgba(41, 98, 255, 0.55));
-        }
-        .flow-step:last-child::after { display: none; }
-        .flow-step .flow-no {
-            display: inline-flex;
+            grid-template-columns: 0.92fr 1.08fr;
+            gap: 28px;
             align-items: center;
-            justify-content: center;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--accent-primary-dim);
-            color: var(--accent-primary);
-            font-size: 12px;
-            font-weight: 800;
-            margin-bottom: 12px;
+            padding: 32px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.86);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(20px);
         }
-        .flow-step h3 {
+        .insight-copy h2 {
+            font-size: clamp(28px, 3.4vw, 40px);
+            line-height: 1.06;
+            letter-spacing: -0.05em;
+            margin-bottom: 10px;
+        }
+        .insight-copy p {
+            color: var(--text-secondary);
             font-size: 15px;
+            line-height: 1.72;
+        }
+        .insight-metrics {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 0.84fr;
+            gap: 0;
+            border-left: 1px solid rgba(16, 24, 40, 0.08);
+        }
+        .insight-metric {
+            padding: 0 22px;
+            border-right: 1px solid rgba(16, 24, 40, 0.08);
+        }
+        .insight-metric:last-child {
+            border-right: 0;
+        }
+        .insight-metric small {
+            display: block;
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
             margin-bottom: 8px;
         }
-        .flow-step p {
-            font-size: 12px;
+        .insight-metric strong {
+            display: block;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        .insight-metric p,
+        .insight-metric span {
+            display: block;
             color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.65;
+        }
+        .insight-metric.is-primary strong {
+            color: var(--accent-primary);
+        }
+        .insight-metric.is-support strong {
+            font-size: 18px;
+            line-height: 1.3;
+        }
+        .insight-metric.is-support p + p {
+            margin-top: 10px;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+        .module-panel {
+            padding: 28px;
+            border-radius: 24px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, #f8fbff 100%);
+            border: 1px solid rgba(16, 24, 40, 0.08);
+            box-shadow: var(--shadow-soft);
+        }
+        .module-panel.primary {
+            background:
+                radial-gradient(circle at top right, rgba(41, 98, 255, 0.10), transparent 32%),
+                linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border-color: rgba(41, 98, 255, 0.16);
+        }
+        .module-panel.teal {
+            background:
+                radial-gradient(circle at top right, rgba(38, 166, 154, 0.09), transparent 32%),
+                linear-gradient(180deg, #ffffff 0%, #f9fcfb 100%);
+            border-color: rgba(38, 166, 154, 0.14);
+        }
+        .module-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 11px;
+            margin-bottom: 18px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 760;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .module-kicker.primary {
+            color: var(--accent-primary);
+            background: rgba(41, 98, 255, 0.08);
+        }
+        .module-kicker.teal {
+            color: var(--accent-teal);
+            background: rgba(38, 166, 154, 0.10);
+        }
+        .module-panel h3 {
+            font-size: 30px;
+            line-height: 1.04;
+            letter-spacing: -0.05em;
+            margin-bottom: 12px;
+        }
+        .module-panel p {
+            max-width: 520px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.72;
+            margin-bottom: 22px;
+        }
+        .module-points {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .module-points span {
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.65;
+        }
+        .module-points span::before {
+            content: "- ";
+            color: var(--text-muted);
+        }
+
+        .support-list {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0;
+            border-top: 1px solid rgba(16, 24, 40, 0.08);
+            border-bottom: 1px solid rgba(16, 24, 40, 0.08);
+        }
+        .support-item {
+            padding: 20px 18px;
+            border-right: 1px solid rgba(16, 24, 40, 0.08);
+        }
+        .support-item:last-child {
+            border-right: 0;
+        }
+        .support-item strong {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+        .support-item span {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 12px;
             line-height: 1.65;
         }
 
-        .footer-strip {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 28px;
+        .workflow-track {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+        }
+        .workflow-step {
+            position: relative;
+            padding: 20px 22px 0 0;
+        }
+        .workflow-step::after {
+            content: "";
+            position: absolute;
+            top: 14px;
+            right: -9px;
+            width: calc(100% - 40px);
+            height: 1px;
+            background: rgba(16, 24, 40, 0.12);
+        }
+        .workflow-step:last-child::after {
+            display: none;
+        }
+        .workflow-no {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            margin-bottom: 16px;
+            border-radius: 999px;
+            background: rgba(41, 98, 255, 0.08);
+            color: var(--accent-primary);
+            font-size: 12px;
+            font-weight: 800;
+        }
+        .workflow-step h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .workflow-step p {
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .cta-band {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 24px;
+            gap: 28px;
+            padding: 30px 32px;
+            border: 1px solid rgba(16, 24, 40, 0.08);
+            border-radius: 26px;
+            background:
+                radial-gradient(circle at top right, rgba(41, 98, 255, 0.08), transparent 28%),
+                linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            box-shadow: var(--shadow-soft);
         }
-        .footer-copy h3 {
-            font-size: 24px;
-            font-weight: 750;
-            letter-spacing: -0.6px;
+        .cta-band h3 {
+            font-size: clamp(28px, 3vw, 38px);
+            line-height: 1.06;
+            letter-spacing: -0.05em;
             margin-bottom: 8px;
         }
-        .footer-copy p {
+        .cta-band p {
+            max-width: 640px;
             color: var(--text-secondary);
             font-size: 14px;
-            line-height: 1.65;
-            max-width: 680px;
+            line-height: 1.7;
         }
-        .footer-actions {
+        .cta-actions {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
@@ -597,54 +688,47 @@
 
         .reveal {
             opacity: 0;
-            transform: translateY(24px);
-            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(28px);
+            transition: opacity 0.72s cubic-bezier(0.16, 1, 0.3, 1), transform 0.72s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .reveal.in-view {
             opacity: 1;
             transform: translateY(0);
         }
-        .stagger > * {
-            opacity: 0;
-            transform: translateY(24px);
-            transition: all 0.55s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .stagger.in-view > *:nth-child(1) { transition-delay: 0.04s; opacity: 1; transform: translateY(0); }
-        .stagger.in-view > *:nth-child(2) { transition-delay: 0.08s; opacity: 1; transform: translateY(0); }
-        .stagger.in-view > *:nth-child(3) { transition-delay: 0.12s; opacity: 1; transform: translateY(0); }
-        .stagger.in-view > *:nth-child(4) { transition-delay: 0.16s; opacity: 1; transform: translateY(0); }
-        .stagger.in-view > *:nth-child(5) { transition-delay: 0.20s; opacity: 1; transform: translateY(0); }
-        .stagger.in-view > *:nth-child(6) { transition-delay: 0.24s; opacity: 1; transform: translateY(0); }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.38; }
         }
-        @keyframes ticker {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
 
-        @media (max-width: 1080px) {
-            .hero-grid,
-            .stats-grid,
-            .flow-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .hero-quickstrip {
+        @media (max-width: 1180px) {
+            .hero-shell,
+            .insight-shell,
+            .workflow-track {
                 grid-template-columns: 1fr;
             }
-            .features-grid {
+            .hero-visual {
+                min-height: 520px;
+            }
+            .insight-metrics {
+                border-left: 0;
+                border-top: 1px solid rgba(16, 24, 40, 0.08);
+                padding-top: 18px;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            .module-grid,
+            .support-list {
                 grid-template-columns: 1fr 1fr;
             }
-            .hero-grid {
-                align-items: start;
+            .workflow-step::after {
+                display: none;
             }
-            .stat-card.primary {
-                grid-column: auto;
+            .cta-band {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
-        @media (max-width: 760px) {
+        @media (max-width: 860px) {
             .lp-nav {
                 padding: 0 16px;
             }
@@ -656,21 +740,38 @@
                 padding-left: 16px;
                 padding-right: 16px;
             }
-            .hero-grid,
-            .stats-grid,
-            .features-grid,
-            .flow-grid,
-            .terminal-panels,
-            .hero-quickstrip,
-            .footer-strip {
+            .hero {
+                padding-top: 92px;
+            }
+            .hero h1 {
+                font-size: 46px;
+            }
+            .hero-visual {
+                min-height: auto;
+                padding: 22px;
+            }
+            .visual-main,
+            .visual-ledger,
+            .module-grid,
+            .support-list,
+            .insight-metrics {
                 grid-template-columns: 1fr;
-                display: grid;
             }
-            .footer-strip {
-                display: block;
+            .insight-metric {
+                padding: 16px 0;
+                border-right: 0;
+                border-top: 1px solid rgba(16, 24, 40, 0.08);
             }
-            .footer-actions {
-                margin-top: 18px;
+            .insight-metric:first-child {
+                border-top: 0;
+                padding-top: 0;
+            }
+            .support-item {
+                border-right: 0;
+                border-bottom: 1px solid rgba(16, 24, 40, 0.08);
+            }
+            .support-item:last-child {
+                border-bottom: 0;
             }
         }
     </style>
@@ -689,101 +790,117 @@
         </ul>
     </nav>
 
-    <div class="ticker-wrap">
-        <div class="ticker-content">
-            <span>IHK <strong>105.23</strong> <span class="up">▲ 0.12%</span></span>
-            <span>USD/IDR <strong class="ticker-usd-value">Memuat...</strong> <span class="ticker-usd-change">—</span></span>
-            <span>Brent Oil <strong>$78.45</strong> <span class="up">▲ 1.20%</span></span>
-            <span>Forecast 1 bulan <strong>{{ inflasi_pred|floatformat:2 }}%</strong> <span class="up">pipeline publik</span></span>
-            <span>UMP Jakarta <strong>Rp 5.39jt</strong></span>
-            <span>IPM Nasional <strong>72.79</strong> <span class="up">▲ 0.45%</span></span>
-            <span>TPT <strong>4.76%</strong> <span class="down">▼ 0.12%</span></span>
-            <span>BI Rate <strong>5.75%</strong></span>
-            <span>PDRB riil <strong>stabil</strong></span>
-            <span>IHK <strong>105.23</strong> <span class="up">▲ 0.12%</span></span>
-            <span>USD/IDR <strong class="ticker-usd-value">Memuat...</strong> <span class="ticker-usd-change">—</span></span>
-            <span>Brent Oil <strong>$78.45</strong> <span class="up">▲ 1.20%</span></span>
-            <span>Forecast 1 bulan <strong>{{ inflasi_pred|floatformat:2 }}%</strong> <span class="up">pipeline publik</span></span>
-            <span>UMP Jakarta <strong>Rp 5.39jt</strong></span>
-            <span>IPM Nasional <strong>72.79</strong> <span class="up">▲ 0.45%</span></span>
-            <span>TPT <strong>4.76%</strong> <span class="down">▼ 0.12%</span></span>
-            <span>BI Rate <strong>5.75%</strong></span>
-            <span>PDRB riil <strong>stabil</strong></span>
-        </div>
-    </div>
-
-    <section class="hero">
-        <div class="hero-grid">
-            <div class="hero-copy reveal" data-parallax="0.16">
-                <div class="hero-badge">
-                    <span class="dot"></span>
-                    LIVE DATA - ECONOMIC MONITORING
-                </div>
+    <header class="hero">
+        <div class="hero-shell">
+            <div class="hero-copy reveal">
+                <div class="hero-kicker">Live data - economic intelligence</div>
                 <h1>
-                    Analisis tren ekonomi,
-                    <span class="accent">proyeksikan arah berikutnya.</span>
+                    Forecast inflasi,
+                    <span class="accent">kurs, dan proksi daya beli.</span>
                 </h1>
                 <p>
-                    Platform analitik untuk memantau inflasi, kurs, dan proksi daya beli Indonesia
-                    dengan data resmi, forecast multi-horizon, serta simulasi wilayah berbasis model.
+                    EcoDash menyatukan pembacaan arah harga, kurs USD/IDR harian, dan estimasi pengeluaran riil
+                    per kapita ke dalam satu permukaan analitik yang siap dipresentasikan secara profesional.
                 </p>
-                <div class="hero-buttons">
+                <div class="hero-actions">
                     <a href="{% url 'landing' %}" class="btn-hero primary">
                         <i class="fas fa-chart-line"></i> Buka Dashboard
                     </a>
                     <a href="{% url 'forecasting' %}" class="btn-hero secondary">
-                        <i class="fas fa-wave-square"></i> Lihat Forecasting
+                        <i class="fas fa-wave-square"></i> Forecasting
                     </a>
                     <a href="{% url 'daya_beli' %}" class="btn-hero secondary">
                         <i class="fas fa-wallet"></i> Buka Daya Beli
                     </a>
                 </div>
-                <div class="hero-quickstrip">
-                    <div class="hero-quickitem">
+                <div class="hero-meta">
+                    <span>Forecast publik horizon {{ public_horizon_label }}</span>
+                    <span>Model utama {{ inflasi_model_name }}</span>
+                    <span>Dirancang untuk analisis akademik dan demonstrasi profesional</span>
+                </div>
+            </div>
+
+            <div class="hero-visual reveal" data-parallax="0.08">
+                <div class="visual-head">
+                    <span class="visual-kicker">Economic monitoring surface</span>
+                    <span class="visual-stamp">pipeline publik aktif</span>
+                </div>
+
+                <div class="visual-main">
+                    <div class="visual-primary">
+                        <small>Forecast publik horizon {{ public_horizon_label }}</small>
                         <strong>{{ inflasi_pred|floatformat:2 }}%</strong>
-                        <span>Headline forecast publik horizon {{ public_horizon_label }} dari pipeline aktif.</span>
+                        <p>
+                            Headline ini memakai model utama {{ inflasi_model_name }} dengan rentang estimasi
+                            {{ inflasi_interval_lower|floatformat:2 }}% sampai {{ inflasi_interval_upper|floatformat:2 }}%.
+                        </p>
                     </div>
-                    <div class="hero-quickitem">
+                    <div class="visual-secondary">
+                        <div class="visual-secondary-row">
+                            <small>USD/IDR live exchange rate</small>
+                            <strong id="home-usd-value">Memuat...</strong>
+                            <span id="home-usd-change">Menunggu data kurs</span>
+                        </div>
+                        <div class="visual-secondary-row">
+                            <small>Tanggal kurs</small>
+                            <strong id="home-usd-date">-</strong>
+                            <span>Sinkron harian dari endpoint aktif</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="visual-chart">
+                    <canvas id="heroForecastChart"></canvas>
+                </div>
+
+                <div class="visual-ledger">
+                    <div class="visual-ledger-item">
+                        <span>Model utama</span>
+                        <strong>{{ inflasi_model_name }}</strong>
+                        <p>Digunakan sebagai headline publik untuk horizon {{ public_horizon_label }}.</p>
+                    </div>
+                    <div class="visual-ledger-item">
+                        <span>R^2 uji model daya beli riil</span>
+                        <strong>{{ ridge_test_r2|floatformat:3 }}</strong>
+                        <p>Koefisien determinasi out-of-sample untuk proksi daya beli.</p>
+                    </div>
+                    <div class="visual-ledger-item">
+                        <span>Wilayah siap simulasi</span>
+                        <strong>{{ province_count }}</strong>
+                        <p>Baseline wilayah terbaru dipakai untuk simulasi dan peta ekonomi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="section">
+        <div class="section-shell">
+            <div class="insight-shell reveal">
+                <div class="insight-copy">
+                    <span class="section-tag">Primary Insight</span>
+                    <h2>Mulai dari forecast aktif, lalu konfirmasi pembacaan dengan kurs dan kualitas model.</h2>
+                    <p>
+                        Halaman awal ini dirancang sebagai ringkasan institusional. Fokus utamanya adalah headline forecast,
+                        posisi USD/IDR live, dan kualitas ringkas dari model proksi daya beli sebelum pengguna masuk ke ruang kerja operasional.
+                    </p>
+                </div>
+                <div class="insight-metrics">
+                    <div class="insight-metric is-primary">
+                        <small>Forecast publik horizon {{ public_horizon_label }}</small>
+                        <strong>{{ inflasi_pred|floatformat:2 }}%</strong>
+                        <p>Dipakai sebagai headline pembacaan arah harga jangka dekat dari pipeline publik aktif.</p>
+                    </div>
+                    <div class="insight-metric">
+                        <small>USD/IDR live</small>
+                        <strong id="insight-usd-value">Memuat...</strong>
+                        <span id="insight-usd-date">Tanggal data diambil: -</span>
+                    </div>
+                    <div class="insight-metric is-support">
+                        <small>Validasi dan cakupan</small>
                         <strong>R^2 {{ ridge_test_r2|floatformat:3 }}</strong>
-                        <span>Koefisien determinasi uji untuk model proksi daya beli riil.</span>
-                    </div>
-                    <div class="hero-quickitem">
-                        <strong>{{ province_count }} wilayah</strong>
-                        <span>Baseline terbaru siap dipakai untuk pembacaan provinsi dan agregat nasional.</span>
-                    </div>
-                </div>
-                <div class="hero-note">
-                    Dirancang untuk analisis akademik, pembacaan kebijakan, dan demonstrasi profesional.
-                </div>
-            </div>
-
-            <div class="hero-terminal reveal" data-parallax="0.08">
-                <div class="terminal-header">
-                    <div class="terminal-dots"><span></span><span></span><span></span></div>
-                    <strong>EcoDash Live Monitor</strong>
-                </div>
-                <div class="terminal-body">
-                    <div class="terminal-row">
-                        <span class="terminal-row-label">USD/IDR live exchange rate</span>
-                        <strong class="terminal-row-value" id="home-usd-value">Memuat...</strong>
-                        <span class="terminal-row-change flat" id="home-usd-change">Menunggu data</span>
-                    </div>
-                    <div class="terminal-row">
-                        <span class="terminal-row-label">Tanggal kurs</span>
-                        <strong class="terminal-row-value" id="home-usd-date">-</strong>
-                        <span class="terminal-row-change flat">sinkron harian</span>
-                    </div>
-                    <div class="terminal-panels">
-                        <div class="terminal-panel">
-                            <small>R^2 uji model daya beli riil</small>
-                            <strong>{{ ridge_test_r2|floatformat:3 }}</strong>
-                            <span>Koefisien determinasi out-of-sample untuk estimasi {{ ridge_target_label|lower }}, dengan MAE uji sekitar Rp {{ ridge_test_mae|floatformat:0 }}.</span>
-                        </div>
-                        <div class="terminal-panel">
-                            <small>Provinsi tercakup</small>
-                            <strong>{{ province_count }}</strong>
-                            <span>Baseline wilayah terbaru dipakai untuk simulasi dan peta ekonomi.</span>
-                        </div>
+                        <p>MAE uji sekitar Rp {{ ridge_test_mae|floatformat:0 }} untuk model proksi daya beli.</p>
+                        <p>{{ province_count }} wilayah siap untuk simulasi dan pembacaan peta ekonomi.</p>
                     </div>
                 </div>
             </div>
@@ -791,133 +908,123 @@
     </section>
 
     <section class="section">
-        <div class="section-inner">
-            <div class="section-header reveal">
-                <span class="tag">Live Indicators</span>
-                <h2>Key Economic Metrics</h2>
-                <p>Susun pembacaan dari headline forecast, kualitas model, kurs, lalu cakupan wilayah sebelum masuk ke ruang kerja operasional.</p>
-            </div>
-            <div class="stats-grid stagger">
-                <div class="stat-card primary" data-parallax="0.05">
-                    <div class="stat-label">Forecast publik horizon {{ public_horizon_label }}</div>
-                    <div class="stat-value" style="color: var(--accent-primary);">{{ inflasi_pred|floatformat:2 }}%</div>
-                    <div class="stat-change up"><i class="fas fa-chart-line"></i> Model utama {{ inflasi_model_name }}</div>
-                    <div class="stat-note">Rentang estimasi aktif berada pada {{ inflasi_interval_lower|floatformat:2 }}% sampai {{ inflasi_interval_upper|floatformat:2 }}%. Gunakan sebagai headline arah jangka dekat sebelum membaca detail horizon lain.</div>
-                    <div class="stat-spark"><canvas id="spark-inflasi"></canvas></div>
-                </div>
-                <div class="stat-card semantic-teal" data-parallax="0.08">
-                    <div class="stat-label">R^2 uji model daya beli riil</div>
-                    <div class="stat-value" style="color: var(--positive);">{{ ridge_test_r2|floatformat:3 }}</div>
-                    <div class="stat-change up"><i class="fas fa-check-circle"></i> MAE uji sekitar Rp {{ ridge_test_mae|floatformat:0 }}</div>
-                    <div class="stat-note">Panel ini menjelaskan kestabilan model estimasi pengeluaran riil per kapita yang dipakai sebagai proksi daya beli.</div>
-                    <div class="stat-spark"><canvas id="spark-r2"></canvas></div>
-                </div>
-                <div class="stat-card" data-parallax="0.11">
-                    <div class="stat-label">USD/IDR Kurs</div>
-                    <div class="stat-value" id="home-usd-value-clone">Memuat...</div>
-                    <div class="stat-change flat" id="home-usd-change-clone"><i class="fas fa-sync-alt"></i> Kurs harian terbaru</div>
-                    <div class="stat-note" id="home-usd-fetched-at">Tanggal data diambil: -</div>
-                    <div class="stat-spark"><canvas id="spark-usd"></canvas></div>
-                </div>
-                <div class="stat-card semantic-violet" data-parallax="0.14">
-                    <div class="stat-label">Provinsi Tercakup</div>
-                    <div class="stat-value" style="color: var(--accent-tertiary);">{{ province_count }}</div>
-                    <div class="stat-change flat"><i class="fas fa-map"></i> Baseline wilayah aktif</div>
-                    <div class="stat-note">Cakupan ini dipakai untuk simulasi wilayah, pembacaan peta ekonomi, dan perbandingan antardaerah.</div>
-                    <div class="stat-spark"><canvas id="spark-prov"></canvas></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section alt" id="features">
-        <div class="section-inner">
-            <div class="section-header reveal">
-                <span class="tag">Capability Surface</span>
-                <h2>Modul yang diprioritaskan untuk pembacaan, simulasi, dan pembandingan.</h2>
-                <p>Dua modul teratas diposisikan sebagai jalur insight utama, lalu didukung oleh peta, pembanding wilayah, dan eksplorasi dataset.</p>
-            </div>
-            <div class="features-grid stagger">
-                <div class="feature-card priority">
-                    <div class="feature-icon"><i class="fas fa-brain"></i></div>
-                    <h3>Forecasting Inflasi</h3>
-                    <p>Forecast multi-horizon 1, 3, 6, dan 12 bulan dengan dua model terbaik per horizon dan rentang estimasi berbasis residual backtest.</p>
-                </div>
-                <div class="feature-card priority">
-                    <div class="feature-icon"><i class="fas fa-wallet"></i></div>
-                    <h3>Simulasi Daya Beli</h3>
-                    <p>Inferensi penuh Ridge Regression untuk pengeluaran riil per kapita, memakai baseline wilayah terbaru dan validasi kronologis.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-map-marked-alt"></i></div>
-                    <h3>Peta Ekonomi Indonesia</h3>
-                    <p>Choropleth dan heat glow untuk membandingkan 38 provinsi dengan fokus pada pembacaan daya beli riil dan indikator struktural daerah.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-balance-scale"></i></div>
-                    <h3>Perbandingan Provinsi</h3>
-                    <p>Bandingkan wilayah secara visual untuk melihat gap, tren, dan posisi relatif antarprovinsi.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-database"></i></div>
-                    <h3>Dataset Explorer</h3>
-                    <p>Jelajahi data dan indikator yang menopang model sehingga demonstrasi tetap transparan dan kredibel.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-book-open"></i></div>
-                    <h3>Referensi Pembacaan</h3>
-                    <p>Ringkasan istilah, konteks indikator, dan kerangka interpretasi sebelum masuk ke analisis yang lebih rinci.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section" id="flow">
-        <div class="section-inner">
-            <div class="section-header reveal">
-                <span class="tag">Data Flow</span>
-                <h2>Data resmi diproses menjadi indikator, lalu diterjemahkan menjadi keputusan baca.</h2>
-                <p>Setiap tahap dirancang untuk menjaga jejak dari sumber data, pembentukan fitur, evaluasi model, sampai insight yang tampil di antarmuka publik.</p>
-            </div>
-            <div class="flow-container reveal">
-                <div class="flow-grid">
-                    <div class="flow-step" data-parallax="0.04">
-                        <span class="flow-no">1</span>
-                        <h3>Sumber resmi</h3>
-                        <p>BPS, Bank Indonesia, World Bank, dan indikator komoditas dijadikan pondasi data utama.</p>
-                    </div>
-                    <div class="flow-step" data-parallax="0.07">
-                        <span class="flow-no">2</span>
-                        <h3>Preprocessing</h3>
-                        <p>Data dibersihkan, diimputasi, lalu dibentuk menjadi fitur ekonomi yang relevan untuk training dan inferensi.</p>
-                    </div>
-                    <div class="flow-step" data-parallax="0.10">
-                        <span class="flow-no">3</span>
-                        <h3>Model</h3>
-                        <p>Setiap horizon inflasi diranking ulang dengan MAE walk-forward, lalu Ridge Regression dipakai untuk estimasi pengeluaran riil per kapita per wilayah.</p>
-                    </div>
-                    <div class="flow-step" data-parallax="0.13">
-                        <span class="flow-no">4</span>
-                        <h3>Delivery</h3>
-                        <p>Insight ditampilkan lewat dashboard, peta, dan simulasi agar siap untuk analisis maupun demonstrasi.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="footer-strip reveal">
-            <div class="footer-copy">
-                <h3>Buka dashboard untuk pembacaan operasional, lalu gunakan panduan untuk konteks interpretasi dan metodologi.</h3>
+        <div class="section-shell">
+            <div class="section-head reveal">
+                <span class="section-tag">Modul Inti</span>
+                <h2>Forecasting dan Daya Beli ditempatkan sebagai dua permukaan keputusan utama.</h2>
                 <p>
-                    Halaman awal ini dirancang sebagai ringkasan institusional. Forecasting dan simulasi tetap menjadi pintu masuk prioritas,
-                    sedangkan panduan memisahkan konteks pembacaan dan konteks teknis secara lebih terstruktur.
+                    Keduanya menjadi pintu masuk prioritas untuk membaca arah inflasi dan dampaknya terhadap
+                    pengeluaran riil per kapita, sementara modul lain berfungsi sebagai lapisan pembanding dan verifikasi.
                 </p>
             </div>
-            <div class="footer-actions">
-                <a href="{% url 'guide' %}" class="btn-hero secondary">Buka Panduan</a>
-                <a href="{% url 'landing' %}" class="btn-hero primary">Buka Dashboard</a>
+
+            <div class="module-grid reveal">
+                <article class="module-panel primary">
+                    <span class="module-kicker primary">Forecasting</span>
+                    <h3>Forecast inflasi multi-horizon untuk pembacaan taktis dan strategis.</h3>
+                    <p>
+                        Buka horizon 1, 3, 6, dan 12 bulan untuk membandingkan dua model terbaik per horizon,
+                        berikut rentang estimasi yang dibangun dari residual walk-forward backtest.
+                    </p>
+                    <div class="module-points">
+                        <span>Headline publik memakai horizon {{ public_horizon_label }}</span>
+                        <span>Ranking model berbasis MAE dengan RMSE dan sMAPE sebagai pendamping</span>
+                        <span>Confidence interval ditampilkan agar pembacaan tetap jujur</span>
+                    </div>
+                    <a href="{% url 'forecasting' %}" class="btn-hero primary">
+                        <i class="fas fa-arrow-up-right-from-square"></i> Buka Forecasting
+                    </a>
+                </article>
+
+                <article class="module-panel teal">
+                    <span class="module-kicker teal">Proksi daya beli</span>
+                    <h3>Simulasi wilayah berbasis estimasi pengeluaran riil per kapita.</h3>
+                    <p>
+                        Modul ini menggunakan inferensi penuh Ridge Regression untuk membaca perubahan relatif pada
+                        pengeluaran riil per kapita sebagai proksi daya beli, dengan baseline wilayah terbaru.
+                    </p>
+                    <div class="module-points">
+                        <span>Memakai baseline wilayah aktif, termasuk agregat nasional</span>
+                        <span>Input skenario dapat dioverride tanpa kembali ke rumus demo linear</span>
+                        <span>Hasil diposisikan untuk pembacaan arah, bukan klaim presisi absolut</span>
+                    </div>
+                    <a href="{% url 'daya_beli' %}" class="btn-hero secondary">
+                        <i class="fas fa-arrow-up-right-from-square"></i> Buka Daya Beli
+                    </a>
+                </article>
+            </div>
+
+            <div class="support-list reveal">
+                <div class="support-item">
+                    <strong>Peta ekonomi Indonesia</strong>
+                    <span>Membaca struktur wilayah melalui indikator ekonomi dan filter tahun aktif.</span>
+                </div>
+                <div class="support-item">
+                    <strong>Perbandingan provinsi</strong>
+                    <span>Mengamati posisi relatif antardaerah untuk konteks komparatif.</span>
+                </div>
+                <div class="support-item">
+                    <strong>Dataset explorer</strong>
+                    <span>Menjaga transparansi sumber dan indikator yang menopang model.</span>
+                </div>
+                <div class="support-item">
+                    <strong>Panduan pembacaan dan teknis</strong>
+                    <span>Memisahkan interpretasi indikator dari penjelasan metodologi model.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-shell">
+            <div class="section-head reveal">
+                <span class="section-tag">Workflow</span>
+                <h2>Dari data resmi menuju insight yang siap dibaca.</h2>
+                <p>
+                    Alur ini menjaga hubungan antara sumber data, pembentukan fitur, evaluasi model, dan antarmuka
+                    akhir yang digunakan untuk analisis maupun presentasi.
+                </p>
+            </div>
+
+            <div class="workflow-track reveal">
+                <div class="workflow-step">
+                    <span class="workflow-no">1</span>
+                    <h3>Sumber data</h3>
+                    <p>BPS, Bank Indonesia, dan variabel eksternal pendukung dihimpun sebagai fondasi utama.</p>
+                </div>
+                <div class="workflow-step">
+                    <span class="workflow-no">2</span>
+                    <h3>Preprocessing</h3>
+                    <p>Data dibersihkan, disejajarkan periodenya, lalu diterjemahkan menjadi fitur yang relevan.</p>
+                </div>
+                <div class="workflow-step">
+                    <span class="workflow-no">3</span>
+                    <h3>Model</h3>
+                    <p>Forecast inflasi diranking ulang per horizon, sementara proksi daya beli dihitung dengan inferensi Ridge penuh.</p>
+                </div>
+                <div class="workflow-step">
+                    <span class="workflow-no">4</span>
+                    <h3>Delivery</h3>
+                    <p>Hasil diteruskan ke dashboard, peta, dan simulasi untuk pembacaan yang lebih cepat dan konsisten.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-shell">
+            <div class="cta-band reveal">
+                <div>
+                    <h3>Buka ruang kerja operasional untuk pembacaan yang lebih rinci.</h3>
+                    <p>
+                        Dashboard memusatkan headline forecast, kurs USD/IDR live, ringkasan inflasi, dan proksi daya beli
+                        dalam satu permukaan yang lebih siap dipakai untuk monitoring maupun demonstrasi.
+                    </p>
+                </div>
+                <div class="cta-actions">
+                    <a href="{% url 'guide' %}" class="btn-hero secondary">Buka Panduan</a>
+                    <a href="{% url 'landing' %}" class="btn-hero primary">Buka Dashboard</a>
+                </div>
             </div>
         </div>
     </section>
@@ -925,44 +1032,62 @@
     <script>
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
-                if (entry.isIntersecting) entry.target.classList.add('in-view');
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                }
             });
-        }, { threshold: 0.12 });
-        document.querySelectorAll('.reveal, .stagger').forEach((el) => observer.observe(el));
+        }, { threshold: 0.14 });
+        document.querySelectorAll('.reveal').forEach((node) => observer.observe(node));
 
-        function drawSpark(canvasId, data, color) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            new Chart(canvas, {
+        function drawHeroForecastChart() {
+            const chartNode = document.getElementById('heroForecastChart');
+            if (!chartNode) return;
+            const context = chartNode.getContext('2d');
+            const gradient = context.createLinearGradient(0, 0, 0, 240);
+            gradient.addColorStop(0, 'rgba(94, 166, 255, 0.34)');
+            gradient.addColorStop(1, 'rgba(94, 166, 255, 0.02)');
+
+            new Chart(chartNode, {
                 type: 'line',
                 data: {
-                    labels: data.map((_, i) => i),
+                    labels: ['t-6', 't-5', 't-4', 't-3', 't-2', 't-1', 't'],
                     datasets: [{
-                        data,
-                        borderColor: color,
-                        borderWidth: 1.5,
+                        data: [0.18, 0.22, 0.24, 0.27, 0.26, 0.29, {{ inflasi_pred|floatformat:2 }}],
+                        borderColor: '#5ea6ff',
+                        borderWidth: 2.4,
                         pointRadius: 0,
-                        tension: 0.4,
+                        tension: 0.42,
                         fill: true,
-                        backgroundColor: color + '18'
+                        backgroundColor: gradient
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                    scales: { x: { display: false }, y: { display: false } }
+                    animation: {
+                        duration: 900,
+                        easing: 'easeOutQuart'
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    scales: {
+                        x: {
+                            display: false
+                        },
+                        y: {
+                            display: false
+                        }
+                    }
                 }
             });
         }
 
-        drawSpark('spark-r2', [0.72, 0.76, 0.79, 0.82, 0.84, 0.87, {{ ridge_test_r2|floatformat:3 }}], '#26A69A');
-        drawSpark('spark-prov', [30, 32, 34, 36, 37, {{ province_count|default:38 }}, {{ province_count|default:38 }}], '#AB47BC');
-        drawSpark('spark-inflasi', [0.20, 0.22, 0.25, 0.23, 0.28, 0.30, 0.28, {{ inflasi_pred|floatformat:2 }}], '#2962FF');
-
         function formatUsdDate(dateString) {
             if (!dateString) return 'Tanggal tidak tersedia';
             const date = new Date(dateString + 'T00:00:00');
+            if (Number.isNaN(date.getTime())) return dateString;
             return date.toLocaleDateString('id-ID', {
                 day: 'numeric',
                 month: 'long',
@@ -981,43 +1106,26 @@
             .then((data) => {
                 const rate = Number(data.latest);
                 const change = Number(data.change_pct || 0);
-                const direction = change > 0 ? 'up' : change < 0 ? 'down' : 'flat';
-                const sign = change > 0 ? '+' : change < 0 ? '-' : '';
                 const formattedRate = 'Rp ' + Math.round(rate).toLocaleString('id-ID');
                 const comparisonDate = data.month_start_date
                     ? 'vs awal bulan (' + formatUsdDate(data.month_start_date) + ')'
                     : 'basis awal bulan belum tersedia';
+                const changeLabel = `${change > 0 ? '+' : change < 0 ? '-' : ''}${Math.abs(change).toFixed(2)}% ${comparisonDate}`;
+                const dailyDate = formatUsdDate(data.daily_date || data.monthly_date);
 
                 document.getElementById('home-usd-value').textContent = formattedRate;
-                document.getElementById('home-usd-date').textContent = formatUsdDate(data.daily_date || data.monthly_date);
-                document.getElementById('home-usd-fetched-at').textContent =
-                    `Tanggal data diambil: ${formatUsdDate(data.daily_date || data.monthly_date)}`;
+                document.getElementById('home-usd-change').textContent = changeLabel;
+                document.getElementById('home-usd-date').textContent = dailyDate;
 
-                const homeChange = document.getElementById('home-usd-change');
-                homeChange.textContent = `${sign}${Math.abs(change).toFixed(2)}% ${comparisonDate}`;
-                homeChange.className = 'terminal-row-change ' + direction;
-
-                document.getElementById('home-usd-value-clone').textContent = formattedRate;
-                const cloneChange = document.getElementById('home-usd-change-clone');
-                cloneChange.innerHTML = `<i class="fas fa-sync-alt"></i> ${sign}${Math.abs(change).toFixed(2)}% ${comparisonDate}`;
-                cloneChange.className = 'stat-change ' + direction;
-
-                document.querySelectorAll('.ticker-usd-value').forEach((element) => {
-                    element.textContent = formattedRate.replace('Rp ', '');
-                });
-                document.querySelectorAll('.ticker-usd-change').forEach((element) => {
-                    element.textContent = `${change > 0 ? '▲ +' : change < 0 ? '▼ -' : '— '}${Math.abs(change).toFixed(2)}%`;
-                    element.className = 'ticker-usd-change ' + direction;
-                });
-
-                drawSpark('spark-usd', data.history || [rate], direction === 'down' ? '#EF5350' : '#26A69A');
+                document.getElementById('insight-usd-value').textContent = formattedRate;
+                document.getElementById('insight-usd-date').textContent = `Tanggal data diambil: ${dailyDate}`;
             })
             .catch(() => {
                 document.getElementById('home-usd-value').textContent = 'Tidak tersedia';
                 document.getElementById('home-usd-change').textContent = 'Gagal memuat kurs';
-                document.getElementById('home-usd-value-clone').textContent = 'Tidak tersedia';
-                document.getElementById('home-usd-change-clone').textContent = 'Gagal memuat kurs';
-                document.getElementById('home-usd-fetched-at').textContent = 'Tanggal data diambil: tidak tersedia';
+                document.getElementById('home-usd-date').textContent = '-';
+                document.getElementById('insight-usd-value').textContent = 'Tidak tersedia';
+                document.getElementById('insight-usd-date').textContent = 'Tanggal data diambil: tidak tersedia';
             });
 
         const parallaxNodes = Array.from(document.querySelectorAll('[data-parallax]'));
@@ -1025,13 +1133,16 @@
             const scrollY = window.scrollY;
             parallaxNodes.forEach((node) => {
                 const speed = Number(node.dataset.parallax || 0);
-                const offset = Math.max(-28, Math.min(42, scrollY * speed));
+                const offset = Math.max(-18, Math.min(26, scrollY * speed));
                 node.style.transform = `translate3d(0, ${offset}px, 0)`;
             });
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            drawHeroForecastChart();
+            applyParallax();
+        });
         window.addEventListener('scroll', applyParallax, { passive: true });
-        applyParallax();
     </script>
 </body>
 </html>
-

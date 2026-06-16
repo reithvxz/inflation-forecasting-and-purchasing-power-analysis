@@ -211,6 +211,9 @@
         padding: 24px;
         position: sticky;
         top: 92px;
+        background:
+            radial-gradient(circle at top right, rgba(41, 98, 255, 0.08), transparent 26%),
+            linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
     }
     .result-label {
         font-size: 11px;
@@ -252,8 +255,8 @@
     }
     .result-interpretation,
     .result-limitations {
-        padding: 16px;
-        border-radius: 14px;
+        padding: 18px;
+        border-radius: 16px;
         border: 1px solid var(--border-color);
         margin-bottom: 18px;
     }
@@ -299,8 +302,8 @@
         margin-bottom: 18px;
     }
     .result-item {
-        padding: 14px;
-        border-radius: 12px;
+        padding: 16px;
+        border-radius: 14px;
         background: var(--bg-panel);
         border: 1px solid var(--border-color);
     }
@@ -319,22 +322,72 @@
         color: var(--text-primary);
         font-weight: 700;
     }
+    .result-subsection {
+        margin-top: 14px;
+        margin-bottom: 18px;
+    }
+    .result-subsection:last-of-type {
+        margin-bottom: 0;
+    }
     .chip-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
     }
     .chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 10px;
-        border-radius: 999px;
-        background: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        padding: 12px 13px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.88);
         border: 1px solid var(--border-color);
-        color: var(--text-secondary);
-        font-size: 12px;
-        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.45;
+    }
+    .chip-label {
+        color: var(--text-tertiary);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    .chip-value {
+        color: var(--text-primary);
+        font-size: 14px;
+        font-weight: 750;
+    }
+    .validation-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+    .validation-card {
+        padding: 14px 15px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.88);
+        border: 1px solid var(--border-color);
+    }
+    .validation-card span {
+        display: block;
+    }
+    .validation-card .small {
+        margin-bottom: 6px;
+        color: var(--text-tertiary);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    .validation-card .big {
+        color: var(--text-primary);
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1.2;
+        font-variant-numeric: tabular-nums;
     }
     .sim-note {
         margin-top: 18px;
@@ -366,7 +419,9 @@
             flex-direction: column;
         }
         .field-grid,
-        .result-grid {
+        .result-grid,
+        .chip-list,
+        .validation-grid {
             grid-template-columns: 1fr;
         }
     }
@@ -513,14 +568,24 @@
             </div>
         </div>
 
-        <div class="result-label" style="margin-top: 10px;">Validasi model</div>
-        <div class="chip-list" style="margin-bottom: 12px;">
-            <div class="chip">R^2 uji: {{ ridge_test_r2|floatformat:3 }}</div>
-            <div class="chip">MAE uji: Rp {{ ridge_test_mae|floatformat:0 }}</div>
+        <div class="result-subsection">
+            <div class="result-label">Validasi model</div>
+            <div class="validation-grid" style="margin-top: 10px;">
+                <div class="validation-card">
+                    <span class="small">R² uji</span>
+                    <span class="big">{{ ridge_test_r2|floatformat:3 }}</span>
+                </div>
+                <div class="validation-card">
+                    <span class="small">MAE uji</span>
+                    <span class="big">Rp {{ ridge_test_mae|floatformat:0 }}</span>
+                </div>
+            </div>
         </div>
 
-        <div class="result-label" style="margin-top: 10px;">Input aktif yang dipakai model</div>
-        <div class="chip-list" id="inputsUsed"></div>
+        <div class="result-subsection">
+            <div class="result-label">Input aktif yang dipakai model</div>
+            <div class="chip-list" id="inputsUsed"></div>
+        </div>
 
         <div class="result-limitations">
             <div class="result-section-title">Batasan model</div>
@@ -632,7 +697,7 @@
                 } else if (key === 'ump' || key === 'pdrb_hargakonstan') {
                     value = formatCurrency(value);
                 }
-                chip.textContent = `${label}: ${value}`;
+                chip.innerHTML = `<span class="chip-label">${label}</span><span class="chip-value">${value}</span>`;
                 inputsUsed.appendChild(chip);
             });
         }

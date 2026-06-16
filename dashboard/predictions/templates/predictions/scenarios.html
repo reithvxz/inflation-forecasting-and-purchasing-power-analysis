@@ -1,204 +1,829 @@
 {% extends 'predictions/base.html' %}
 {% load static %}
 
-{% block page_title %}What-If Scenarios{% endblock %}
+{% block page_title %}Scenario Analysis Workspace{% endblock %}
 
 {% block extra_head %}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <style>
-    .scenarios-header { text-align: center; margin-bottom: 24px; }
-    .scenarios-header p { color: var(--text-secondary); font-size: 13px; margin-top: 8px; }
-    .scenarios-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin-bottom: 24px; }
-    .scenario-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease; position: relative; }
-    .scenario-card:hover { border-color: var(--border-hover); background: var(--bg-elevated); }
-    .scenario-card.active { border-color: var(--accent-primary); background: var(--bg-elevated); }
-    .sc-icon { width: 40px; height: 40px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 16px; }
-    .sc-icon.pos { background: var(--accent-primary-dim); color: var(--accent-primary); border: 1px solid var(--accent-primary-dim); }
-    .sc-icon.neg { background: var(--negative-dim); color: var(--negative); border: 1px solid var(--negative-dim); }
-    .sc-icon.neu { background: rgba(171, 71, 188, 0.15); color: var(--accent-tertiary); border: 1px solid rgba(171, 71, 188, 0.15); }
-    .scenario-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; color: var(--text-primary); }
-    .scenario-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px; }
-    .sc-params { display: flex; gap: 6px; flex-wrap: wrap; }
-    .sc-param { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: var(--bg-hover); border: 1px solid var(--border-color); color: var(--text-secondary); }
+    .scenario-shell {
+        display: grid;
+        gap: 22px;
+    }
 
-    .result-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; display: none; }
-    .result-panel.active { display: block; }
-    .result-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
-    .result-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
-    .result-badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
-    .result-badge.positive { background: var(--positive-dim); color: var(--positive); border: 1px solid var(--positive-dim); }
-    .result-badge.negative { background: var(--negative-dim); color: var(--negative); border: 1px solid var(--negative-dim); }
-    .result-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
-    .result-metric { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 6px; padding: 16px; }
-    .result-metric .label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600; }
-    .result-metric .value { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1.1; }
-    .result-metric .value.pos { color: var(--positive); }
-    .result-metric .value.neg { color: var(--negative); }
-    .result-chart { height: 300px; }
-    .result-desc { margin-top: 20px; padding: 14px 16px; background: var(--bg-panel); border-radius: 6px; border-left: 3px solid var(--accent-primary); }
-    .result-desc h4 { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-primary); }
-    .result-desc p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+    .scenario-hero,
+    .scenario-selector,
+    .scenario-main,
+    .scenario-side,
+    .scenario-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .scenario-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 22px;
+        padding: 28px;
+        background:
+            radial-gradient(circle at top right, rgba(141, 66, 255, 0.10), transparent 28%),
+            linear-gradient(180deg, #ffffff 0%, #fbf9ff 100%);
+    }
+
+    .scenario-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 11px;
+        margin-bottom: 14px;
+        border-radius: 999px;
+        background: rgba(141, 66, 255, 0.10);
+        color: #8d42ff;
+        font-size: 11px;
+        font-weight: 760;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .scenario-kicker::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: currentColor;
+    }
+
+    .scenario-hero h2 {
+        margin: 0 0 10px;
+        font-size: clamp(30px, 3.6vw, 42px);
+        line-height: 1.06;
+        letter-spacing: -0.05em;
+    }
+
+    .scenario-hero p,
+    .scenario-panel p,
+    .scenario-side p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .scenario-hero-rail {
+        display: grid;
+        gap: 12px;
+    }
+
+    .hero-rail-item {
+        padding: 15px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        background: #ffffff;
+    }
+
+    .hero-rail-item span {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--text-tertiary);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .hero-rail-item strong {
+        display: block;
+        color: var(--text-primary);
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .scenario-selector {
+        padding: 22px;
+    }
+
+    .selector-head,
+    .panel-head,
+    .side-head {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 14px;
+    }
+
+    .panel-label {
+        color: var(--text-tertiary);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .selector-head h3,
+    .panel-head h3,
+    .side-head h3 {
+        margin: 0;
+        font-size: 18px;
+        letter-spacing: -0.02em;
+    }
+
+    .selector-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px;
+    }
+
+    .scenario-card {
+        display: grid;
+        gap: 14px;
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-panel);
+        cursor: pointer;
+        transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .scenario-card:hover {
+        transform: translateY(-1px);
+        border-color: rgba(41, 98, 255, 0.16);
+        background: #ffffff;
+    }
+
+    .scenario-card.active {
+        border-color: rgba(41, 98, 255, 0.24);
+        background: linear-gradient(180deg, rgba(41, 98, 255, 0.07), rgba(41, 98, 255, 0.02));
+        box-shadow: 0 14px 28px rgba(41, 98, 255, 0.10);
+    }
+
+    .scenario-card.custom {
+        border-style: dashed;
+    }
+
+    .scenario-card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .scenario-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        font-size: 16px;
+        border: 1px solid transparent;
+    }
+
+    .scenario-icon.teal {
+        background: rgba(38, 166, 154, 0.12);
+        color: #26a69a;
+        border-color: rgba(38, 166, 154, 0.14);
+    }
+
+    .scenario-icon.amber {
+        background: rgba(216, 155, 29, 0.12);
+        color: #d89b1d;
+        border-color: rgba(216, 155, 29, 0.16);
+    }
+
+    .scenario-icon.violet {
+        background: rgba(141, 66, 255, 0.12);
+        color: #8d42ff;
+        border-color: rgba(141, 66, 255, 0.16);
+    }
+
+    .scenario-icon.blue {
+        background: rgba(41, 98, 255, 0.12);
+        color: #2962ff;
+        border-color: rgba(41, 98, 255, 0.16);
+    }
+
+    .scenario-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: rgba(19, 23, 34, 0.06);
+        color: var(--text-secondary);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .scenario-card h4 {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.35;
+        letter-spacing: -0.02em;
+    }
+
+    .scenario-card p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.62;
+    }
+
+    .scenario-assumption-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .scenario-assumption {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 9px;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .scenario-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 18px;
+        align-items: start;
+    }
+
+    .scenario-main,
+    .scenario-side {
+        padding: 22px;
+    }
+
+    .scenario-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+        margin-bottom: 18px;
+    }
+
+    .scenario-metric {
+        padding: 16px;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-panel);
+    }
+
+    .scenario-metric span {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text-tertiary);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .scenario-metric strong {
+        display: block;
+        color: var(--text-primary);
+        font-size: clamp(24px, 3vw, 34px);
+        line-height: 1;
+        letter-spacing: -0.04em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .scenario-metric strong.positive { color: #26a69a; }
+    .scenario-metric strong.negative { color: var(--negative); }
+
+    .scenario-meta-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+
+    .meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .scenario-chart-wrap {
+        height: 380px;
+        margin-top: 8px;
+    }
+
+    .scenario-panel {
+        padding: 18px;
+        background: var(--bg-panel);
+    }
+
+    .scenario-panel-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .scenario-panel-item {
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--border-color);
+        background: #ffffff;
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.62;
+    }
+
+    .scenario-panel-item strong {
+        color: var(--text-primary);
+    }
+
+    .impact-list {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .impact-item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--border-color);
+        background: #ffffff;
+    }
+
+    .impact-item strong {
+        display: block;
+        color: var(--text-primary);
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    .impact-item span {
+        color: var(--text-secondary);
+        font-size: 12px;
+    }
+
+    .impact-change {
+        font-size: 13px;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .impact-change.positive { color: #26a69a; }
+    .impact-change.negative { color: var(--negative); }
+    .impact-change.neutral { color: var(--text-secondary); }
+
+    .scenario-empty,
+    .scenario-loading,
+    .scenario-error {
+        display: grid;
+        place-items: center;
+        gap: 10px;
+        min-height: 320px;
+        padding: 28px;
+        text-align: center;
+        border-radius: 18px;
+        border: 1px dashed var(--border-color);
+        background: rgba(248, 251, 255, 0.72);
+        color: var(--text-secondary);
+    }
+
+    .scenario-loading i {
+        color: var(--accent-primary);
+        animation: spin 1s linear infinite;
+    }
+
+    .scenario-error {
+        color: var(--negative);
+        background: rgba(239, 83, 80, 0.05);
+        border-color: rgba(239, 83, 80, 0.18);
+    }
+
+    @keyframes spin {
+        100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 1080px) {
+        .scenario-layout,
+        .scenario-hero {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 780px) {
+        .scenario-metrics {
+            grid-template-columns: 1fr;
+        }
+
+        .scenario-chart-wrap {
+            height: 320px;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="scenarios-header">
-    <p>Pilih skenario kebijakan untuk melihat dampaknya terhadap daya beli masyarakat Indonesia.</p>
-</div>
-
-<div class="scenarios-grid" id="scenariosGrid"></div>
-
-<div class="result-panel" id="resultPanel">
-    <div class="result-header">
+<section class="scenario-shell">
+    <section class="scenario-hero">
         <div>
-            <div class="result-title" id="resultTitle"></div>
-            <div style="color:var(--text-secondary);font-size:14px;margin-top:4px;" id="resultSubtitle"></div>
+            <div class="scenario-kicker">Scenario analysis</div>
+            <h2>Baca sensitivitas proksi daya beli nasional dengan skenario yang deterministik.</h2>
+            <p>
+                Skenario pada halaman ini tidak lagi memakai angka acak. Setiap hasil dibangun dari model ridge aktif
+                dengan baseline nasional dan pembanding 38 provinsi agar pembacaan sebelum-sesudah tetap kredibel untuk presentasi.
+            </p>
         </div>
-        <div class="result-badge" id="resultBadge"></div>
-    </div>
-    <div class="result-metrics">
-        <div class="result-metric">
-            <div class="label">Perubahan Daya Beli</div>
-            <div class="value" id="metricChange"></div>
+        <div class="scenario-hero-rail">
+            <div class="hero-rail-item">
+                <span>Headline use case</span>
+                <strong>Mengukur apakah tekanan harga, pendapatan, atau perlambatan output lebih dominan memengaruhi pengeluaran riil.</strong>
+            </div>
+            <div class="hero-rail-item">
+                <span>Catatan pembacaan</span>
+                <strong>Output dibaca sebagai estimasi pengeluaran riil per kapita per bulan, lalu diinterpretasikan sebagai proksi daya beli.</strong>
+            </div>
         </div>
-        <div class="result-metric">
-            <div class="label">Daya Beli Rata-rata</div>
-            <div class="value" id="metricAvg"></div>
+    </section>
+
+    <section class="scenario-selector">
+        <div class="selector-head">
+            <span class="panel-label">Scenario selector surface</span>
+            <h3>Pilih skenario kebijakan atau kondisi makro</h3>
+            <p>Selector ini mengubah baseline nasional, menghitung ulang dampak relatif, lalu menurunkannya ke pembanding wilayah secara deterministik.</p>
         </div>
-        <div class="result-metric">
-            <div class="label">Dampak per Provinsi</div>
-            <div class="value" id="metricProv"></div>
+        <div class="selector-grid" id="scenariosGrid"></div>
+    </section>
+
+    <section class="scenario-layout">
+        <div class="scenario-main">
+            <div class="panel-head">
+                <span class="panel-label">Impact summary panel</span>
+                <h3 id="scenarioTitle">Memuat analisis skenario</h3>
+                <p id="scenarioDescription">Workspace akan terisi setelah satu skenario dipilih.</p>
+            </div>
+
+            <div id="scenarioState">
+                <div class="scenario-loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Menyiapkan baseline aktif dan analisis skenario...</p>
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="result-chart"><canvas id="resultChart"></canvas></div>
-    <div class="result-desc">
-        <h4><i class="fas fa-info-circle" style="color:var(--accent-primary)"></i> Interpretasi</h4>
-        <p id="resultInterp"></p>
-    </div>
-</div>
+
+        <aside class="scenario-side">
+            <div class="side-head">
+                <span class="panel-label">Analyst rail</span>
+                <h3>Asumsi, interpretasi, dan wilayah terdampak</h3>
+                <p>Panel ini merangkum perubahan asumsi skenario, pembacaan nasional, serta provinsi dengan perubahan relatif paling menonjol.</p>
+            </div>
+
+            <div class="scenario-panel">
+                <div class="panel-head">
+                    <span class="panel-label">Asumsi skenario</span>
+                    <h3>Perubahan input</h3>
+                </div>
+                <div class="scenario-panel-list" id="scenarioAssumptions">
+                    <div class="scenario-panel-item">Menunggu skenario aktif.</div>
+                </div>
+            </div>
+
+            <div class="scenario-panel">
+                <div class="panel-head">
+                    <span class="panel-label">Interpretasi</span>
+                    <h3>Makna headline</h3>
+                </div>
+                <div class="scenario-panel-list" id="scenarioInterpretation">
+                    <div class="scenario-panel-item">Interpretasi nasional akan muncul di sini.</div>
+                </div>
+            </div>
+
+            <div class="scenario-panel">
+                <div class="panel-head">
+                    <span class="panel-label">Provinsi terdampak</span>
+                    <h3>Perubahan relatif terbesar</h3>
+                </div>
+                <div class="impact-list" id="scenarioTopImpacts">
+                    <div class="scenario-panel-item">Daftar wilayah akan terisi setelah analisis dijalankan.</div>
+                </div>
+            </div>
+
+            <div class="scenario-panel">
+                <div class="panel-head">
+                    <span class="panel-label">Limitasi</span>
+                    <h3>Batas pembacaan</h3>
+                </div>
+                <div class="scenario-panel-list" id="scenarioLimitations">
+                    <div class="scenario-panel-item">Catatan metodologis akan muncul bersama hasil skenario.</div>
+                </div>
+            </div>
+        </aside>
+    </section>
+</section>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 const SCENARIOS = [
     {
-        id: 'ump_up', name: 'UMP Naik 10%', icon: 'fa-arrow-up', iconClass: 'pos',
-        desc: 'Simulasi dampak kenaikan Upah Minimum Provinsi sebesar 10% terhadap daya beli.',
-        params: ['UMP +10%', 'Inflasi tetap', 'TPT tetap'],
-        change: +4.7, direction: 'pos',
-        interp: 'Kenaikan UMP 10% meningkatkan daya beli rata-rata 4.7%. Efek paling besar dirasakan provinsi dengan UMP rendah, karena proporsi kenaikan lebih signifikan terhadap pengeluaran.'
+        id: 'inflation_shock',
+        title: 'Tekanan inflasi naik',
+        description: 'Uji respons ketika inflasi tahunan bertambah 1,5 poin.',
+        icon: 'fa-percent',
+        tone: 'amber',
+        tag: 'Harga'
     },
     {
-        id: 'ump_inflasi', name: 'UMP +10% & Inflasi +5%', icon: 'fa-balance-scale', iconClass: 'pos',
-        desc: 'Kombinasi kenaikan UMP dan inflasi. Apakah kenaikan upah mampu menutup dampak inflasi?',
-        params: ['UMP +10%', 'Inflasi +5%'],
-        change: +4.9, direction: 'pos',
-        interp: 'Meskipun inflasi naik 5%, kenaikan UMP 10% tetap mampu meningkatkan daya beli sebesar 4.9%. Ini menunjukkan bahwa kebijakan UMP yang tepat dapat melindungi daya beli dari inflasi.'
+        id: 'income_support',
+        title: 'Kompensasi pendapatan',
+        description: 'Baca penguatan daya beli saat UMP aktif dinaikkan 8%.',
+        icon: 'fa-arrow-trend-up',
+        tone: 'teal',
+        tag: 'Pendapatan'
     },
     {
-        id: 'inflasi_up', name: 'Inflasi Naik 5%', icon: 'fa-percentage', iconClass: 'neg',
-        desc: 'Simulasi dampak kenaikan inflasi 5% terhadap daya beli riil masyarakat.',
-        params: ['Inflasi +5%', 'UMP tetap'],
-        change: -3.8, direction: 'neg',
-        interp: 'Kenaikan inflasi tanpa penyesuaian pendapatan cenderung menekan daya beli riil. Dalam pembacaan model aktif, efeknya dibaca sebagai penyempitan ruang belanja riil rumah tangga.'
+        id: 'balanced_support',
+        title: 'Pendapatan vs inflasi',
+        description: 'Uji apakah kenaikan pendapatan tetap mampu menjaga konsumsi riil.',
+        icon: 'fa-scale-balanced',
+        tone: 'blue',
+        tag: 'Kombinasi'
     },
     {
-        id: 'resesi', name: 'Resesi Ekonomi (TPT ×3)', icon: 'fa-exclamation-triangle', iconClass: 'neg',
-        desc: 'Simulasi dampak resesi ekonomi di mana Tingkat Pengangguran Terbuka naik 3x lipat.',
-        params: ['TPT ×3', 'PDRB turun', 'UMP tetap'],
-        change: -56.0, direction: 'neg',
-        interp: 'Resesi dengan TPT naik 3x menyebabkan penurunan daya beli drastis 56%. Ini menunjukkan bahwa pengangguran adalah faktor paling berpengaruh terhadap daya beli masyarakat.'
+        id: 'growth_slowdown',
+        title: 'Perlambatan pertumbuhan',
+        description: 'Simulasi ketika output riil melemah dan TPT meningkat.',
+        icon: 'fa-chart-line',
+        tone: 'violet',
+        tag: 'Aktivitas'
     },
     {
-        id: 'pdrb_down', name: 'PDRB Turun 20%', icon: 'fa-chart-line', iconClass: 'neg',
-        desc: 'Simulasi dampak penurunan Produk Domestik Regional Bruto (PDRB) sebesar 20%.',
-        params: ['PDRB -20%', 'UMP tetap', 'TPT tetap'],
-        change: -5.3, direction: 'neg',
-        interp: 'Penurunan PDRB 20% menurunkan daya beli 5.3%. PDRB adalah indikator pertumbuhan ekonomi — ketika ekonomi kontraksi, daya beli masyarakat ikut turun.'
-    },
-    {
-        id: 'custom', name: 'Skenario Kustom', icon: 'fa-sliders-h', iconClass: 'neu',
-        desc: 'Buat skenario Anda sendiri dengan mengatur parameter UMP, Inflasi, TPT, dan PDRB.',
-        params: ['Kustom'],
-        change: 0, direction: 'neu',
-        interp: 'Gunakan slider di halaman Daya Beli untuk membuat skenario kustom dengan parameter yang Anda tentukan sendiri.'
+        id: 'custom',
+        title: 'Skenario kustom',
+        description: 'Lanjutkan ke modul Daya Beli untuk mengatur asumsi wilayah secara manual.',
+        icon: 'fa-sliders',
+        tone: 'blue',
+        tag: 'Lanjutan'
     }
 ];
 
-const grid = document.getElementById('scenariosGrid');
-SCENARIOS.forEach((s, i) => {
-    const card = document.createElement('div');
-    card.className = 'scenario-card';
-    card.setAttribute('data-aos', 'fade-up');
-    card.setAttribute('data-aos-delay', String(i * 100));
-    card.innerHTML = `
-        <div class="sc-icon ${s.iconClass}"><i class="fas ${s.icon}"></i></div>
-        <h3>${s.name}</h3>
-        <p>${s.desc}</p>
-        <div class="sc-params">${s.params.map(p => `<span class="sc-param">${p}</span>`).join('')}</div>`;
-    card.addEventListener('click', () => selectScenario(s));
-    grid.appendChild(card);
-});
+let activeScenarioId = 'inflation_shock';
+let scenarioChart = null;
 
-let resultChart = null;
-function selectScenario(s) {
-    document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+function formatCurrency(value) {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) return '-';
+    const numeric = Number(value);
+    if (numeric >= 1000000) return `Rp ${(numeric / 1000000).toFixed(2).replace('.', ',')} jt`;
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0
+    }).format(numeric);
+}
 
-    const panel = document.getElementById('resultPanel');
-    panel.classList.add('active');
-    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+function formatPct(value) {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) return '-';
+    const numeric = Number(value);
+    return `${numeric >= 0 ? '+' : ''}${numeric.toFixed(2).replace('.', ',')}%`;
+}
 
-    document.getElementById('resultTitle').textContent = s.name;
-    document.getElementById('resultSubtitle').textContent = s.desc;
+function toneClass(value) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return 'neutral';
+    if (numeric > 0.2) return 'positive';
+    if (numeric < -0.2) return 'negative';
+    return 'neutral';
+}
 
-    const badge = document.getElementById('resultBadge');
-    if (s.direction === 'neu') {
-        badge.className = 'result-badge positive';
-        badge.textContent = 'Kustom';
-        document.getElementById('metricChange').textContent = '-';
-        document.getElementById('metricChange').className = 'value';
-    } else {
-        badge.className = `result-badge ${s.change >= 0 ? 'positive' : 'negative'}`;
-        badge.textContent = s.change >= 0 ? `+${s.change}%` : `${s.change}%`;
-        document.getElementById('metricChange').textContent = (s.change >= 0 ? '+' : '') + s.change.toFixed(1) + '%';
-        document.getElementById('metricChange').className = `value ${s.change >= 0 ? 'pos' : 'neg'}`;
+function renderScenarioCards() {
+    const grid = document.getElementById('scenariosGrid');
+    grid.innerHTML = SCENARIOS.map((scenario) => `
+        <button
+            type="button"
+            class="scenario-card ${scenario.id === 'custom' ? 'custom' : ''} ${scenario.id === activeScenarioId ? 'active' : ''}"
+            data-scenario="${scenario.id}">
+            <div class="scenario-card-top">
+                <div class="scenario-icon ${scenario.tone}">
+                    <i class="fas ${scenario.icon}"></i>
+                </div>
+                <span class="scenario-tag">${scenario.tag}</span>
+            </div>
+            <div>
+                <h4>${scenario.title}</h4>
+                <p>${scenario.description}</p>
+            </div>
+        </button>
+    `).join('');
+
+    grid.querySelectorAll('.scenario-card').forEach((card) => {
+        card.addEventListener('click', () => {
+            const scenarioId = card.dataset.scenario;
+            if (scenarioId === 'custom') {
+                window.location.href = '/daya-beli/';
+                return;
+            }
+            activeScenarioId = scenarioId;
+            renderScenarioCards();
+            loadScenarioAnalysis(scenarioId);
+        });
+    });
+}
+
+function setScenarioState(type, message) {
+    const root = document.getElementById('scenarioState');
+    if (type === 'loading') {
+        root.innerHTML = `
+            <div class="scenario-loading">
+                <i class="fas fa-spinner"></i>
+                <p>${message}</p>
+            </div>
+        `;
+        return;
     }
+    if (type === 'error') {
+        root.innerHTML = `
+            <div class="scenario-error">
+                <i class="fas fa-circle-exclamation"></i>
+                <p>${message}</p>
+            </div>
+        `;
+        return;
+    }
+    root.innerHTML = `
+        <div class="scenario-empty">
+            <i class="fas fa-chart-column"></i>
+            <p>${message}</p>
+        </div>
+    `;
+}
 
-    const baseAvg = 1450000;
-    const newAvg = baseAvg * (1 + s.change / 100);
-    document.getElementById('metricAvg').textContent = 'Rp ' + Math.round(newAvg).toLocaleString();
-    document.getElementById('metricProv').textContent = '38 provinsi';
-    document.getElementById('resultInterp').textContent = s.interp;
+function renderScenarioChart(payload) {
+    const series = payload.series || {};
+    const ctx = document.getElementById('scenarioChart').getContext('2d');
+    if (scenarioChart) scenarioChart.destroy();
 
-    // Chart: before vs after for top 8 provinces
-    const provs = ['DKI Jakarta','Jawa Timur','Jawa Barat','Jawa Tengah','Sumatera Utara','Bali','Kalimantan Timur','Sulawesi Selatan'];
-    const before = provs.map(() => baseAvg + (Math.random() - 0.3) * 800000);
-    const after = before.map(v => v * (1 + s.change / 100));
-
-    if (resultChart) resultChart.destroy();
-    const ctx = document.getElementById('resultChart').getContext('2d');
-    resultChart = new Chart(ctx, {
+    scenarioChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: provs,
+            labels: series.labels || [],
             datasets: [
-                { label: 'Sebelum', data: before, backgroundColor: 'rgba(120, 123, 134, 0.4)', borderColor: 'rgba(120, 123, 134, 0.6)', borderWidth: 1, borderRadius: 4 },
-                { label: 'Sesudah', data: after, backgroundColor: s.change >= 0 ? 'rgba(38, 166, 154, 0.6)' : 'rgba(239, 83, 80, 0.6)', borderColor: s.change >= 0 ? 'rgba(38, 166, 154, 0.9)' : 'rgba(239, 83, 80, 0.9)', borderWidth: 1, borderRadius: 4 }
+                {
+                    label: 'Baseline',
+                    data: series.baseline || [],
+                    backgroundColor: 'rgba(120, 123, 134, 0.18)',
+                    borderColor: 'rgba(120, 123, 134, 0.46)',
+                    borderWidth: 1,
+                    borderRadius: 8
+                },
+                {
+                    label: 'Skenario',
+                    data: series.scenario || [],
+                    backgroundColor: 'rgba(41, 98, 255, 0.28)',
+                    borderColor: 'rgba(41, 98, 255, 0.78)',
+                    borderWidth: 1,
+                    borderRadius: 8
+                }
             ]
         },
         options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { labels: { color: '#5D606B', font: { size: 12 } } } },
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#5D606B',
+                        usePointStyle: true,
+                        boxWidth: 8,
+                        padding: 16,
+                        font: { weight: 600, size: 11 }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#FFFFFF',
+                    titleColor: '#131722',
+                    bodyColor: '#5D606B',
+                    borderColor: '#E0E3EB',
+                    borderWidth: 1,
+                    callbacks: {
+                        label(context) {
+                            return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`;
+                        }
+                    }
+                }
+            },
             scales: {
-                x: { ticks: { color: '#5D606B', maxRotation: 45, font: { size: 11 } }, grid: { color: 'rgba(224, 227, 235, 0.8)' } },
-                y: { ticks: { color: '#5D606B', font: { size: 11 }, callback: v => 'Rp ' + (v/1000).toFixed(0) + 'k' }, grid: { color: 'rgba(224, 227, 235, 0.8)' } }
+                x: {
+                    ticks: { color: '#7D8797', maxRotation: 0, autoSkip: false },
+                    grid: { display: false }
+                },
+                y: {
+                    ticks: {
+                        color: '#7D8797',
+                        callback: (value) => formatCurrency(value)
+                    },
+                    grid: { color: 'rgba(224, 227, 235, 0.72)', drawBorder: false }
+                }
             }
         }
     });
 }
 
-// Handle custom scenario
-grid.lastChild.addEventListener('click', () => { window.location.href = '/daya-beli/'; });
+function renderScenarioPayload(payload) {
+    document.getElementById('scenarioTitle').textContent = payload.title;
+    document.getElementById('scenarioDescription').textContent = payload.description;
+
+    const changeClass = toneClass(payload.change_pct);
+
+    document.getElementById('scenarioState').innerHTML = `
+        <div class="scenario-metrics">
+            <div class="scenario-metric">
+                <span>Baseline nasional</span>
+                <strong>${formatCurrency(payload.baseline_value)}</strong>
+            </div>
+            <div class="scenario-metric">
+                <span>Hasil skenario</span>
+                <strong>${formatCurrency(payload.scenario_value)}</strong>
+            </div>
+            <div class="scenario-metric">
+                <span>Perubahan relatif</span>
+                <strong class="${changeClass}">${formatPct(payload.change_pct)}</strong>
+            </div>
+        </div>
+        <div class="scenario-meta-strip">
+            <span class="meta-pill">${payload.coverage_label}</span>
+            <span class="meta-pill">Baseline data ${payload.baseline_year}</span>
+            <span class="meta-pill">Status: ${payload.status_label}</span>
+        </div>
+        <article class="scenario-panel">
+            <div class="panel-head">
+                <span class="panel-label">Before vs after chart</span>
+                <h3>Sebelum dan sesudah skenario</h3>
+                <p>${payload.series.focus}. Perbandingan ini membantu membaca distribusi perubahan, bukan hanya headline nasional.</p>
+            </div>
+            <div class="scenario-chart-wrap"><canvas id="scenarioChart"></canvas></div>
+        </article>
+    `;
+
+    document.getElementById('scenarioAssumptions').innerHTML = (payload.assumptions || []).map((item) => `
+        <div class="scenario-panel-item">${item}</div>
+    `).join('');
+
+    document.getElementById('scenarioInterpretation').innerHTML = `
+        <div class="scenario-panel-item"><strong>Interpretasi nasional.</strong> ${payload.interpretation}</div>
+    `;
+
+    document.getElementById('scenarioLimitations').innerHTML = (payload.limitations || []).map((item) => `
+        <div class="scenario-panel-item">${item}</div>
+    `).join('');
+
+    const featuredImpacts = (payload.province_impacts || []).slice(0, 5);
+    document.getElementById('scenarioTopImpacts').innerHTML = featuredImpacts.map((item) => `
+        <div class="impact-item">
+            <div>
+                <strong>${item.province}</strong>
+                <span>${formatCurrency(item.baseline_value)} -> ${formatCurrency(item.scenario_value)}</span>
+            </div>
+            <div class="impact-change ${toneClass(item.change_pct)}">${formatPct(item.change_pct)}</div>
+        </div>
+    `).join('');
+
+    renderScenarioChart(payload);
+}
+
+async function loadScenarioAnalysis(scenarioId) {
+    setScenarioState('loading', 'Menghitung dampak skenario dari baseline model aktif...');
+    try {
+        const response = await fetch(`/api/scenario-analysis/?scenario_id=${encodeURIComponent(scenarioId)}`, {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache' }
+        });
+        if (!response.ok) {
+            throw new Error('Scenario API error ' + response.status);
+        }
+        const payload = await response.json();
+        renderScenarioPayload(payload);
+    } catch (error) {
+        console.error(error);
+        setScenarioState('error', 'Analisis skenario tidak berhasil dimuat. Silakan coba ulang beberapa saat lagi.');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    renderScenarioCards();
+    await loadScenarioAnalysis(activeScenarioId);
+});
 </script>
 {% endblock %}
