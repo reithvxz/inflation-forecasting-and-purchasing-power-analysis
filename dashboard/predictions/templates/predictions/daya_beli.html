@@ -1,6 +1,6 @@
 {% extends 'predictions/base.html' %}
 
-{% block page_title %}Simulasi Daya Beli Berbasis Model{% endblock %}
+{% block page_title %}Simulasi Proksi Daya Beli{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -250,6 +250,48 @@
         background: rgba(239, 83, 80, 0.12);
         color: var(--negative);
     }
+    .result-interpretation,
+    .result-limitations {
+        padding: 16px;
+        border-radius: 14px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 18px;
+    }
+    .result-interpretation {
+        background: linear-gradient(180deg, rgba(41, 98, 255, 0.06), #ffffff 100%);
+        border-color: rgba(41, 98, 255, 0.18);
+    }
+    .result-limitations {
+        background: linear-gradient(180deg, rgba(255, 179, 0, 0.08), #ffffff 100%);
+        border-color: rgba(255, 179, 0, 0.22);
+    }
+    .result-section-title {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+        color: var(--text-tertiary);
+        margin-bottom: 8px;
+    }
+    .interpretation-highlight {
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        line-height: 1.35;
+    }
+    .result-interpretation p,
+    .result-limitations li {
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.65;
+    }
+    .result-limitations ul {
+        padding-left: 18px;
+        display: grid;
+        gap: 8px;
+    }
     .result-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -338,7 +380,7 @@
             <div class="sim-head">
                 <div>
                     <div class="sim-kicker">Full model inference</div>
-                    <h2>Simulasi pengeluaran riil per kapita sebagai proksi daya beli</h2>
+                    <h2>Simulasi pengeluaran riil per kapita untuk membaca proksi daya beli</h2>
                     <p>
                         Simulasi ini memakai baseline wilayah terbaru, termasuk agregat nasional Indonesia, lalu menjalankan inferensi penuh pada pipeline
                         Ridge Regression. Setiap perubahan input memicu pembentukan ulang fitur turunan sebelum estimasi dihitung,
@@ -430,7 +472,7 @@
         </div>
 
         <div class="sim-note">
-            <h3>Cara baca hasil</h3>
+            <h3>Definisi output</h3>
             <p>
                 Angka yang muncul adalah estimasi pengeluaran riil per kapita per bulan. Karena target ini berasal dari
                 struktur pengeluaran rumah tangga, hasilnya paling tepat dibaca sebagai proksi daya beli, bukan ukuran
@@ -443,6 +485,14 @@
         <div class="result-label">{{ ridge_target_label }}</div>
         <div class="result-value" id="resultValue">Rp 0</div>
         <div class="result-status stabil" id="resultStatus">stabil</div>
+
+        <div class="result-interpretation">
+            <div class="result-section-title">Interpretasi utama</div>
+            <div class="interpretation-highlight" id="resultDelta">Menunggu hasil simulasi aktif.</div>
+            <p id="resultInterpretation">
+                Panel ini akan merangkum apakah skenario yang dipilih cenderung menekan, menjaga, atau memperkuat proksi daya beli relatif terhadap baseline wilayah.
+            </p>
+        </div>
 
         <div class="result-grid">
             <div class="result-item">
@@ -471,6 +521,15 @@
 
         <div class="result-label" style="margin-top: 10px;">Input aktif yang dipakai model</div>
         <div class="chip-list" id="inputsUsed"></div>
+
+        <div class="result-limitations">
+            <div class="result-section-title">Batasan model</div>
+            <ul>
+                <li>Artefak aktif memakai data tahunan 2021-2025, sehingga pembacaan model lebih kuat untuk arah perubahan dibanding presisi nominal yang sangat detail.</li>
+                <li>Output dibaca sebagai estimasi pengeluaran riil per kapita per bulan yang dipakai sebagai proksi daya beli, bukan ukuran daya beli teoritis murni.</li>
+                <li>Perubahan wilayah, inflasi, upah, TPT, dan PDRB memberi gambaran skenario komparatif; keputusan substantif tetap perlu dibaca bersama konteks ekonomi daerah.</li>
+            </ul>
+        </div>
     </aside>
 </section>
 {% endblock %}
@@ -514,6 +573,8 @@
         const resultYear = document.getElementById('resultYear');
         const resultBaseline = document.getElementById('resultBaseline');
         const resultMode = document.getElementById('resultMode');
+        const resultDelta = document.getElementById('resultDelta');
+        const resultInterpretation = document.getElementById('resultInterpretation');
         const inputsUsed = document.getElementById('inputsUsed');
         const simLoading = document.getElementById('simLoading');
         const simError = document.getElementById('simError');
@@ -577,6 +638,16 @@
         }
 
         function renderResult(data, modeLabel) {
+            const baseline = Number(data.baseline_pengeluaran || 0);
+            const predicted = Number(data.predicted_pengeluaran || 0);
+            const deltaPct = baseline > 0 ? ((predicted - baseline) / baseline) * 100 : 0;
+            let interpretationText = 'Skenario ini menjaga posisi pengeluaran riil per kapita tetap dekat dengan baseline wilayah.';
+            if (data.status_label === 'meningkat') {
+                interpretationText = 'Skenario ini mengindikasikan ruang belanja riil yang lebih kuat dibanding baseline wilayah aktif.';
+            } else if (data.status_label === 'menurun') {
+                interpretationText = 'Skenario ini mengindikasikan tekanan terhadap ruang belanja riil dibanding baseline wilayah aktif.';
+            }
+
             resultValue.textContent = formatCurrency(data.predicted_pengeluaran);
             resultProvince.textContent = data.province;
             resultYear.textContent = data.baseline_year;
@@ -584,6 +655,8 @@
             resultMode.textContent = modeLabel;
             resultStatus.textContent = data.status_label;
             resultStatus.className = `result-status ${data.status_label}`;
+            resultDelta.textContent = `${formatNumber(Math.abs(deltaPct), 2)}% ${deltaPct >= 0 ? 'di atas' : 'di bawah'} baseline ${data.province}`;
+            resultInterpretation.textContent = `${interpretationText} Tahun baseline yang dipakai adalah ${data.baseline_year}.`;
             renderInputsChips(data.inputs_used || {});
         }
 

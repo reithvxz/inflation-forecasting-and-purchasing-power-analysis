@@ -1,7 +1,7 @@
 {% extends 'predictions/base.html' %}
 {% load static %}
 
-{% block page_title %}Peta Indonesia - Economic Data{% endblock %}
+{% block page_title %}Peta Ekonomi Indonesia{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -30,6 +30,7 @@
         display: flex;
         align-items: center;
         gap: 12px;
+        flex-wrap: wrap;
         min-width: 0;
     }
 
@@ -63,6 +64,9 @@
         border-color: #2962ff;
         outline: none;
         box-shadow: 0 0 0 3px rgba(41, 98, 255, 0.1);
+    }
+    .year-select {
+        min-width: 150px;
     }
 
     .data-status {
@@ -510,6 +514,10 @@
                     <option value="Pct_Penduduk_Miskin">% Penduduk Miskin</option>
                 </select>
             </div>
+            <div class="metric-field">
+                <label for="mapYear">Tahun data</label>
+                <select id="mapYear" class="metric-select year-select"></select>
+            </div>
             <div class="data-status">
                 <span class="data-status-dot" aria-hidden="true"></span>
                 <span id="dataStatusText">Memuat data provinsi...</span>
@@ -573,6 +581,8 @@ let heatLayer;
 let indonesiaBounds;
 let provinceData = {};
 let latestYear = '';
+let selectedYear = '';
+let availableYears = [];
 let activeMetric = 'Total_Pengeluaran_Riil';
 let activeStats = null;
 const provinceLayers = {};
@@ -746,7 +756,7 @@ function updateLegend() {
     document.getElementById('mapLegend').innerHTML = `
         <div class="legend-heading">
             <span>${METRIC_INFO[activeMetric].label}</span>
-            <span>${latestYear || 'Data terbaru'}</span>
+            <span>${selectedYear || latestYear || 'Data terbaru'}</span>
         </div>
         <div class="legend-gradient"></div>
         <div class="legend-labels">
@@ -763,7 +773,7 @@ function updateSummary(values) {
     document.getElementById('mapSummary').innerHTML = `
         <span class="insight-eyebrow">Ringkasan nasional</span>
         <h2 class="insight-title">${METRIC_INFO[activeMetric].label}</h2>
-        <p class="insight-copy">${METRIC_INFO[activeMetric].description} berdasarkan data ${latestYear || 'terbaru'}.</p>
+        <p class="insight-copy">${METRIC_INFO[activeMetric].description} berdasarkan data ${selectedYear || latestYear || 'terbaru'}.</p>
         <div class="summary-value">${formatValue(activeStats.average)}</div>
         <div class="summary-label">Rata-rata dari ${values.length} provinsi</div>
         <div class="summary-range">
@@ -875,6 +885,37 @@ function resetMapView() {
     }
 }
 
+function populateYearOptions() {
+    const yearSelect = document.getElementById('mapYear');
+    if (!yearSelect) return;
+    yearSelect.innerHTML = availableYears
+        .map((year) => `<option value="${year}">${year}</option>`)
+        .join('');
+    yearSelect.value = String(selectedYear || latestYear || '');
+}
+
+async function refreshMetricSnapshot(year = null) {
+    const params = new URLSearchParams();
+    if (year !== null && year !== undefined && year !== '') {
+        params.set('year', year);
+    }
+    const url = `/api/metrics-latest/${params.toString() ? `?${params.toString()}` : ''}`;
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) {
+        throw new Error('Map data could not be loaded');
+    }
+
+    const metrics = await response.json();
+    provinceData = metrics.provinces || {};
+    latestYear = metrics.latest_year || '';
+    selectedYear = metrics.selected_year || latestYear || '';
+    availableYears = metrics.available_years || (selectedYear ? [selectedYear] : []);
+    populateYearOptions();
+    updateMap();
+    document.getElementById('dataStatusText').textContent =
+        `${Object.keys(provinceData).length} provinsi - data ${selectedYear || latestYear || 'terbaru'}`;
+}
+
 async function initializeMap() {
     map = L.map('map', {
         center: [-2.4, 118],
@@ -897,18 +938,12 @@ async function initializeMap() {
     }).addTo(map);
 
     try {
-        const [metricsResponse, geoResponse] = await Promise.all([
-            fetch('/api/metrics-latest/'),
-            fetch(GEOJSON_URL)
-        ]);
-        if (!metricsResponse.ok || !geoResponse.ok) {
+        const geoResponse = await fetch(GEOJSON_URL);
+        if (!geoResponse.ok) {
             throw new Error('Map data could not be loaded');
         }
 
-        const metrics = await metricsResponse.json();
         const geoJson = await geoResponse.json();
-        provinceData = metrics.provinces || metrics;
-        latestYear = metrics.latest_year || '';
 
         geoJsonLayer = L.geoJSON(geoJson, {
             style: polygonStyle,
@@ -917,10 +952,8 @@ async function initializeMap() {
 
         indonesiaBounds = geoJsonLayer.getBounds();
         resetMapView();
-        updateMap();
+        await refreshMetricSnapshot();
 
-        document.getElementById('dataStatusText').textContent =
-            `${geoJson.features.length} provinsi - data ${latestYear || 'terbaru'}`;
         document.getElementById('mapLoading').classList.add('is-hidden');
     } catch (error) {
         console.error('Failed to initialize economic map:', error);
@@ -935,6 +968,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('mapMetric').addEventListener('change', (event) => {
         activeMetric = event.target.value;
         updateMap();
+    });
+    document.getElementById('mapYear').addEventListener('change', async (event) => {
+        try {
+            document.getElementById('dataStatusText').textContent = `Memuat data ${event.target.value}...`;
+            await refreshMetricSnapshot(event.target.value);
+        } catch (error) {
+            console.error('Failed to update map year:', error);
+            document.getElementById('dataStatusText').textContent = 'Data tahun tidak tersedia';
+        }
     });
     document.getElementById('resetMapView').addEventListener('click', resetMapView);
     initializeMap();

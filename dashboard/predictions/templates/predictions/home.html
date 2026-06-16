@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoDash — Prediksi Inflasi & Daya Beli Indonesia</title>
+    <title>EcoDash - Forecast Inflasi dan Proksi Daya Beli Indonesia</title>
     <link rel="icon" type="image/svg+xml" href="{% static 'predictions/img/favicon.svg' %}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -377,6 +377,33 @@
             line-height: 1.6;
         }
 
+        .hero-quickstrip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            max-width: 720px;
+        }
+        .hero-quickitem {
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(41, 98, 255, 0.12);
+            box-shadow: var(--shadow-sm);
+        }
+        .hero-quickitem strong {
+            display: block;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+        .hero-quickitem span {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -394,6 +421,25 @@
         .stat-card {
             padding: 20px;
             transition: all 0.18s ease;
+        }
+        .stat-card.primary {
+            grid-column: span 2;
+            background:
+                radial-gradient(circle at top right, rgba(41, 98, 255, 0.10), transparent 34%),
+                linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+            border-color: rgba(41, 98, 255, 0.18);
+            box-shadow: var(--shadow-md);
+        }
+        .stat-card.primary .stat-note {
+            max-width: 420px;
+        }
+        .stat-card.semantic-teal {
+            background: linear-gradient(180deg, #ffffff 0%, rgba(38, 166, 154, 0.05) 100%);
+            border-color: rgba(38, 166, 154, 0.16);
+        }
+        .stat-card.semantic-violet {
+            background: linear-gradient(180deg, #ffffff 0%, rgba(171, 71, 188, 0.05) 100%);
+            border-color: rgba(171, 71, 188, 0.16);
         }
         .stat-card:hover,
         .feature-card:hover {
@@ -443,6 +489,10 @@
         .feature-card {
             padding: 24px;
             transition: all 0.18s ease;
+        }
+        .feature-card.priority {
+            border-color: rgba(41, 98, 255, 0.18);
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
         }
         .feature-icon {
             width: 46px;
@@ -581,11 +631,17 @@
             .flow-grid {
                 grid-template-columns: 1fr 1fr;
             }
+            .hero-quickstrip {
+                grid-template-columns: 1fr;
+            }
             .features-grid {
                 grid-template-columns: 1fr 1fr;
             }
             .hero-grid {
                 align-items: start;
+            }
+            .stat-card.primary {
+                grid-column: auto;
             }
         }
         @media (max-width: 760px) {
@@ -605,6 +661,7 @@
             .features-grid,
             .flow-grid,
             .terminal-panels,
+            .hero-quickstrip,
             .footer-strip {
                 grid-template-columns: 1fr;
                 display: grid;
@@ -625,8 +682,8 @@
             <h2>EcoDash</h2>
         </div>
         <ul class="lp-nav-links">
-            <li><a href="#features">Fitur</a></li>
-            <li><a href="#flow">Pipeline</a></li>
+            <li><a href="{% url 'forecasting' %}">Forecasting</a></li>
+            <li><a href="{% url 'daya_beli' %}">Daya Beli</a></li>
             <li><a href="{% url 'guide' %}">Panduan</a></li>
             <li><a href="{% url 'landing' %}" class="nav-cta">Buka Dashboard</a></li>
         </ul>
@@ -667,8 +724,8 @@
                     <span class="accent">proyeksikan arah berikutnya.</span>
                 </h1>
                 <p>
-                    Platform analitik untuk membaca inflasi, kurs, dan daya beli Indonesia dengan
-                    pipeline data resmi, forecasting multivariat, dan simulasi ekonomi berbasis model.
+                    Platform analitik untuk memantau inflasi, kurs, dan proksi daya beli Indonesia
+                    dengan data resmi, forecast multi-horizon, serta simulasi wilayah berbasis model.
                 </p>
                 <div class="hero-buttons">
                     <a href="{% url 'landing' %}" class="btn-hero primary">
@@ -677,9 +734,23 @@
                     <a href="{% url 'forecasting' %}" class="btn-hero secondary">
                         <i class="fas fa-wave-square"></i> Lihat Forecasting
                     </a>
-                    <a href="{% url 'guide' %}" class="btn-hero secondary">
-                        <i class="fas fa-book-open"></i> Referensi Pembacaan
+                    <a href="{% url 'daya_beli' %}" class="btn-hero secondary">
+                        <i class="fas fa-wallet"></i> Buka Daya Beli
                     </a>
+                </div>
+                <div class="hero-quickstrip">
+                    <div class="hero-quickitem">
+                        <strong>{{ inflasi_pred|floatformat:2 }}%</strong>
+                        <span>Headline forecast publik horizon {{ public_horizon_label }} dari pipeline aktif.</span>
+                    </div>
+                    <div class="hero-quickitem">
+                        <strong>R^2 {{ ridge_test_r2|floatformat:3 }}</strong>
+                        <span>Koefisien determinasi uji untuk model proksi daya beli riil.</span>
+                    </div>
+                    <div class="hero-quickitem">
+                        <strong>{{ province_count }} wilayah</strong>
+                        <span>Baseline terbaru siap dipakai untuk pembacaan provinsi dan agregat nasional.</span>
+                    </div>
                 </div>
                 <div class="hero-note">
                     Dirancang untuk analisis akademik, pembacaan kebijakan, dan demonstrasi profesional.
@@ -724,20 +795,21 @@
             <div class="section-header reveal">
                 <span class="tag">Live Indicators</span>
                 <h2>Key Economic Metrics</h2>
-                <p>Indikator utama yang paling cepat memberi konteks sebelum masuk ke dashboard operasional.</p>
+                <p>Susun pembacaan dari headline forecast, kualitas model, kurs, lalu cakupan wilayah sebelum masuk ke ruang kerja operasional.</p>
             </div>
             <div class="stats-grid stagger">
-                <div class="stat-card" data-parallax="0.05">
+                <div class="stat-card primary" data-parallax="0.05">
                     <div class="stat-label">Forecast publik horizon {{ public_horizon_label }}</div>
                     <div class="stat-value" style="color: var(--accent-primary);">{{ inflasi_pred|floatformat:2 }}%</div>
                     <div class="stat-change up"><i class="fas fa-chart-line"></i> Model utama {{ inflasi_model_name }}</div>
-                    <div class="stat-note">Rentang estimasi saat ini {{ inflasi_interval_lower|floatformat:2 }}% sampai {{ inflasi_interval_upper|floatformat:2 }}%.</div>
+                    <div class="stat-note">Rentang estimasi aktif berada pada {{ inflasi_interval_lower|floatformat:2 }}% sampai {{ inflasi_interval_upper|floatformat:2 }}%. Gunakan sebagai headline arah jangka dekat sebelum membaca detail horizon lain.</div>
                     <div class="stat-spark"><canvas id="spark-inflasi"></canvas></div>
                 </div>
-                <div class="stat-card" data-parallax="0.08">
+                <div class="stat-card semantic-teal" data-parallax="0.08">
                     <div class="stat-label">R^2 uji model daya beli riil</div>
                     <div class="stat-value" style="color: var(--positive);">{{ ridge_test_r2|floatformat:3 }}</div>
                     <div class="stat-change up"><i class="fas fa-check-circle"></i> MAE uji sekitar Rp {{ ridge_test_mae|floatformat:0 }}</div>
+                    <div class="stat-note">Panel ini menjelaskan kestabilan model estimasi pengeluaran riil per kapita yang dipakai sebagai proksi daya beli.</div>
                     <div class="stat-spark"><canvas id="spark-r2"></canvas></div>
                 </div>
                 <div class="stat-card" data-parallax="0.11">
@@ -747,10 +819,11 @@
                     <div class="stat-note" id="home-usd-fetched-at">Tanggal data diambil: -</div>
                     <div class="stat-spark"><canvas id="spark-usd"></canvas></div>
                 </div>
-                <div class="stat-card" data-parallax="0.14">
+                <div class="stat-card semantic-violet" data-parallax="0.14">
                     <div class="stat-label">Provinsi Tercakup</div>
                     <div class="stat-value" style="color: var(--accent-tertiary);">{{ province_count }}</div>
-                    <div class="stat-change flat"><i class="fas fa-map"></i> Baseline terbaru per provinsi</div>
+                    <div class="stat-change flat"><i class="fas fa-map"></i> Baseline wilayah aktif</div>
+                    <div class="stat-note">Cakupan ini dipakai untuk simulasi wilayah, pembacaan peta ekonomi, dan perbandingan antardaerah.</div>
                     <div class="stat-spark"><canvas id="spark-prov"></canvas></div>
                 </div>
             </div>
@@ -761,16 +834,16 @@
         <div class="section-inner">
             <div class="section-header reveal">
                 <span class="tag">Capability Surface</span>
-                <h2>Fokus pada pekerjaan analitis, bukan sekadar visualisasi.</h2>
-                <p>Halaman dan modul diposisikan sebagai alat kerja untuk membaca tren, membandingkan wilayah, dan menguji skenario ekonomi.</p>
+                <h2>Modul yang diprioritaskan untuk pembacaan, simulasi, dan pembandingan.</h2>
+                <p>Dua modul teratas diposisikan sebagai jalur insight utama, lalu didukung oleh peta, pembanding wilayah, dan eksplorasi dataset.</p>
             </div>
             <div class="features-grid stagger">
-                <div class="feature-card">
+                <div class="feature-card priority">
                     <div class="feature-icon"><i class="fas fa-brain"></i></div>
                     <h3>Forecasting Inflasi</h3>
                     <p>Forecast multi-horizon 1, 3, 6, dan 12 bulan dengan dua model terbaik per horizon dan rentang estimasi berbasis residual backtest.</p>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card priority">
                     <div class="feature-icon"><i class="fas fa-wallet"></i></div>
                     <h3>Simulasi Daya Beli</h3>
                     <p>Inferensi penuh Ridge Regression untuk pengeluaran riil per kapita, memakai baseline wilayah terbaru dan validasi kronologis.</p>
@@ -803,8 +876,8 @@
         <div class="section-inner">
             <div class="section-header reveal">
                 <span class="tag">Data Flow</span>
-                <h2>Data resmi masuk, fitur dibentuk, model berjalan, insight ditampilkan.</h2>
-                <p>Alur ini diringkas untuk menampilkan hubungan yang jelas antara sumber data, pembentukan fitur, dan keluaran analitis.</p>
+                <h2>Data resmi diproses menjadi indikator, lalu diterjemahkan menjadi keputusan baca.</h2>
+                <p>Setiap tahap dirancang untuk menjaga jejak dari sumber data, pembentukan fitur, evaluasi model, sampai insight yang tampil di antarmuka publik.</p>
             </div>
             <div class="flow-container reveal">
                 <div class="flow-grid">
@@ -836,14 +909,14 @@
     <section class="section">
         <div class="footer-strip reveal">
             <div class="footer-copy">
-                <h3>Masuk ke dashboard untuk analisis utama. Buka referensi interpretasi untuk konteks metodologis.</h3>
+                <h3>Buka dashboard untuk pembacaan operasional, lalu gunakan panduan untuk konteks interpretasi dan metodologi.</h3>
                 <p>
-                    Halaman awal ini sengaja tetap ringkas dan profesional. Untuk istilah teknis tersedia halaman referensi,
-                    sedangkan pekerjaan analitis penuh bisa langsung dilanjutkan di dashboard operasional.
+                    Halaman awal ini dirancang sebagai ringkasan institusional. Forecasting dan simulasi tetap menjadi pintu masuk prioritas,
+                    sedangkan panduan memisahkan konteks pembacaan dan konteks teknis secara lebih terstruktur.
                 </p>
             </div>
             <div class="footer-actions">
-                <a href="{% url 'guide' %}" class="btn-hero secondary">Lihat Referensi</a>
+                <a href="{% url 'guide' %}" class="btn-hero secondary">Buka Panduan</a>
                 <a href="{% url 'landing' %}" class="btn-hero primary">Buka Dashboard</a>
             </div>
         </div>

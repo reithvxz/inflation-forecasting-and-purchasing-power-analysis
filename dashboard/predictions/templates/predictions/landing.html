@@ -105,6 +105,18 @@
         background: #fff;
         border: 1px solid var(--border-color);
     }
+    .mini-explain.semantic-primary {
+        background: linear-gradient(180deg, #ffffff 0%, rgba(41, 98, 255, 0.05) 100%);
+        border-color: rgba(41, 98, 255, 0.18);
+    }
+    .mini-explain.semantic-violet {
+        background: linear-gradient(180deg, #ffffff 0%, rgba(171, 71, 188, 0.05) 100%);
+        border-color: rgba(171, 71, 188, 0.16);
+    }
+    .mini-explain.semantic-amber {
+        background: linear-gradient(180deg, #ffffff 0%, rgba(255, 179, 0, 0.06) 100%);
+        border-color: rgba(255, 179, 0, 0.22);
+    }
     .mini-explain strong {
         display: block;
         font-size: 13px;
@@ -168,6 +180,17 @@
     }
     .dash-card {
         padding: 18px;
+    }
+    .dash-card.priority {
+        background:
+            radial-gradient(circle at top right, rgba(41, 98, 255, 0.10), transparent 34%),
+            linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        border-color: rgba(41, 98, 255, 0.18);
+        box-shadow: var(--shadow-md);
+    }
+    .dash-card.support {
+        background: linear-gradient(180deg, #ffffff 0%, rgba(38, 166, 154, 0.05) 100%);
+        border-color: rgba(38, 166, 154, 0.16);
     }
     .kpi-top {
         display: flex;
@@ -293,6 +316,10 @@
         text-decoration: none;
         transition: 0.15s ease;
     }
+    .quick-item.priority {
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        border-color: rgba(41, 98, 255, 0.16);
+    }
     .quick-item:hover {
         border-color: var(--accent-primary);
         transform: translateY(-1px);
@@ -349,17 +376,17 @@
             </div>
         </div>
         <div class="orientation-side">
-            <div class="mini-explain">
+            <div class="mini-explain semantic-primary">
                 <strong>Urutan pembacaan singkat</strong>
-                <span>Tinjau tiga indikator inflasi terlebih dahulu, lalu lanjutkan ke KPI utama dan panel kurs.</span>
+                <span>Tinjau tiga indikator inflasi terlebih dahulu, lalu masuk ke forecast utama, kurs USD/IDR, dan proksi daya beli.</span>
             </div>
-            <div class="mini-explain">
-                <strong>Referensi metodologis</strong>
-                <span>Halaman Panduan menjelaskan MoM, YoY, Y-to-D, baseline, dan kerangka kerja model secara ringkas.</span>
+            <div class="mini-explain semantic-violet">
+                <strong>Modul prioritas</strong>
+                <span>Forecasting dan Daya Beli diposisikan sebagai dua jalur insight utama sebelum eksplorasi modul sekunder.</span>
             </div>
-            <div class="mini-explain">
-                <strong>Eksplorasi skenario</strong>
-                <span>Gunakan halaman Daya Beli untuk melihat bagaimana perubahan inflasi dan indikator inti memengaruhi estimasi pengeluaran riil.</span>
+            <div class="mini-explain semantic-amber">
+                <strong>Catatan interpretasi</strong>
+                <span>Panduan memisahkan konteks pembacaan indikator dan konteks teknis model agar proses presentasi lebih terstruktur.</span>
             </div>
         </div>
     </section>
@@ -401,16 +428,16 @@
     </section>
 
     <section class="kpi-grid-terminal">
-        <article class="dash-card">
+        <article class="dash-card priority">
             <div class="kpi-top">
                 <div class="kpi-icon"><i class="fas fa-wave-square"></i></div>
                 <span class="kpi-tag">Forecast</span>
             </div>
             <div class="kpi-label">Forecast publik horizon {{ public_horizon_label }}</div>
             <div class="kpi-value" style="color: var(--accent-primary);">{{ inflasi_pred|floatformat:2 }}%</div>
-            <div class="kpi-sub">Model utama {{ inflasi_model_name }} dengan rentang estimasi {{ inflasi_interval_lower|floatformat:2 }}% sampai {{ inflasi_interval_upper|floatformat:2 }}%.</div>
+            <div class="kpi-sub">Model utama {{ inflasi_model_name }} dengan rentang estimasi {{ inflasi_interval_lower|floatformat:2 }}% sampai {{ inflasi_interval_upper|floatformat:2 }}%. Gunakan angka ini sebagai headline pembacaan arah harga jangka dekat.</div>
         </article>
-        <article class="dash-card">
+        <article class="dash-card support">
             <div class="kpi-top">
                 <div class="kpi-icon" style="background: rgba(38, 166, 154, 0.12); color: var(--positive);"><i class="fas fa-shield-heart"></i></div>
                 <span class="kpi-tag">Model</span>
@@ -426,7 +453,7 @@
             </div>
             <div class="kpi-label">Estimasi pengeluaran riil per kapita</div>
             <div class="kpi-value" style="color: var(--text-primary);">Rp {{ rata_pengeluaran }}</div>
-            <div class="kpi-sub">Gambaran pengeluaran riil per kapita bulanan dari baseline nasional terbaru setelah penyesuaian inflasi.</div>
+            <div class="kpi-sub">Baseline nasional terbaru untuk pembacaan proksi daya beli, sesudah penyesuaian inflasi tahunan pada artefak aktif.</div>
         </article>
         <article class="dash-card">
             <div class="kpi-top">
@@ -469,19 +496,19 @@
 
         <div class="quick-links">
             <h3>Jalur baca cepat</h3>
-            <p>Tiga modul ini merangkum istilah, forecast, dan simulasi yang paling sering dipakai saat membaca dashboard.</p>
+            <p>Urutkan pembacaan dari forecast utama, lanjutkan ke simulasi daya beli, lalu buka panduan saat butuh konteks istilah atau metodologi.</p>
             <div class="quick-grid">
-                <a class="quick-item" href="{% url 'guide' %}">
-                    <strong>Referensi Pembacaan</strong>
-                    <span>Istilah inti, konteks indikator, dan kerangka interpretasi.</span>
-                </a>
-                <a class="quick-item" href="{% url 'forecasting' %}">
+                <a class="quick-item priority" href="{% url 'forecasting' %}">
                     <strong>Forecasting</strong>
                     <span>Lihat horizon 1, 3, 6, dan 12 bulan beserta dua model terbaiknya.</span>
                 </a>
-                <a class="quick-item" href="{% url 'daya_beli' %}">
+                <a class="quick-item priority" href="{% url 'daya_beli' %}">
                     <strong>Daya Beli</strong>
                     <span>Eksplor dampak perubahan inflasi dengan model penuh.</span>
+                </a>
+                <a class="quick-item" href="{% url 'guide' %}">
+                    <strong>Panduan</strong>
+                    <span>Pisahkan panduan pembacaan indikator dan panduan teknis model dalam satu halaman terstruktur.</span>
                 </a>
             </div>
         </div>

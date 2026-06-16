@@ -1,190 +1,166 @@
-# EcoDash - Prediksi Inflasi dan Proksi Daya Beli Indonesia
+<div align="center">
 
-EcoDash adalah dashboard analitik ekonomi Indonesia yang mengintegrasikan dua modul inti:
+# EcoDash
 
-1. forecast inflasi multi-horizon untuk membaca arah tekanan harga
-2. estimasi pengeluaran riil per kapita per provinsi sebagai proksi daya beli rumah tangga
+**Dashboard analitik ekonomi Indonesia untuk membaca inflasi, kurs, dan proksi daya beli secara lebih terstruktur, presentable, dan berbasis data resmi.**
 
-Repositori ini diposisikan untuk demonstrasi profesional, analisis akademik, dan eksplorasi kebijakan berbasis data resmi.
+<p>
+  <img src="docs/readme/hero-ecodash.png" alt="EcoDash Economic Intelligence Dashboard" width="100%" />
+</p>
 
-## Ringkasan sistem
+<p>
+  <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.12" />
+  <img src="https://img.shields.io/badge/Django-Web_App-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django" />
+  <img src="https://img.shields.io/badge/PyTorch-Deep_Learning-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch" />
+  <img src="https://img.shields.io/badge/scikit--learn-Regression-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white" alt="scikit-learn" />
+</p>
+<p>
+  <img src="https://img.shields.io/badge/pandas-Data_Processing-150458?style=for-the-badge&logo=pandas&logoColor=white" alt="pandas" />
+  <img src="https://img.shields.io/badge/statsmodels-Time_Series-1F4E79?style=for-the-badge" alt="statsmodels" />
+  <img src="https://img.shields.io/badge/Prophet-Forecasting-0F766E?style=for-the-badge" alt="Prophet" />
+  <img src="https://img.shields.io/badge/Repo-Public-111827?style=for-the-badge&logo=github&logoColor=white" alt="Public Repository" />
+</p>
 
-EcoDash saat ini memiliki empat area utama:
+</div>
 
-- `Home (/)`: landing page dengan headline forecast publik 1 bulan, kurs USD/IDR harian, dan ringkasan kapabilitas
-- `Dashboard (/dashboard/)`: KPI operasional, ringkasan istilah inflasi, panel USD/IDR live, dan akses cepat ke modul utama
-- `Forecasting (/forecasting/)`: forecast inflasi untuk horizon `1M`, `3M`, `6M`, dan `12M`
-- `Daya Beli (/daya-beli/)`: simulasi per provinsi berbasis inferensi penuh Ridge Regression untuk pengeluaran riil per kapita
+> **Positioning**  
+> EcoDash dirancang sebagai economic intelligence dashboard untuk demonstrasi profesional, eksplorasi akademik, dan pembacaan insight kebijakan berbasis data resmi Indonesia.
 
-Tambahan halaman pendukung:
+## Overview
 
-- `Panduan (/panduan/)`
-- `Datasets (/datasets/)`
-- `Compare (/compare/)`
-- `Map (/map/)`
-- `Scenarios (/scenarios/)`
+EcoDash mengintegrasikan dua modul inti:
 
-## Forecasting inflasi multi-horizon
+1. **Forecast inflasi multi-horizon** untuk membaca arah tekanan harga dalam horizon `1 bulan`, `3 bulan`, `6 bulan`, dan `12 bulan`.
+2. **Estimasi pengeluaran riil per kapita per bulan sebagai proksi daya beli** untuk membaca arah tekanan terhadap kapasitas belanja rumah tangga secara regional.
 
-### Horizon publik
+Selain itu, dashboard juga menampilkan:
 
-Pipeline forecast publik mendukung empat horizon:
+- ringkasan KPI ekonomi
+- panel kurs USD/IDR harian
+- peta ekonomi Indonesia berbasis indikator terpilih
+- halaman panduan pembacaan dan panduan teknis
 
-- `1m`
-- `3m`
-- `6m`
-- `12m`
+## Mengapa Proyek Ini Penting
 
-Setiap horizon memiliki evaluasi, pemeringkatan model, dan artefak terpisah. Dengan demikian, model terbaik untuk 1 bulan tidak diasumsikan sama dengan model terbaik untuk 12 bulan.
+Dalam praktiknya, angka ekonomi sering tersedia dalam banyak sumber, format, dan horizon waktu yang berbeda. EcoDash menyatukan alur tersebut ke dalam satu antarmuka yang lebih mudah dibaca untuk:
 
-### Kandidat model
+- **monitoring cepat**, ketika pengguna perlu melihat arah inflasi dan kurs terbaru
+- **analisis komparatif**, ketika pengguna ingin membaca perbedaan wilayah atau horizon prediksi
+- **komunikasi presentasi**, ketika insight perlu dijelaskan secara profesional kepada dosen, tim, atau pemangku kepentingan
 
-Kandidat model yang dievaluasi:
+## Modul Utama
 
-- `Naive`
+### 1. Forecast Inflasi Multi-Horizon
+
+Modul forecasting dibangun untuk empat horizon publik:
+
+| Horizon | Fungsi Utama | Karakter Pembacaan |
+| --- | --- | --- |
+| `1M` | pembacaan taktis jangka dekat | paling relevan untuk headline near-term |
+| `3M` | pembacaan arah kuartalan | cocok untuk evaluasi pergeseran tren |
+| `6M` | pembacaan kebijakan menengah | membantu melihat arah tekanan yang lebih stabil |
+| `12M` | orientasi makro | untuk konteks strategis, bukan angka presisi |
+
+Setiap horizon dievaluasi secara **terpisah**. Dengan demikian, model terbaik untuk horizon `1M` tidak otomatis diasumsikan terbaik untuk `12M`.
+
+#### Keluarga model yang dievaluasi
+
+- `Naive Baseline`
 - `ARIMA`
 - `SARIMAX`
 - `Prophet`
 - `LSTM`
 - `Bi-LSTM`
 - `Ensemble` horizon-specific
-- `GARCH` opsional, hanya dipakai jika asumsi dan dependensi mendukung
+- `GARCH` sebagai kandidat opsional jika asumsi statistik dan dependensi mendukung
 
-Catatan metodologis:
+#### Aturan seleksi model
 
-- `GARCH` tidak dipaksa tampil. Jika package `arch` tidak tersedia atau validasi asumsi tidak memadai, kandidat ini ditandai `skipped`.
-- Model deep learning tetap dicatat pada tabel perbandingan, namun headline publik hanya menggunakan model dengan performa terbaik pada horizon terkait.
+- **MAE** digunakan sebagai metrik utama pemeringkatan
+- **RMSE** dan **sMAPE** dicatat sebagai metrik pendamping
+- UI publik hanya menampilkan **2 model terbaik** per horizon agar pembacaan tetap fokus
 
-### Aturan seleksi model
+#### Confidence interval
 
-Untuk setiap horizon:
+Confidence interval dibangun dari **residual walk-forward backtest**, bukan dari shading dekoratif. Artinya:
 
-- `MAE` dipakai sebagai metrik utama ranking
-- `RMSE` dan `sMAPE` dipakai sebagai metrik pendamping
-- UI publik hanya menampilkan `2 model terbaik`
+- band prediksi merepresentasikan ketidakpastian historis model
+- horizon yang lebih jauh memang akan menghasilkan band yang lebih lebar
+- rentang prediksi harus dibaca sebagai **estimasi**, bukan kepastian
 
-Pendekatan ini menjaga fokus halaman forecasting tanpa menghilangkan transparansi proses seleksi.
+### 2. Proksi Daya Beli
 
-### Confidence interval
+Modul kedua tidak mengklaim mengukur daya beli murni secara teoritis. Target yang diprediksi adalah:
 
-Confidence interval tidak dibentuk dari angka tetap atau elemen dekoratif.
+**pengeluaran riil per kapita per bulan**
 
-Band prediksi dibangun dari:
+Nilai tersebut kemudian diinterpretasikan sebagai **proksi daya beli**, karena merepresentasikan ruang belanja riil rumah tangga setelah penyesuaian inflasi.
 
-1. residual out-of-sample hasil walk-forward backtest
-2. distribusi residual historis per model-horizon
-3. penerapan quantile residual ke point forecast
+Karakteristik implementasi saat ini:
 
-Implikasi interpretatif:
+- model utama menggunakan **Ridge Regression**
+- inferensi simulasi memakai baseline wilayah terbaru dari data terproses
+- fitur input aktif dapat dioverride pada skenario simulasi
+- hasil diposisikan untuk membaca **arah perubahan**, bukan untuk klaim presisi absolut tinggi
 
-- horizon `1M` lebih sesuai untuk pembacaan taktis
-- horizon `3M` dan `6M` lebih sesuai untuk arah kebijakan
-- horizon `12M` lebih sesuai untuk orientasi makro, bukan angka presisi
-
-Semakin jauh horizon, semakin lebar band-nya. Itu perilaku yang diharapkan, bukan bug.
-
-## Model proksi daya beli
-
-Modul ini tidak memprediksi daya beli murni dalam pengertian teoritis yang ketat. Target yang dipakai adalah
-`pengeluaran riil per kapita per bulan`, lalu hasilnya dibaca sebagai proksi daya beli karena lebih dekat ke ruang
-belanja riil rumah tangga setelah penyesuaian inflasi.
-
-Estimasi dilakukan dengan `Ridge Regression` menggunakan baseline wilayah terbaru.
-
-Karakteristik implementasi:
-
-- simulasi tidak lagi menggunakan aproksimasi linear demo
-- request simulasi membaca baseline wilayah terbaru dari `clean_daya_beli.csv`
-- input user dioverride ke baseline tersebut
-- fitur turunan dihitung ulang sebelum inferensi
-
-Endpoint simulasi utama:
-
-- `GET /api/simulate/?provinsi=...&inflasi=...`
-- override opsional:
-  - `ump`
-  - `tpt`
-  - `pdrb_hargakonstan`
-
-Catatan interpretasi:
-
-- `R^2` pada model proksi daya beli adalah skor goodness-of-fit pada data uji
-- `R^2` bukan akurasi klasifikasi
-- input `inflasi` pada simulasi dibaca sebagai skenario inflasi tahunan, lalu dipetakan ke skala fitur internal model secara konsisten
-
-## Artefak utama
-
-Artefak forecast utama:
-
-- `models/inflation_multihorizon_forecast.json`
-- `models/inflation_multihorizon_comparison.json`
-- `models/forecast_results.json` sebagai payload turunan yang ikut disegarkan
-
-Payload artefak forecast mencakup:
-
-- `generated_at`
-- `history`
-- `horizons`
-- `headline_model`
-- `headline_forecast`
-- `top_models`
-- `risk_note`
-- metrik model
-- confidence interval
-
-Artefak model lain yang masih dipakai:
-
-- `models/best_daya_beli_ridge.pkl`
-- `models/lstm_model.pt`
-- `models/arima_inflasi.pkl`
-- `models/ensemble_forecast.pkl`
-- `models/ensemble_metrics.pkl`
-
-## Endpoint penting
-
-Sumber tunggal forecast UI:
-
-- `GET /api/inflation-forecast/`
-
-Endpoint pendukung:
-
-- `GET /api/inflasi-summary/`
-- `GET /api/usd-idr/`
-- `GET /api/simulate/`
-- `GET /api/commodity-prices/`
-- `GET /api/metrics-latest/`
-
-Aturan sinkronisasi UI:
-
-- home, dashboard, dan halaman forecasting membaca headline inflasi dari payload yang sama
-- headline publik default memakai `horizons["1m"]`
-- model headline mengikuti `headline_model`, bukan hardcoded `LSTM` atau `Ensemble`
-
-## Struktur file penting
+## Workflow Sistem
 
 ```text
-dashboard/
-  manage.py
-  predictions/
-    templates/predictions/
-    static/predictions/
-    inflation_forecast.py
-    views.py
-  train_inflation_multihorizon.py
-
-datasets/
-  processed/
-    clean_inflasi_ts.csv
-    clean_daya_beli.csv
-
-models/
-  inflation_multihorizon_forecast.json
-  inflation_multihorizon_comparison.json
-  forecast_results.json
-  best_daya_beli_ridge.pkl
+Data resmi
+  -> preprocessing & harmonisasi
+  -> feature engineering
+  -> training / evaluasi model
+  -> artefak model & JSON hasil
+  -> Django dashboard & API layer
+  -> visual insight untuk pengguna
 ```
 
-## Retrain dan menjalankan proyek
+## Arsitektur Ringkas
+
+| Layer | Peran |
+| --- | --- |
+| `datasets/processed` | sumber data terproses untuk modeling |
+| `dashboard/train_inflation_multihorizon.py` | training dan evaluasi forecast inflasi multi-horizon |
+| `dashboard/train_daya_beli_ridge.py` | training model Ridge untuk proksi daya beli |
+| `models/` | artefak model dan hasil forecast |
+| `dashboard/predictions/views.py` | API dan delivery layer ke frontend |
+| `dashboard/predictions/templates/` | halaman dashboard dan modul visual |
+
+## Sumber Data dan Model Inti
+
+### Data
+
+Repositori ini menggunakan kombinasi data resmi dan referensi ekonomi, termasuk:
+
+- **BPS** untuk inflasi dan indikator sosial-ekonomi terkait
+- **Bank Indonesia** untuk konteks moneter domestik
+- **World Bank / FRED / sumber pasar publik** untuk variabel eksternal yang relevan
+- **endpoint kurs harian** untuk USD/IDR pada panel live exchange rate
+
+### Model inti
+
+| Modul | Model Produksi / Kandidat |
+| --- | --- |
+| Forecast inflasi | ARIMA, SARIMAX, Prophet, LSTM, Bi-LSTM, Ensemble, Naive |
+| Proksi daya beli | Ridge Regression |
+
+## Tech Stack
+
+### Framework dan aplikasi
+
+- **Django** untuk web application dan API delivery
+- **Python** sebagai inti data-processing dan modeling pipeline
+
+### Key libraries
+
+- **pandas / numpy** untuk manipulasi data
+- **scikit-learn** untuk pipeline regresi dan evaluasi
+- **statsmodels** untuk ARIMA / SARIMAX
+- **Prophet** untuk alternative forecasting
+- **PyTorch** untuk LSTM / Bi-LSTM
+- **matplotlib / seaborn** untuk eksplorasi dan visualisasi pendukung
+
+## Quick Start
 
 ### 1. Install dependencies
 
@@ -192,91 +168,104 @@ models/
 pip install -r requirements.txt
 ```
 
-### 2. Refresh data
-
-```bash
-python download_domestic.py
-python preprocessing.py
-```
-
-### 3. Retrain model proksi daya beli
-
-```bash
-python dashboard/train_daya_beli_ridge.py
-```
-
-### 4. Retrain forecast inflasi multi-horizon
-
-```bash
-python dashboard/train_inflation_multihorizon.py
-```
-
-Script ini akan memperbarui:
-
-- ranking model per horizon
-- top-2 model per horizon
-- point forecast
-- confidence interval
-- artefak JSON yang dibaca web
-
-### 5. Jalankan aplikasi
+### 2. Jalankan aplikasi
 
 ```bash
 python dashboard/manage.py runserver
 ```
 
-### 6. Jalankan test utama
+### 3. Jalankan test utama
 
 ```bash
 python dashboard/manage.py test predictions.tests
 ```
 
-## Catatan interpretasi
+## Retrain Pipeline
 
-- horizon `1M` paling relevan untuk headline publik jangka dekat
-- horizon `3M` dan `6M` lebih tepat untuk pembacaan arah tren
-- horizon `12M` dipakai untuk konteks makro dan diskusi risiko
-- band prediksi harus dibaca sebagai rentang estimasi, bukan jaminan realisasi
-
-## Workflow branch tim
-
-Branch kerja aktif untuk integrasi UI dan backend ringan:
-
-- `frontend`
-
-Alur integrasi:
-
-1. kerjakan perubahan di `frontend`
-2. audit dan test
-3. push `frontend`
-4. merge `frontend -> main`
-5. sync `backend` dan `modelling` ke `main` terbaru
-
-## Sinkronisasi branch tim
-
-Jika branch lokal belum memiliki commit yang belum dipublikasikan:
+### Retrain proksi daya beli
 
 ```bash
-git fetch origin
-git checkout <branch-yang-dia-pakai>
-git pull --ff-only origin <branch-yang-dia-pakai>
+python dashboard/train_daya_beli_ridge.py
 ```
 
-Jika branch lokal sudah memiliki commit sendiri dan perlu disejajarkan ke `main` terbaru:
+### Retrain forecast inflasi multi-horizon
 
 ```bash
-git fetch origin
-git checkout <branch-lokal>
-git rebase origin/main
+python dashboard/train_inflation_multihorizon.py
 ```
 
-Jadi urutannya memang dimulai dari `git fetch origin`, lalu lanjut `pull --ff-only` atau `rebase` sesuai kondisi branch lokalnya.
+Script forecasting akan memperbarui artefak yang dipakai web, termasuk:
 
-## Anggota tim
+- ranking model per horizon
+- dua model terbaik per horizon
+- point forecast
+- confidence interval
+- payload JSON untuk dashboard
 
-- Muhammad Rajif Al Farikhi - Backend
-- Sahrul Adicandra Effendy - Backend + Data
-- Semaya David Petroes Putra - Modelling
-- Adrina Firda Marwah - Modelling
-- Okan Athallah Maredith - Frontend
+## Struktur Repo
 
+```text
+.
+|-- dashboard/
+|   |-- manage.py
+|   |-- predictions/
+|   |   |-- templates/predictions/
+|   |   |-- static/predictions/
+|   |   `-- views.py
+|   |-- train_inflation_multihorizon.py
+|   `-- train_daya_beli_ridge.py
+|-- datasets/
+|   `-- processed/
+|       |-- clean_inflasi_ts.csv
+|       `-- clean_daya_beli.csv
+|-- docs/
+|   `-- readme/
+|       `-- hero-ecodash.png
+|-- models/
+|   |-- inflation_multihorizon_forecast.json
+|   |-- inflation_multihorizon_comparison.json
+|   |-- forecast_results.json
+|   `-- best_daya_beli_ridge.pkl
+`-- README.md
+```
+
+## Evaluasi dan Catatan Interpretasi
+
+- Forecast horizon pendek lebih cocok untuk pembacaan operasional jangka dekat.
+- Forecast horizon panjang tetap berguna, tetapi harus dibaca bersama confidence interval.
+- Nilai `R^2` pada model proksi daya beli adalah **goodness-of-fit**, bukan akurasi klasifikasi.
+- Modul proksi daya beli saat ini lebih kuat untuk membaca **arah tekanan** dan **perubahan relatif**, dibanding klaim angka absolut yang sangat presisi.
+
+## Antarmuka Utama
+
+| Halaman | Fungsi |
+| --- | --- |
+| `Home (/)` | landing page dan headline publik |
+| `Dashboard (/dashboard/)` | pusat monitoring operasional |
+| `Forecasting (/forecasting/)` | analisis forecast multi-horizon |
+| `Daya Beli (/daya-beli/)` | simulasi proksi daya beli berbasis model |
+| `Panduan (/panduan/)` | panduan pembacaan dan panduan teknis |
+| `Map (/map/)` | peta ekonomi Indonesia dengan filter indikator dan tahun |
+
+## Use Cases
+
+- presentasi akademik dan demonstrasi proyek
+- eksplorasi insight inflasi lintas horizon
+- pembacaan pergeseran tekanan ekonomi regional
+- komunikasi visual hasil modeling kepada audiens profesional
+
+## Tim
+
+| Nama | Peran |
+| --- | --- |
+| Muhammad Rajif Al Farikhi | Backend |
+| Sahrul Adicandra Effendy | Backend + Data |
+| Semaya David Petroes Putra | Modelling |
+| Adrina Firda Marwah | Modelling |
+| Okan Athallah Maredith | Frontend |
+
+---
+
+<div align="center">
+  <sub>EcoDash dikembangkan sebagai dashboard analitik ekonomi yang memadukan disiplin data, forecasting, dan presentasi visual yang siap ditunjukkan secara profesional.</sub>
+</div>

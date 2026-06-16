@@ -9,6 +9,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.conf import settings
 from predictions.daya_beli_model import (
+    DERIVED_NUMERIC_FEATURES,
     NOMINAL_TARGET_COLUMN,
     TARGET_COLUMN,
     TARGET_LABEL,
@@ -68,6 +69,125 @@ SARIMAX_FEATURE_REASON_MAP = {
     "FAO_FPI": {
         "label": "FAO Food Price Index",
         "reason": "Mewakili tekanan harga pangan global, yang penting untuk struktur inflasi Indonesia.",
+    },
+}
+
+RIDGE_FEATURE_REASON_MAP = {
+    "UMP": {
+        "label": "Upah minimum provinsi",
+        "reason": "Menangkap level upah nominal yang menjadi titik awal pembentukan daya beli riil.",
+    },
+    "Real_UMP": {
+        "label": "Upah minimum riil",
+        "reason": "Merepresentasikan kapasitas upah setelah dikoreksi tekanan inflasi tahunan.",
+    },
+    "TPT": {
+        "label": "Tingkat pengangguran terbuka",
+        "reason": "Menggambarkan tekanan pasar kerja yang berpengaruh pada ruang belanja rumah tangga.",
+    },
+    "TPAK": {
+        "label": "Tingkat partisipasi angkatan kerja",
+        "reason": "Memberi konteks kedalaman partisipasi tenaga kerja di setiap wilayah.",
+    },
+    "PDRB_HargaKonstan": {
+        "label": "PDRB harga konstan",
+        "reason": "Mewakili kapasitas ekonomi riil daerah yang menopang konsumsi per kapita.",
+    },
+    "PDRB_HargaBerlaku": {
+        "label": "PDRB harga berlaku",
+        "reason": "Menambah konteks level ekonomi nominal antarwilayah.",
+    },
+    "Inflasi_Rata_Tahunan": {
+        "label": "Inflasi rata-rata tahunan",
+        "reason": "Mewakili tekanan harga domestik yang memengaruhi konsumsi riil rumah tangga.",
+    },
+    "Inflasi_WB_Annual": {
+        "label": "Inflasi tahunan acuan",
+        "reason": "Menjadi sumber inflasi tahunan utama untuk pembentukan deflator pada artefak aktif.",
+    },
+    "Inflation_Deflator": {
+        "label": "Deflator inflasi",
+        "reason": "Mengubah pengeluaran nominal menjadi pengeluaran riil yang lebih relevan untuk interpretasi daya beli.",
+    },
+    "Prev_Total_Pengeluaran_Riil": {
+        "label": "Pengeluaran riil tahun sebelumnya",
+        "reason": "Memberi jangkar historis agar model tidak kehilangan konteks level konsumsi terakhir.",
+    },
+    "Real_UMP_Growth": {
+        "label": "Pertumbuhan upah riil",
+        "reason": "Menangkap perubahan tahunan daya dorong upah setelah koreksi inflasi.",
+    },
+    "PDRB_HargaKonstan_Growth": {
+        "label": "Pertumbuhan PDRB riil",
+        "reason": "Mengukur arah perubahan kapasitas ekonomi daerah dari tahun sebelumnya.",
+    },
+    "TPT_Growth": {
+        "label": "Perubahan TPT",
+        "reason": "Menambah sinyal perubahan kondisi pasar kerja, bukan hanya levelnya.",
+    },
+    "UMP_x_PDRB": {
+        "label": "Interaksi upah dan PDRB",
+        "reason": "Membaca apakah efek upah menjadi berbeda pada wilayah dengan skala ekonomi yang berbeda.",
+    },
+    "Inflasi_x_TPT": {
+        "label": "Interaksi inflasi dan TPT",
+        "reason": "Menggambarkan tekanan gabungan antara kenaikan harga dan pelemahan pasar kerja.",
+    },
+    "Log_PDRB": {
+        "label": "Log PDRB",
+        "reason": "Menstabilkan skala PDRB agar hubungan non-linear lebih mudah dibaca model linear.",
+    },
+    "Log_UMP": {
+        "label": "Log upah riil",
+        "reason": "Menstabilkan skala upah dan membantu model membaca perubahan relatif.",
+    },
+    "Gini_Rasio": {
+        "label": "Rasio gini",
+        "reason": "Memberi konteks distribusi pengeluaran yang dapat memengaruhi rata-rata konsumsi per kapita.",
+    },
+    "IPM": {
+        "label": "Indeks pembangunan manusia",
+        "reason": "Mewakili kualitas pembangunan manusia yang berkorelasi dengan struktur konsumsi wilayah.",
+    },
+    "Pct_Penduduk_Miskin": {
+        "label": "Persentase penduduk miskin",
+        "reason": "Menggambarkan tekanan kesejahteraan yang relevan terhadap konsumsi rata-rata.",
+    },
+    "Garis_Kemiskinan": {
+        "label": "Garis kemiskinan",
+        "reason": "Memberi titik acuan biaya minimum hidup antarwilayah.",
+    },
+    "Jumlah_Penduduk": {
+        "label": "Jumlah penduduk",
+        "reason": "Menambah konteks ukuran wilayah dan skala rumah tangga yang terwakili.",
+    },
+    "Pct_Populasi": {
+        "label": "Proporsi populasi",
+        "reason": "Menunjukkan bobot penduduk relatif antarwilayah pada data aktif.",
+    },
+    "Pct_Akses_Air_Bersih": {
+        "label": "Akses air bersih",
+        "reason": "Menjadi proksi kualitas layanan dasar yang ikut memengaruhi profil kesejahteraan wilayah.",
+    },
+    "Protein_gram_per_hari": {
+        "label": "Konsumsi protein harian",
+        "reason": "Menambah konteks kualitas konsumsi rumah tangga, bukan hanya nominal pengeluaran.",
+    },
+    "GDP_PerCapita_PPP": {
+        "label": "GDP per capita PPP",
+        "reason": "Memberi referensi daya beli makro yang bisa membantu pembacaan skala konsumsi antarwilayah.",
+    },
+    "Pct_Unemployment_WB": {
+        "label": "Pengangguran acuan internasional",
+        "reason": "Menambah pembanding eksternal untuk pasar kerja ketika data tersedia.",
+    },
+    "Poverty_Headcount_Pct": {
+        "label": "Poverty headcount",
+        "reason": "Memberi sinyal kemiskinan relatif sebagai pembanding tambahan lintas sumber.",
+    },
+    "Year_Index": {
+        "label": "Indeks tahun",
+        "reason": "Menjaga jejak waktu agar model bisa membaca pergeseran antarperiode secara eksplisit.",
     },
 }
 
@@ -149,6 +269,72 @@ def _get_model_family_notes():
             "strength": "Cepat dibaca, relatif stabil, dan berguna sebagai pembanding yang transparan.",
         },
     ]
+
+
+def _get_ridge_feature_note(feature_name):
+    info = RIDGE_FEATURE_REASON_MAP.get(feature_name, {})
+    return {
+        "feature": feature_name,
+        "label": info.get("label", feature_name.replace("_", " ")),
+        "reason": info.get(
+            "reason",
+            "Fitur ini dipertahankan pada artefak aktif karena masih memberi sinyal terhadap estimasi pengeluaran riil per kapita.",
+        ),
+        "group": "derived" if feature_name in DERIVED_NUMERIC_FEATURES else "core",
+    }
+
+
+def _build_ridge_model_guide_context():
+    load_models(load_inflation=False)
+    bundle = RIDGE_MODEL_BUNDLE or {}
+    if not bundle or bundle.get("legacy_artifact"):
+        return {
+            "available": False,
+            "message": "Artefak model daya beli aktif belum menyediakan metadata teknis yang lengkap untuk halaman panduan.",
+        }
+
+    selected_features = [_get_ridge_feature_note(feature) for feature in bundle.get("num_features", [])]
+    core_features = [item for item in selected_features if item["group"] == "core"]
+    derived_features = [item for item in selected_features if item["group"] == "derived"]
+    split_strategy = bundle.get("split_strategy") or {}
+    data_scope = bundle.get("data_scope") or {}
+    walk_forward = (bundle.get("walk_forward") or {}).get("mean") or {}
+
+    return {
+        "available": True,
+        "target_label": bundle.get("target_label", TARGET_LABEL),
+        "target_type": bundle.get("target_type", "real"),
+        "core_features": core_features,
+        "derived_features": derived_features,
+        "categorical_features": [
+            {
+                "feature": "Provinsi",
+                "label": "Wilayah",
+                "reason": "Kategori wilayah membantu model membedakan karakter dasar masing-masing provinsi dan agregat nasional Indonesia.",
+            }
+        ],
+        "data_scope": data_scope,
+        "split_strategy": split_strategy,
+        "validation_strategy": bundle.get("validation_strategy") or {},
+        "test_metrics": {
+            "r2": round(_safe_float(bundle.get("test_r2")), 3),
+            "mae": round(_safe_float(bundle.get("test_mae")), 0),
+            "rmse": round(_safe_float(bundle.get("test_rmse")), 0),
+            "smape": round(_safe_float(bundle.get("test_smape")), 2),
+        },
+        "walk_forward": {
+            "r2": round(_safe_float(walk_forward.get("r2")), 3),
+            "mae": round(_safe_float(walk_forward.get("mae")), 0),
+            "rmse": round(_safe_float(walk_forward.get("rmse")), 0),
+            "smape": round(_safe_float(walk_forward.get("smape")), 2),
+        },
+        "model_note": bundle.get("model_note", ""),
+        "limitations": [
+            f"Cakupan data aktif berada pada {int(_safe_float(data_scope.get('year_min'), 2021))}-{int(_safe_float(data_scope.get('year_max'), 2025))} dengan observasi tahunan lintas wilayah, sehingga resolusi waktunya memang tidak setajam model inflasi bulanan.",
+            "Output paling tepat dibaca sebagai estimasi pengeluaran riil per kapita per bulan yang dipakai sebagai proksi daya beli, bukan ukuran daya beli teoritis murni.",
+            "Nilai model lebih kuat untuk membaca arah perubahan antar-skenario dibanding mengejar presisi nominal pada level yang sangat detail.",
+        ],
+    }
 
 
 def _get_sarimax_feature_audit_payload():
@@ -772,12 +958,14 @@ def home_page(request):
 
 
 def guide_page(request):
+    load_models(load_inflation=False)
     return render(
         request,
         'predictions/guide.html',
         {
             'sarimax_feature_audit': _build_sarimax_feature_audit_context(),
             'model_family_notes': _get_model_family_notes(),
+            'ridge_model_summary': _build_ridge_model_guide_context(),
         },
     )
 
@@ -1018,29 +1206,48 @@ def api_commodity_prices(request):
 
 
 def api_all_metrics_latest(request):
-    """Return latest year metrics for all provinces (for radar chart)."""
+    """Return yearly metrics for all provinces."""
     project_root = os.path.dirname(settings.BASE_DIR)
     path = os.path.join(project_root, 'datasets', 'processed', 'clean_daya_beli.csv')
     if not os.path.exists(path):
-        return JsonResponse({'error': 'Data not found'}, status=404)
+        return _json_no_store({'error': 'Data not found'}, status=404)
     try:
         df = prepare_daya_beli_dataframe(pd.read_csv(path))
-        latest_year = df['Tahun'].max()
-        latest = df[df['Tahun'] == latest_year]
+        available_years = sorted(int(year) for year in df['Tahun'].dropna().unique().tolist())
+        latest_year = max(available_years)
+        selected_year = latest_year
+        requested_year = request.GET.get('year')
+        if requested_year not in (None, ''):
+            try:
+                parsed_year = int(requested_year)
+            except ValueError:
+                parsed_year = latest_year
+            if parsed_year in available_years:
+                selected_year = parsed_year
+
+        selected_rows = df[df['Tahun'] == selected_year]
         
         metrics = [TARGET_COLUMN, 'UMP', 'PDRB_HargaKonstan', 'TPT', 'IPM', 'Gini_Rasio', 
                    'Pct_Penduduk_Miskin', 'Inflasi_Rata_Tahunan']
-        available = [m for m in metrics if m in latest.columns]
+        available = [m for m in metrics if m in selected_rows.columns]
         
         result = {}
-        for _, row in latest.iterrows():
+        for _, row in selected_rows.iterrows():
             prov = row['Provinsi']
             result[prov] = {m: float(row[m]) if pd.notna(row[m]) else 0 for m in available}
             result[prov]['Tahun'] = int(row['Tahun'])
         
-        return JsonResponse({'latest_year': int(latest_year), 'provinces': result, 'metrics': available})
+        return _json_no_store(
+            {
+                'latest_year': int(latest_year),
+                'selected_year': int(selected_year),
+                'available_years': available_years,
+                'provinces': result,
+                'metrics': available,
+            }
+        )
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return _json_no_store({'error': str(e)}, status=500)
 
 
 def api_usd_idr_latest(request):

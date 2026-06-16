@@ -70,7 +70,7 @@ class HomePageUsdIdrTests(TestCase):
         self.assertNotIn(">0.55%</div>", html)
         self.assertIn("fetch('/api/usd-idr/', {", html)
         self.assertIn("cache: 'no-store'", html)
-        self.assertContains(response, "Referensi Pembacaan")
+        self.assertContains(response, "Buka Daya Beli")
 
     def test_home_and_landing_use_same_primary_inflation_forecast(self):
         home_response = self.client.get(reverse("home"))
@@ -181,8 +181,11 @@ class DayaBeliSimulationTests(TestCase):
         self.assertContains(response, "Advanced")
         self.assertContains(response, "Wilayah")
         self.assertContains(response, "Indonesia")
-        self.assertContains(response, "Simulasi pengeluaran riil per kapita sebagai proksi daya beli")
+        self.assertContains(response, "Simulasi pengeluaran riil per kapita untuk membaca proksi daya beli")
         self.assertContains(response, "pengeluaran riil per kapita per bulan")
+        self.assertContains(response, "Interpretasi utama")
+        self.assertContains(response, "Batasan model")
+        self.assertContains(response, "proksi daya beli")
         self.assertNotIn("baseValue", html)
         self.assertNotIn("slopePerPercent", html)
 
@@ -195,6 +198,8 @@ class GuideAndDashboardTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Panduan")
         self.assertIn(reverse("guide"), html)
+        self.assertContains(response, "Panduan Pembacaan")
+        self.assertContains(response, "Panduan Teknis")
         self.assertContains(response, "MoM")
         self.assertContains(response, "YoY")
         self.assertContains(response, "Y-to-D")
@@ -203,6 +208,14 @@ class GuideAndDashboardTests(TestCase):
         self.assertContains(response, "LSTM / Bi-LSTM")
         self.assertContains(response, "Fitur inti SARIMAX untuk model inflasi")
         self.assertContains(response, "Audit kontribusi fitur SARIMAX")
+        self.assertContains(response, "Ringkasan teknis model proksi daya beli")
+
+    def test_global_nav_prioritizes_forecasting_and_daya_beli_before_dashboard(self):
+        response = self.client.get(reverse("guide"))
+        html = response.content.decode()
+
+        self.assertLess(html.index("<span>Forecasting</span>"), html.index("<span>Daya Beli</span>"))
+        self.assertLess(html.index("<span>Daya Beli</span>"), html.index("<span>Dashboard</span>"))
 
     def test_dashboard_shows_orientation_panel_and_human_labels(self):
         response = self.client.get(reverse("landing"))
@@ -255,4 +268,28 @@ class EconomicMapPageTests(TestCase):
         self.assertIn('id="mapSummary"', html)
         self.assertIn('id="provinceRanking"', html)
         self.assertIn('id="resetMapView"', html)
+        self.assertIn('id="mapYear"', html)
         self.assertNotIn("PROVINCE_COORDS", html)
+
+    def test_metrics_latest_api_returns_latest_year_without_param(self):
+        response = self.client.get(reverse("api_metrics_latest"))
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data["latest_year"], 2025)
+        self.assertEqual(data["selected_year"], 2025)
+        self.assertEqual(data["available_years"], [2021, 2022, 2023, 2024, 2025])
+        self.assertGreaterEqual(len(data["provinces"]), 35)
+
+    def test_metrics_latest_api_accepts_year_parameter(self):
+        latest_response = self.client.get(reverse("api_metrics_latest"))
+        selected_response = self.client.get(reverse("api_metrics_latest"), {"year": 2023})
+
+        latest_payload = latest_response.json()
+        selected_payload = selected_response.json()
+
+        self.assertEqual(selected_response.status_code, 200)
+        self.assertEqual(selected_payload["selected_year"], 2023)
+        self.assertEqual(selected_payload["latest_year"], 2025)
+        self.assertEqual(selected_payload["available_years"], [2021, 2022, 2023, 2024, 2025])
+        self.assertNotEqual(selected_payload["provinces"], latest_payload["provinces"])
