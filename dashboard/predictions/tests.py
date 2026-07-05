@@ -116,6 +116,16 @@ class HomePageUsdIdrTests(TestCase):
         self.assertIn("headline_forecast", one_month)
         self.assertIn("risk_note", one_month)
 
+    def test_forecasting_payload_keeps_all_candidate_models_visible(self):
+        response = self.client.get(reverse("api_inflation_forecast"))
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        comparison_ids = {
+            row["id"] for row in data["horizons"]["1m"]["comparison"]
+        }
+        self.assertTrue({"lstm", "bilstm", "garch"}.issubset(comparison_ids))
+
 
 class DayaBeliSimulationTests(TestCase):
     def test_simulate_daya_beli_requires_province_and_returns_positive_value(self):

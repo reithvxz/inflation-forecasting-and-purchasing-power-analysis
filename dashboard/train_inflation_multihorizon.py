@@ -15,6 +15,11 @@ from sklearn.preprocessing import MinMaxScaler
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 
+try:
+    from arch import arch_model
+except ImportError:
+    arch_model = None
+
 # ----------------------------------------------------------------------
 #  Imports from the project package (paths are defined in predictions/ )
 # ----------------------------------------------------------------------
@@ -115,6 +120,10 @@ def metric_source_priority(metric_source):
         "not_evaluated": 2,
     }
     return priority.get(metric_source, 3)
+
+
+def get_torch_device():
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def recursive_forecast(model, horizon, exog_future=None):
     """
@@ -462,7 +471,7 @@ class SequenceForecastModel(nn.Module):
 
 
 def _train_sequence_model(X_train, y_train, X_val, y_val, bidirectional=False):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = get_torch_device()
     model = SequenceForecastModel(X_train.shape[2], bidirectional=bidirectional).to(device)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LSTM_LR)
@@ -501,7 +510,7 @@ def _train_sequence_model(X_train, y_train, X_val, y_val, bidirectional=False):
 
     if best_state is not None:
         model.load_state_dict(best_state)
-    return model
+    return model, device
 
 
 def evaluate_sequence_model(df, horizon, model_id):
@@ -575,10 +584,22 @@ def evaluate_sequence_model(df, horizon, model_id):
     X_test = X_seq[seq_val_end:]
     y_test = y_seq[seq_val_end:]
 
+    if (
+        X_train.size == 0
+        or X_val.size == 0
+        or X_test.size == 0
+        or y_train.size == 0
+        or y_val.size == 0
+        or y_test.size == 0
+    ):
+        raise RuntimeError(
+            f"Sequence split kosong untuk {professional_model_name(model_id)} pada horizon {horizon} bulan."
+        )
+
     # ------------------------------------------------------------------
     #   6️⃣  Train the model
     # ------------------------------------------------------------------
-    model = _train_sequence_model(
+    model, device = _train_sequence_model(
         X_train, y_train, X_val, y_val, bidirectional=bidirectional
     )
     model.eval()
@@ -588,7 +609,7 @@ def evaluate_sequence_model(df, horizon, model_id):
     # ------------------------------------------------------------------
     with torch.no_grad():
         test_pred_scaled = model(
-            torch.tensor(X_test, dtype=torch.float32)
+            torch.tensor(X_test, dtype=torch.float32, device=device)
         ).cpu().numpy()
     test_pred = scaler_y.inverse_transform(test_pred_scaled).reshape(-1)
     y_true = scaler_y.inverse_transform(y_test).reshape(-1)
@@ -599,7 +620,7 @@ def evaluate_sequence_model(df, horizon, model_id):
     last_sequence = x_scaled_all[-SEQ_LENGTH:]
     with torch.no_grad():
         future_scaled = model(
-            torch.tensor(np.array([last_sequence]), dtype=torch.float32)
+            torch.tensor(np.array([last_sequence]), dtype=torch.float32, device=device)
         ).cpu().numpy()
     point_forecast = float(
         scaler_y.inverse_transform(future_scaled).reshape(-1)[0]
@@ -625,14 +646,87 @@ def evaluate_sequence_model(df, horizon, model_id):
     }
 
 
-def maybe_garch_candidate():
+def walkforward_garch(df, horizon):
+    if arch_model is None:
+        raise RuntimeError(
+            "Package arch belum terpasang, sehingga kandidat GARCH belum dapat dievaluasi."
+        )
+
+    y = df["Inflasi_MoM"].reset_index(drop=True).astype(float)
+    start = len(df) - horizon - FORECAST_TEST_WINDOW
+    predictions = []
+    actuals = []
+
+    for origin in range(start, len(df) - horizon):
+        train_y = y.iloc[: origin + 1]
+        actual = float(y.iloc[origin + horizon])
+        try:
+            fitted = arch_model(
+                train_y,
+                mean="ARX",
+                lags=1,
+                vol="GARCH",
+                p=1,
+                q=1,
+                dist="normal",
+                rescale=False,
+            ).fit(disp="off")
+            forecast = fitted.forecast(horizon=horizon, reindex=False)
+            pred = float(forecast.mean.iloc[-1, horizon - 1])
+        except Exception:
+            pred = float(train_y.iloc[-1])
+        predictions.append(pred)
+        actuals.append(actual)
+
+    full_model = arch_model(
+        y,
+        mean="ARX",
+        lags=1,
+        vol="GARCH",
+        p=1,
+        q=1,
+        dist="normal",
+        rescale=False,
+    ).fit(disp="off")
+    future_point = float(
+        full_model.forecast(horizon=horizon, reindex=False).mean.iloc[-1, horizon - 1]
+    )
     return {
         "id": "garch",
         "name": professional_model_name("garch"),
-        "status": "skipped",
-        "reason": "Package arch tidak tersedia, sehingga kandidat GARCH dilewati secara eksplisit.",
-        "metric_source": "not_evaluated",
+        "metrics": metric_block(actuals, predictions),
+        "residuals": (np.asarray(actuals) - np.asarray(predictions)).tolist(),
+        "point_forecast": future_point,
+        "metric_source": "walk_forward",
+        "status": "ok",
+        "backtest_predictions": [float(v) for v in predictions],
+        "backtest_actuals": [float(v) for v in actuals],
+        "backtest_dates": [
+            df["Tanggal"].iloc[origin + horizon].strftime("%Y-%m-%d")
+            for origin in range(start, len(df) - horizon)
+        ],
     }
+
+
+def maybe_garch_candidate(df, horizon):
+    if arch_model is None:
+        return {
+            "id": "garch",
+            "name": professional_model_name("garch"),
+            "status": "skipped",
+            "reason": "Package arch belum terpasang, sehingga kandidat GARCH belum bisa dievaluasi pada artefak ini.",
+            "metric_source": "not_evaluated",
+        }
+    try:
+        return walkforward_garch(df, horizon)
+    except Exception as exc:
+        return {
+            "id": "garch",
+            "name": professional_model_name("garch"),
+            "status": "skipped",
+            "reason": f"GARCH gagal dievaluasi: {exc}",
+            "metric_source": "walk_forward",
+        }
 
 
 def build_ensemble_result(base_results):
@@ -720,7 +814,7 @@ def forecast_for_horizon(df, horizon):
                 }
             )
 
-    garch_candidate = maybe_garch_candidate()
+    garch_candidate = maybe_garch_candidate(df, horizon)
 
     base_results = [naive_result, arima_result, sarimax_result, prophet_result]
     ensemble_result = build_ensemble_result(
@@ -729,8 +823,14 @@ def forecast_for_horizon(df, horizon):
     if ensemble_result is not None:
         base_results.append(ensemble_result)
 
+    public_candidates = base_results + ([garch_candidate] if garch_candidate.get("status") == "ok" else [])
     ranked_public = sorted(
-        [result for result in base_results if result.get("status") == "ok"],
+        [
+            result
+            for result in public_candidates
+            if result.get("status") == "ok"
+            and result.get("metric_source") == "walk_forward"
+        ],
         key=lambda item: item["metrics"]["mae"],
     )[:2]
 

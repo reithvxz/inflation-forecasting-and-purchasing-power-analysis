@@ -445,6 +445,13 @@
     color: var(--negative);
 }
 
+.forecast-candidate-note {
+    margin-top: 6px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
 .forecast-empty {
     padding: 28px;
     border: 1px dashed var(--border-color);
@@ -592,8 +599,15 @@
         return `<div class="forecast-model-subline">Komposisi ensemble: ${parts.join(' | ')}</div>`;
     }
 
-    function getMetricSourceMeta(metricSource) {
-        const normalized = String(metricSource || '').toLowerCase();
+    function getMetricSourceMeta(row) {
+        const normalized = String(row?.metric_source || '').toLowerCase();
+        const status = String(row?.status || 'ok').toLowerCase();
+        if (status !== 'ok') {
+            return {
+                label: status === 'skipped' ? 'Skipped' : 'Pending',
+                title: row?.reason || 'Kandidat belum menghasilkan metrik yang valid pada artefak aktif.'
+            };
+        }
         if (normalized === 'walk_forward') {
             return {
                 label: 'Walk-forward',
@@ -835,15 +849,16 @@
                 </thead>
                 <tbody>
                     ${(rows || []).map((row) => {
-                        const sourceMeta = getMetricSourceMeta(row.metric_source);
+                        const sourceMeta = getMetricSourceMeta(row);
                         return `
                         <tr>
                             <td>
                                 <div>${row.name}</div>
                                 ${row.id === 'ensemble' ? renderEnsembleComposition(row.weights) : ''}
+                                ${row.status !== 'ok' && row.reason ? `<div class="forecast-candidate-note">${row.reason}</div>` : ''}
                             </td>
                             <td>
-                                <span class="metric-source-badge ${row.metric_source}" title="${sourceMeta.title}">
+                                <span class="metric-source-badge ${row.status === 'ok' ? row.metric_source : 'not_evaluated'}" title="${sourceMeta.title}">
                                     ${sourceMeta.label}
                                 </span>
                             </td>

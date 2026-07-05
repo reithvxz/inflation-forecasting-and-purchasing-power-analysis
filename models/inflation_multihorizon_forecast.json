@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-02T15:32:09.304670Z",
+  "generated_at": "2026-07-05T09:12:17.464872Z",
   "interval_level": 0.9,
   "assumptions": {
     "future_exog": "Untuk forecast publik, indikator eksogen masa depan diasumsikan bergerak dekat observasi terakhir (flat baseline).",
@@ -151,16 +151,16 @@
           "interval_note": null
         },
         {
-          "id": "ensemble",
-          "name": "Ensemble",
+          "id": "garch",
+          "name": "GARCH",
           "rank": 2,
-          "point_forecast": 0.3548,
-          "ci_lower": -0.3474,
-          "ci_upper": 0.9146,
+          "point_forecast": 0.3744,
+          "ci_lower": -0.563,
+          "ci_upper": 0.852,
           "metrics": {
-            "mae": 0.3393,
-            "rmse": 0.4904,
-            "smape": 101.51,
+            "mae": 0.3334,
+            "rmse": 0.5152,
+            "smape": 97.93,
             "n_test": 24,
             "interval_level": 90
           },
@@ -242,6 +242,19 @@
           "point_forecast": 0.3569
         },
         {
+          "id": "garch",
+          "name": "GARCH",
+          "status": "ok",
+          "metric_source": "walk_forward",
+          "metrics": {
+            "mae": 0.3334,
+            "rmse": 0.5152,
+            "smape": 97.93,
+            "n_test": 24
+          },
+          "point_forecast": 0.3744
+        },
+        {
           "id": "ensemble",
           "name": "Ensemble",
           "status": "ok",
@@ -301,23 +314,28 @@
         {
           "id": "bilstm",
           "name": "Bi-LSTM",
-          "status": "skipped",
+          "status": "ok",
           "metric_source": "chronological_holdout",
-          "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
+          "metrics": {
+            "mae": 0.5394,
+            "rmse": 0.6619,
+            "smape": 138.41,
+            "n_test": 24
+          },
+          "point_forecast": -0.5342
         },
         {
           "id": "lstm",
           "name": "LSTM",
-          "status": "skipped",
+          "status": "ok",
           "metric_source": "chronological_holdout",
-          "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
-        },
-        {
-          "id": "garch",
-          "name": "GARCH",
-          "status": "skipped",
-          "metric_source": "not_evaluated",
-          "reason": "Package arch tidak tersedia, sehingga kandidat GARCH dilewati secara eksplisit."
+          "metrics": {
+            "mae": 0.582,
+            "rmse": 0.6636,
+            "smape": 133.63,
+            "n_test": 24
+          },
+          "point_forecast": 1.1668
         }
       ],
       "sarimax_feature_audit": {
@@ -471,16 +489,16 @@
           "interval_note": null
         },
         {
-          "id": "naive",
-          "name": "Naive Baseline",
+          "id": "garch",
+          "name": "GARCH",
           "rank": 2,
-          "point_forecast": 0.44,
-          "ci_lower": -0.4255,
-          "ci_upper": 1.5525,
+          "point_forecast": 0.3478,
+          "ci_lower": -0.3794,
+          "ci_upper": 1.1431,
           "metrics": {
-            "mae": 0.4879,
-            "rmse": 0.6816,
-            "smape": 123.33,
+            "mae": 0.3728,
+            "rmse": 0.5003,
+            "smape": 106.28,
             "n_test": 24,
             "interval_level": 90
           },
@@ -562,6 +580,19 @@
           "point_forecast": 0.3222
         },
         {
+          "id": "garch",
+          "name": "GARCH",
+          "status": "ok",
+          "metric_source": "walk_forward",
+          "metrics": {
+            "mae": 0.3728,
+            "rmse": 0.5003,
+            "smape": 106.28,
+            "n_test": 24
+          },
+          "point_forecast": 0.3478
+        },
+        {
           "id": "naive",
           "name": "Naive Baseline",
           "status": "ok",
@@ -612,32 +643,37 @@
           "metric_source": "walk_forward",
           "metrics": {
             "mae": 276.0098,
-            "rmse": 779.7387,
+            "rmse": 779.7389,
             "smape": 123.26,
             "n_test": 24
           },
           "point_forecast": 0.2329
         },
         {
-          "id": "bilstm",
-          "name": "Bi-LSTM",
-          "status": "skipped",
-          "metric_source": "chronological_holdout",
-          "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
-        },
-        {
           "id": "lstm",
           "name": "LSTM",
-          "status": "skipped",
+          "status": "ok",
           "metric_source": "chronological_holdout",
-          "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
+          "metrics": {
+            "mae": 0.4064,
+            "rmse": 0.5795,
+            "smape": 144.51,
+            "n_test": 24
+          },
+          "point_forecast": 0.5181
         },
         {
-          "id": "garch",
-          "name": "GARCH",
-          "status": "skipped",
-          "metric_source": "not_evaluated",
-          "reason": "Package arch tidak tersedia, sehingga kandidat GARCH dilewati secara eksplisit."
+          "id": "bilstm",
+          "name": "Bi-LSTM",
+          "status": "ok",
+          "metric_source": "chronological_holdout",
+          "metrics": {
+            "mae": 0.9028,
+            "rmse": 1.6502,
+            "smape": 135.76,
+            "n_test": 24
+          },
+          "point_forecast": -4.565
         }
       ],
       "sarimax_feature_audit": {
@@ -791,16 +827,16 @@
           "interval_note": null
         },
         {
-          "id": "naive",
-          "name": "Naive Baseline",
+          "id": "garch",
+          "name": "GARCH",
           "rank": 2,
-          "point_forecast": 0.44,
-          "ci_lower": -0.417,
-          "ci_upper": 1.5255,
+          "point_forecast": 0.3451,
+          "ci_lower": -0.386,
+          "ci_upper": 1.1686,
           "metrics": {
-            "mae": 0.5725,
-            "rmse": 0.7052,
-            "smape": 150.38,
+            "mae": 0.3751,
+            "rmse": 0.509,
+            "smape": 105.23,
             "n_test": 24,
             "interval_level": 90
           },
@@ -882,6 +918,19 @@
           "point_forecast": 0.2816
         },
         {
+          "id": "garch",
+          "name": "GARCH",
+          "status": "ok",
+          "metric_source": "walk_forward",
+          "metrics": {
+            "mae": 0.3751,
+            "rmse": 0.509,
+            "smape": 105.23,
+            "n_test": 24
+          },
+          "point_forecast": 0.3451
+        },
+        {
           "id": "naive",
           "name": "Naive Baseline",
           "status": "ok",
@@ -931,8 +980,8 @@
           "status": "ok",
           "metric_source": "walk_forward",
           "metrics": {
-            "mae": 539.7506,
-            "rmse": 1082.6881,
+            "mae": 539.7507,
+            "rmse": 1082.6884,
             "smape": 126.12,
             "n_test": 24
           },
@@ -941,23 +990,28 @@
         {
           "id": "bilstm",
           "name": "Bi-LSTM",
-          "status": "skipped",
+          "status": "ok",
           "metric_source": "chronological_holdout",
-          "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
+          "metrics": {
+            "mae": 0.4241,
+            "rmse": 0.5237,
+            "smape": 116.51,
+            "n_test": 24
+          },
+          "point_forecast": 0.504
         },
         {
           "id": "lstm",
           "name": "LSTM",
-          "status": "skipped",
+          "status": "ok",
           "metric_source": "chronological_holdout",
-          "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
-        },
-        {
-          "id": "garch",
-          "name": "GARCH",
-          "status": "skipped",
-          "metric_source": "not_evaluated",
-          "reason": "Package arch tidak tersedia, sehingga kandidat GARCH dilewati secara eksplisit."
+          "metrics": {
+            "mae": 0.574,
+            "rmse": 0.6489,
+            "smape": 123.59,
+            "n_test": 24
+          },
+          "point_forecast": 1.0127
         }
       ],
       "sarimax_feature_audit": {
@@ -1111,16 +1165,16 @@
           "interval_note": null
         },
         {
-          "id": "naive",
-          "name": "Naive Baseline",
+          "id": "garch",
+          "name": "GARCH",
           "rank": 2,
-          "point_forecast": 0.44,
-          "ci_lower": -0.5715,
-          "ci_upper": 1.5385,
+          "point_forecast": 0.345,
+          "ci_lower": -0.4811,
+          "ci_upper": 1.0925,
           "metrics": {
-            "mae": 0.4817,
-            "rmse": 0.6191,
-            "smape": 130.6,
+            "mae": 0.3722,
+            "rmse": 0.5092,
+            "smape": 101.65,
             "n_test": 24,
             "interval_level": 90
           },
@@ -1202,6 +1256,19 @@
           "point_forecast": 0.2946
         },
         {
+          "id": "garch",
+          "name": "GARCH",
+          "status": "ok",
+          "metric_source": "walk_forward",
+          "metrics": {
+            "mae": 0.3722,
+            "rmse": 0.5092,
+            "smape": 101.65,
+            "n_test": 24
+          },
+          "point_forecast": 0.345
+        },
+        {
           "id": "naive",
           "name": "Naive Baseline",
           "status": "ok",
@@ -1261,23 +1328,28 @@
         {
           "id": "bilstm",
           "name": "Bi-LSTM",
-          "status": "skipped",
+          "status": "ok",
           "metric_source": "chronological_holdout",
-          "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
+          "metrics": {
+            "mae": 0.3506,
+            "rmse": 0.498,
+            "smape": 139.29,
+            "n_test": 24
+          },
+          "point_forecast": 0.2303
         },
         {
           "id": "lstm",
           "name": "LSTM",
-          "status": "skipped",
+          "status": "ok",
           "metric_source": "chronological_holdout",
-          "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
-        },
-        {
-          "id": "garch",
-          "name": "GARCH",
-          "status": "skipped",
-          "metric_source": "not_evaluated",
-          "reason": "Package arch tidak tersedia, sehingga kandidat GARCH dilewati secara eksplisit."
+          "metrics": {
+            "mae": 0.3647,
+            "rmse": 0.5054,
+            "smape": 112.38,
+            "n_test": 24
+          },
+          "point_forecast": 0.0773
         }
       ],
       "sarimax_feature_audit": {
@@ -1411,6 +1483,19 @@
         "point_forecast": 0.3569
       },
       {
+        "id": "garch",
+        "name": "GARCH",
+        "status": "ok",
+        "metric_source": "walk_forward",
+        "metrics": {
+          "mae": 0.3334,
+          "rmse": 0.5152,
+          "smape": 97.93,
+          "n_test": 24
+        },
+        "point_forecast": 0.3744
+      },
+      {
         "id": "ensemble",
         "name": "Ensemble",
         "status": "ok",
@@ -1470,23 +1555,28 @@
       {
         "id": "bilstm",
         "name": "Bi-LSTM",
-        "status": "skipped",
+        "status": "ok",
         "metric_source": "chronological_holdout",
-        "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
+        "metrics": {
+          "mae": 0.5394,
+          "rmse": 0.6619,
+          "smape": 138.41,
+          "n_test": 24
+        },
+        "point_forecast": -0.5342
       },
       {
         "id": "lstm",
         "name": "LSTM",
-        "status": "skipped",
+        "status": "ok",
         "metric_source": "chronological_holdout",
-        "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
-      },
-      {
-        "id": "garch",
-        "name": "GARCH",
-        "status": "skipped",
-        "metric_source": "not_evaluated",
-        "reason": "Package arch tidak tersedia, sehingga kandidat GARCH dilewati secara eksplisit."
+        "metrics": {
+          "mae": 0.582,
+          "rmse": 0.6636,
+          "smape": 133.63,
+          "n_test": 24
+        },
+        "point_forecast": 1.1668
       }
     ],
     "3m": [
@@ -1502,6 +1592,19 @@
           "n_test": 24
         },
         "point_forecast": 0.3222
+      },
+      {
+        "id": "garch",
+        "name": "GARCH",
+        "status": "ok",
+        "metric_source": "walk_forward",
+        "metrics": {
+          "mae": 0.3728,
+          "rmse": 0.5003,
+          "smape": 106.28,
+          "n_test": 24
+        },
+        "point_forecast": 0.3478
       },
       {
         "id": "naive",
@@ -1554,32 +1657,37 @@
         "metric_source": "walk_forward",
         "metrics": {
           "mae": 276.0098,
-          "rmse": 779.7387,
+          "rmse": 779.7389,
           "smape": 123.26,
           "n_test": 24
         },
         "point_forecast": 0.2329
       },
       {
-        "id": "bilstm",
-        "name": "Bi-LSTM",
-        "status": "skipped",
-        "metric_source": "chronological_holdout",
-        "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
-      },
-      {
         "id": "lstm",
         "name": "LSTM",
-        "status": "skipped",
+        "status": "ok",
         "metric_source": "chronological_holdout",
-        "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
+        "metrics": {
+          "mae": 0.4064,
+          "rmse": 0.5795,
+          "smape": 144.51,
+          "n_test": 24
+        },
+        "point_forecast": 0.5181
       },
       {
-        "id": "garch",
-        "name": "GARCH",
-        "status": "skipped",
-        "metric_source": "not_evaluated",
-        "reason": "Package arch tidak tersedia, sehingga kandidat GARCH dilewati secara eksplisit."
+        "id": "bilstm",
+        "name": "Bi-LSTM",
+        "status": "ok",
+        "metric_source": "chronological_holdout",
+        "metrics": {
+          "mae": 0.9028,
+          "rmse": 1.6502,
+          "smape": 135.76,
+          "n_test": 24
+        },
+        "point_forecast": -4.565
       }
     ],
     "6m": [
@@ -1595,6 +1703,19 @@
           "n_test": 24
         },
         "point_forecast": 0.2816
+      },
+      {
+        "id": "garch",
+        "name": "GARCH",
+        "status": "ok",
+        "metric_source": "walk_forward",
+        "metrics": {
+          "mae": 0.3751,
+          "rmse": 0.509,
+          "smape": 105.23,
+          "n_test": 24
+        },
+        "point_forecast": 0.3451
       },
       {
         "id": "naive",
@@ -1646,8 +1767,8 @@
         "status": "ok",
         "metric_source": "walk_forward",
         "metrics": {
-          "mae": 539.7506,
-          "rmse": 1082.6881,
+          "mae": 539.7507,
+          "rmse": 1082.6884,
           "smape": 126.12,
           "n_test": 24
         },
@@ -1656,23 +1777,28 @@
       {
         "id": "bilstm",
         "name": "Bi-LSTM",
-        "status": "skipped",
+        "status": "ok",
         "metric_source": "chronological_holdout",
-        "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
+        "metrics": {
+          "mae": 0.4241,
+          "rmse": 0.5237,
+          "smape": 116.51,
+          "n_test": 24
+        },
+        "point_forecast": 0.504
       },
       {
         "id": "lstm",
         "name": "LSTM",
-        "status": "skipped",
+        "status": "ok",
         "metric_source": "chronological_holdout",
-        "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
-      },
-      {
-        "id": "garch",
-        "name": "GARCH",
-        "status": "skipped",
-        "metric_source": "not_evaluated",
-        "reason": "Package arch tidak tersedia, sehingga kandidat GARCH dilewati secara eksplisit."
+        "metrics": {
+          "mae": 0.574,
+          "rmse": 0.6489,
+          "smape": 123.59,
+          "n_test": 24
+        },
+        "point_forecast": 1.0127
       }
     ],
     "12m": [
@@ -1688,6 +1814,19 @@
           "n_test": 24
         },
         "point_forecast": 0.2946
+      },
+      {
+        "id": "garch",
+        "name": "GARCH",
+        "status": "ok",
+        "metric_source": "walk_forward",
+        "metrics": {
+          "mae": 0.3722,
+          "rmse": 0.5092,
+          "smape": 101.65,
+          "n_test": 24
+        },
+        "point_forecast": 0.345
       },
       {
         "id": "naive",
@@ -1749,23 +1888,28 @@
       {
         "id": "bilstm",
         "name": "Bi-LSTM",
-        "status": "skipped",
+        "status": "ok",
         "metric_source": "chronological_holdout",
-        "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
+        "metrics": {
+          "mae": 0.3506,
+          "rmse": 0.498,
+          "smape": 139.29,
+          "n_test": 24
+        },
+        "point_forecast": 0.2303
       },
       {
         "id": "lstm",
         "name": "LSTM",
-        "status": "skipped",
+        "status": "ok",
         "metric_source": "chronological_holdout",
-        "reason": "Input and parameter tensors are not at the same device, found input tensor at cpu and parameter tensor at cuda:0"
-      },
-      {
-        "id": "garch",
-        "name": "GARCH",
-        "status": "skipped",
-        "metric_source": "not_evaluated",
-        "reason": "Package arch tidak tersedia, sehingga kandidat GARCH dilewati secara eksplisit."
+        "metrics": {
+          "mae": 0.3647,
+          "rmse": 0.5054,
+          "smape": 112.38,
+          "n_test": 24
+        },
+        "point_forecast": 0.0773
       }
     ]
   }

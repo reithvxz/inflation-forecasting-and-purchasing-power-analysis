@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-02T15:32:09.304670Z",
+  "generated_at": "2026-07-05T09:12:17.464872Z",
   "methodology": {
     "selection_basis": "Shortlist awal ditentukan dari teori ekonomi, lalu diuji ulang dengan ablation drop-one out-of-sample pada SARIMAX.",
     "metric_primary": "MAE",
