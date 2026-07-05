@@ -31,6 +31,16 @@ CORE_EXOG_COLUMNS = [
     "FAO_FPI",
 ]
 
+
+def inflation_dataset_path(project_root):
+    corrected = os.path.join(
+        project_root, "datasets", "processed", "clean_inflasi_ts_corrected.csv"
+    )
+    legacy = os.path.join(
+        project_root, "datasets", "processed", "clean_inflasi_ts.csv"
+    )
+    return corrected if os.path.exists(corrected) else legacy
+
 SARIMAX_REGRESSOR_SHORTLIST = [
     "USD_IDR",
     "Brent_USD",

@@ -131,6 +131,54 @@ def _to_float_id(val) -> float:
         return np.nan
 
 
+def _to_float_mixed_locale(val) -> float:
+    """Konversi angka campuran format EN/ID ke float.
+
+    Contoh:
+    - 16,675.0 -> 16675.0
+    - 17.988,0 -> 17988.0
+    - 17,870.0 -> 17870.0
+    - 17.870,0 -> 17870.0
+    """
+    try:
+        s = str(val).strip()
+        if s in ("-", "", "nan", "None", "NaN"):
+            return np.nan
+        s = s.replace("%", "").replace(" ", "").replace("(*)", "").replace('"', "")
+
+        last_comma = s.rfind(",")
+        last_dot = s.rfind(".")
+
+        if last_comma != -1 and last_dot != -1:
+            if last_dot > last_comma:
+                # English-style: comma thousands, dot decimal
+                s = s.replace(",", "")
+            else:
+                # Indonesian-style: dot thousands, comma decimal
+                s = s.replace(".", "").replace(",", ".")
+            return float(s)
+
+        if last_comma != -1:
+            parts = s.split(",")
+            if len(parts) > 2:
+                return float("".join(parts))
+            if len(parts) == 2 and len(parts[1]) == 3 and len(parts[0]) >= 1:
+                return float(parts[0] + parts[1])
+            return float(s.replace(",", "."))
+
+        if last_dot != -1:
+            parts = s.split(".")
+            if len(parts) > 2:
+                return float("".join(parts))
+            if len(parts) == 2 and len(parts[1]) == 3 and len(parts[0]) >= 1:
+                return float(parts[0] + parts[1])
+            return float(s)
+
+        return float(s)
+    except Exception:
+        return np.nan
+
+
 
 def _extract_year(filename: str):
     """Ekstrak tahun dari nama file (misalnya '...2024.csv' → 2024)."""
@@ -295,7 +343,9 @@ def load_usd_idr() -> pd.DataFrame:
         df.rename(columns={df.columns[0]: "Tanggal", df.columns[1]: "Kurs"}, inplace=True)
         # Parse tanggal format dd/mm/yyyy
         df["Tanggal"] = pd.to_datetime(df["Tanggal"], format="%d/%m/%Y", errors="coerce")
-        df["Kurs"] = df["Kurs"].apply(_to_float_id)
+        # Raw Investing.com export mixes English and Indonesian numeric formats
+        # across rows, so we need a locale-aware parser per value.
+        df["Kurs"] = df["Kurs"].apply(_to_float_mixed_locale)
         df = df.dropna(subset=["Tanggal", "Kurs"]).set_index("Tanggal").sort_index()
         # Data sudah bulanan - normalize ke awal bulan
         df.index = df.index.normalize()  # set to start of day
@@ -432,7 +482,7 @@ def load_usd_idr_2026() -> pd.DataFrame:
         else:
             print("  GAGAL – kolom harga tidak ditemukan")
             return pd.DataFrame()
-        df[price_col] = df[price_col].apply(_to_float_id)
+        df[price_col] = df[price_col].apply(_to_float_mixed_locale)
         df = df.dropna(subset=["Tanggal", price_col])
         # Resample ke bulanan (ambil rata-rata)
         df_monthly = (df.set_index("Tanggal")[[price_col]]

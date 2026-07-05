@@ -22,6 +22,8 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 
+from dashboard.predictions.inflation_forecast import inflation_dataset_path
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.join(SCRIPT_DIR, "datasets", "processed")
 
@@ -44,7 +46,7 @@ def get_lstm_pipeline_data(seq_length=12):
     print("  LSTM Data Pipeline (Chronological Split) v2")
     print("=" * 50)
 
-    path = os.path.join(OUT_DIR, "clean_inflasi_ts.csv")
+    path = inflation_dataset_path(SCRIPT_DIR)
     if not os.path.exists(path):
         raise FileNotFoundError(f"File {path} tidak ditemukan. Jalankan preprocessing.py dulu.")
 

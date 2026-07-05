@@ -1,6 +1,37 @@
 {
   "1m": [
     {
+      "id": "sarimax",
+      "name": "SARIMAX",
+      "status": "ok",
+      "metric_source": "walk_forward",
+      "metrics": {
+        "mae": 0.3193,
+        "rmse": 0.4619,
+        "smape": 113.5,
+        "n_test": 24
+      },
+      "point_forecast": 0.3171
+    },
+    {
+      "id": "ensemble",
+      "name": "Ensemble",
+      "status": "ok",
+      "metric_source": "walk_forward",
+      "metrics": {
+        "mae": 0.3276,
+        "rmse": 0.4918,
+        "smape": 104.39,
+        "n_test": 24
+      },
+      "point_forecast": 0.4438,
+      "weights": {
+        "arima": 0.3452,
+        "sarimax": 0.3585,
+        "prophet": 0.2962
+      }
+    },
+    {
       "id": "arima",
       "name": "ARIMA",
       "status": "ok",
@@ -27,22 +58,17 @@
       "point_forecast": 0.3744
     },
     {
-      "id": "ensemble",
-      "name": "Ensemble",
+      "id": "prophet",
+      "name": "Prophet",
       "status": "ok",
       "metric_source": "walk_forward",
       "metrics": {
-        "mae": 0.3393,
-        "rmse": 0.4904,
-        "smape": 101.51,
+        "mae": 0.3865,
+        "rmse": 0.5876,
+        "smape": 111.27,
         "n_test": 24
       },
-      "point_forecast": 0.3548,
-      "weights": {
-        "arima": 0.9609,
-        "sarimax": 0.0356,
-        "prophet": 0.0035
-      }
+      "point_forecast": 0.6984
     },
     {
       "id": "naive",
@@ -58,43 +84,17 @@
       "point_forecast": 0.44
     },
     {
-      "id": "sarimax",
-      "name": "SARIMAX",
-      "status": "ok",
-      "metric_source": "walk_forward",
-      "metrics": {
-        "mae": 8.9594,
-        "rmse": 42.4594,
-        "smape": 101.71,
-        "n_test": 24
-      },
-      "point_forecast": 0.2686
-    },
-    {
-      "id": "prophet",
-      "name": "Prophet",
-      "status": "ok",
-      "metric_source": "walk_forward",
-      "metrics": {
-        "mae": 90.5555,
-        "rmse": 441.7408,
-        "smape": 111.64,
-        "n_test": 24
-      },
-      "point_forecast": 0.6601
-    },
-    {
       "id": "bilstm",
       "name": "Bi-LSTM",
       "status": "ok",
       "metric_source": "chronological_holdout",
       "metrics": {
-        "mae": 0.5394,
-        "rmse": 0.6619,
-        "smape": 138.41,
+        "mae": 0.414,
+        "rmse": 0.5295,
+        "smape": 122.62,
         "n_test": 24
       },
-      "point_forecast": -0.5342
+      "point_forecast": 0.0068
     },
     {
       "id": "lstm",
@@ -102,15 +102,46 @@
       "status": "ok",
       "metric_source": "chronological_holdout",
       "metrics": {
-        "mae": 0.582,
-        "rmse": 0.6636,
-        "smape": 133.63,
+        "mae": 0.5357,
+        "rmse": 0.6246,
+        "smape": 119.81,
         "n_test": 24
       },
-      "point_forecast": 1.1668
+      "point_forecast": 0.8641
     }
   ],
   "3m": [
+    {
+      "id": "sarimax",
+      "name": "SARIMAX",
+      "status": "ok",
+      "metric_source": "walk_forward",
+      "metrics": {
+        "mae": 0.3264,
+        "rmse": 0.4823,
+        "smape": 113.39,
+        "n_test": 24
+      },
+      "point_forecast": 0.2712
+    },
+    {
+      "id": "ensemble",
+      "name": "Ensemble",
+      "status": "ok",
+      "metric_source": "walk_forward",
+      "metrics": {
+        "mae": 0.3371,
+        "rmse": 0.5063,
+        "smape": 109.01,
+        "n_test": 24
+      },
+      "point_forecast": 0.2884,
+      "weights": {
+        "arima": 0.3276,
+        "sarimax": 0.3632,
+        "prophet": 0.3092
+      }
+    },
     {
       "id": "arima",
       "name": "ARIMA",
@@ -138,6 +169,19 @@
       "point_forecast": 0.3478
     },
     {
+      "id": "prophet",
+      "name": "Prophet",
+      "status": "ok",
+      "metric_source": "walk_forward",
+      "metrics": {
+        "mae": 0.3834,
+        "rmse": 0.5858,
+        "smape": 109.92,
+        "n_test": 24
+      },
+      "point_forecast": 0.2729
+    },
+    {
       "id": "naive",
       "name": "Naive Baseline",
       "status": "ok",
@@ -151,48 +195,17 @@
       "point_forecast": 0.44
     },
     {
-      "id": "ensemble",
-      "name": "Ensemble",
+      "id": "bilstm",
+      "name": "Bi-LSTM",
       "status": "ok",
-      "metric_source": "walk_forward",
+      "metric_source": "chronological_holdout",
       "metrics": {
-        "mae": 0.7981,
-        "rmse": 1.6018,
-        "smape": 114.9,
+        "mae": 0.3747,
+        "rmse": 0.5013,
+        "smape": 117.27,
         "n_test": 24
       },
-      "point_forecast": 0.3203,
-      "weights": {
-        "arima": 0.9813,
-        "sarimax": 0.0174,
-        "prophet": 0.0013
-      }
-    },
-    {
-      "id": "sarimax",
-      "name": "SARIMAX",
-      "status": "ok",
-      "metric_source": "walk_forward",
-      "metrics": {
-        "mae": 20.4084,
-        "rmse": 59.4096,
-        "smape": 128.24,
-        "n_test": 24
-      },
-      "point_forecast": 0.2186
-    },
-    {
-      "id": "prophet",
-      "name": "Prophet",
-      "status": "ok",
-      "metric_source": "walk_forward",
-      "metrics": {
-        "mae": 276.0098,
-        "rmse": 779.7389,
-        "smape": 123.26,
-        "n_test": 24
-      },
-      "point_forecast": 0.2329
+      "point_forecast": 0.3953
     },
     {
       "id": "lstm",
@@ -200,28 +213,46 @@
       "status": "ok",
       "metric_source": "chronological_holdout",
       "metrics": {
-        "mae": 0.4064,
-        "rmse": 0.5795,
-        "smape": 144.51,
+        "mae": 0.3927,
+        "rmse": 0.5582,
+        "smape": 144.3,
         "n_test": 24
       },
-      "point_forecast": 0.5181
-    },
-    {
-      "id": "bilstm",
-      "name": "Bi-LSTM",
-      "status": "ok",
-      "metric_source": "chronological_holdout",
-      "metrics": {
-        "mae": 0.9028,
-        "rmse": 1.6502,
-        "smape": 135.76,
-        "n_test": 24
-      },
-      "point_forecast": -4.565
+      "point_forecast": 0.6495
     }
   ],
   "6m": [
+    {
+      "id": "sarimax",
+      "name": "SARIMAX",
+      "status": "ok",
+      "metric_source": "walk_forward",
+      "metrics": {
+        "mae": 0.3308,
+        "rmse": 0.4824,
+        "smape": 117.6,
+        "n_test": 24
+      },
+      "point_forecast": 0.3202
+    },
+    {
+      "id": "ensemble",
+      "name": "Ensemble",
+      "status": "ok",
+      "metric_source": "walk_forward",
+      "metrics": {
+        "mae": 0.3388,
+        "rmse": 0.5057,
+        "smape": 109.01,
+        "n_test": 24
+      },
+      "point_forecast": 0.4403,
+      "weights": {
+        "arima": 0.3241,
+        "sarimax": 0.355,
+        "prophet": 0.3209
+      }
+    },
     {
       "id": "arima",
       "name": "ARIMA",
@@ -234,6 +265,19 @@
         "n_test": 24
       },
       "point_forecast": 0.2816
+    },
+    {
+      "id": "prophet",
+      "name": "Prophet",
+      "status": "ok",
+      "metric_source": "walk_forward",
+      "metrics": {
+        "mae": 0.3659,
+        "rmse": 0.5806,
+        "smape": 97.81,
+        "n_test": 24
+      },
+      "point_forecast": 0.7334
     },
     {
       "id": "garch",
@@ -260,50 +304,6 @@
         "n_test": 24
       },
       "point_forecast": 0.44
-    },
-    {
-      "id": "ensemble",
-      "name": "Ensemble",
-      "status": "ok",
-      "metric_source": "walk_forward",
-      "metrics": {
-        "mae": 0.7246,
-        "rmse": 1.0785,
-        "smape": 132.83,
-        "n_test": 24
-      },
-      "point_forecast": 0.2817,
-      "weights": {
-        "arima": 0.9901,
-        "sarimax": 0.0093,
-        "prophet": 0.0007
-      }
-    },
-    {
-      "id": "sarimax",
-      "name": "SARIMAX",
-      "status": "ok",
-      "metric_source": "walk_forward",
-      "metrics": {
-        "mae": 38.7532,
-        "rmse": 86.8455,
-        "smape": 137.4,
-        "n_test": 24
-      },
-      "point_forecast": 0.2666
-    },
-    {
-      "id": "prophet",
-      "name": "Prophet",
-      "status": "ok",
-      "metric_source": "walk_forward",
-      "metrics": {
-        "mae": 539.7507,
-        "rmse": 1082.6884,
-        "smape": 126.12,
-        "n_test": 24
-      },
-      "point_forecast": 0.6896
     },
     {
       "id": "bilstm",
@@ -334,6 +334,37 @@
   ],
   "12m": [
     {
+      "id": "sarimax",
+      "name": "SARIMAX",
+      "status": "ok",
+      "metric_source": "walk_forward",
+      "metrics": {
+        "mae": 0.3322,
+        "rmse": 0.4813,
+        "smape": 118.67,
+        "n_test": 24
+      },
+      "point_forecast": 0.2864
+    },
+    {
+      "id": "ensemble",
+      "name": "Ensemble",
+      "status": "ok",
+      "metric_source": "walk_forward",
+      "metrics": {
+        "mae": 0.3409,
+        "rmse": 0.5035,
+        "smape": 108.67,
+        "n_test": 24
+      },
+      "point_forecast": 0.323,
+      "weights": {
+        "arima": 0.3248,
+        "sarimax": 0.3608,
+        "prophet": 0.3144
+      }
+    },
+    {
       "id": "arima",
       "name": "ARIMA",
       "status": "ok",
@@ -360,6 +391,19 @@
       "point_forecast": 0.345
     },
     {
+      "id": "prophet",
+      "name": "Prophet",
+      "status": "ok",
+      "metric_source": "walk_forward",
+      "metrics": {
+        "mae": 0.3812,
+        "rmse": 0.5811,
+        "smape": 115.35,
+        "n_test": 24
+      },
+      "point_forecast": 0.3943
+    },
+    {
       "id": "naive",
       "name": "Naive Baseline",
       "status": "ok",
@@ -371,50 +415,6 @@
         "n_test": 24
       },
       "point_forecast": 0.44
-    },
-    {
-      "id": "ensemble",
-      "name": "Ensemble",
-      "status": "ok",
-      "metric_source": "walk_forward",
-      "metrics": {
-        "mae": 0.8898,
-        "rmse": 1.3683,
-        "smape": 119.75,
-        "n_test": 24
-      },
-      "point_forecast": 0.2943,
-      "weights": {
-        "arima": 0.9933,
-        "sarimax": 0.006,
-        "prophet": 0.0007
-      }
-    },
-    {
-      "id": "sarimax",
-      "name": "SARIMAX",
-      "status": "ok",
-      "metric_source": "walk_forward",
-      "metrics": {
-        "mae": 60.9263,
-        "rmse": 129.1091,
-        "smape": 133.65,
-        "n_test": 24
-      },
-      "point_forecast": 0.2408
-    },
-    {
-      "id": "prophet",
-      "name": "Prophet",
-      "status": "ok",
-      "metric_source": "walk_forward",
-      "metrics": {
-        "mae": 505.8734,
-        "rmse": 1015.4114,
-        "smape": 147.23,
-        "n_test": 24
-      },
-      "point_forecast": 0.4213
     },
     {
       "id": "bilstm",

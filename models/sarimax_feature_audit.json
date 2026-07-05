@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-05T09:12:17.464872Z",
+  "generated_at": "2026-07-05T09:49:32.392664Z",
   "methodology": {
     "selection_basis": "Shortlist awal ditentukan dari teori ekonomi, lalu diuji ulang dengan ablation drop-one out-of-sample pada SARIMAX.",
     "metric_primary": "MAE",
@@ -17,9 +17,9 @@
         "FAO_FPI"
       ],
       "base_metrics": {
-        "mae": 8.9594,
-        "rmse": 42.4594,
-        "smape": 101.71,
+        "mae": 0.3193,
+        "rmse": 0.4619,
+        "smape": 113.5,
         "n_test": 24
       },
       "method": "drop-one walk-forward ablation",
@@ -34,13 +34,13 @@
           ],
           "status": "ok",
           "dropped_model_metrics": {
-            "mae": 54.6001,
-            "rmse": 265.814,
-            "smape": 117.96,
+            "mae": 0.3786,
+            "rmse": 0.5246,
+            "smape": 140.18,
             "n_test": 24
           },
-          "delta_mae": 45.6407,
-          "delta_rmse": 223.3546,
+          "delta_mae": 0.0593,
+          "delta_rmse": 0.0627,
           "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
         },
         {
@@ -53,14 +53,14 @@
           ],
           "status": "ok",
           "dropped_model_metrics": {
-            "mae": 23.8037,
-            "rmse": 115.1619,
-            "smape": 106.7,
+            "mae": 0.3229,
+            "rmse": 0.4651,
+            "smape": 117.92,
             "n_test": 24
           },
-          "delta_mae": 14.8443,
-          "delta_rmse": 72.7025,
-          "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
+          "delta_mae": 0.0036,
+          "delta_rmse": 0.0031,
+          "interpretation": "penghapusan fitur hampir tidak mengubah error; kontribusi fitur cenderung marjinal"
         },
         {
           "feature": "FAO_FPI",
@@ -72,33 +72,14 @@
           ],
           "status": "ok",
           "dropped_model_metrics": {
-            "mae": 12.3509,
-            "rmse": 59.0606,
-            "smape": 104.96,
+            "mae": 0.3185,
+            "rmse": 0.4612,
+            "smape": 113.27,
             "n_test": 24
           },
-          "delta_mae": 3.3915,
-          "delta_rmse": 16.6012,
-          "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
-        },
-        {
-          "feature": "Brent_USD",
-          "remaining_regressors": [
-            "USD_IDR",
-            "BI_Rate",
-            "DXY",
-            "FAO_FPI"
-          ],
-          "status": "ok",
-          "dropped_model_metrics": {
-            "mae": 4.3837,
-            "rmse": 20.0511,
-            "smape": 105.83,
-            "n_test": 24
-          },
-          "delta_mae": -4.5756,
-          "delta_rmse": -22.4083,
-          "interpretation": "penghapusan fitur justru menurunkan error; shortlist layak ditinjau ulang"
+          "delta_mae": -0.0008,
+          "delta_rmse": -0.0008,
+          "interpretation": "penghapusan fitur hampir tidak mengubah error; kontribusi fitur cenderung marjinal"
         },
         {
           "feature": "USD_IDR",
@@ -115,9 +96,28 @@
             "smape": 100.7,
             "n_test": 24
           },
-          "delta_mae": -8.6465,
-          "delta_rmse": -41.9983,
-          "interpretation": "penghapusan fitur justru menurunkan error; shortlist layak ditinjau ulang"
+          "delta_mae": -0.0065,
+          "delta_rmse": -0.0009,
+          "interpretation": "penghapusan fitur hampir tidak mengubah error; kontribusi fitur cenderung marjinal"
+        },
+        {
+          "feature": "Brent_USD",
+          "remaining_regressors": [
+            "USD_IDR",
+            "BI_Rate",
+            "DXY",
+            "FAO_FPI"
+          ],
+          "status": "ok",
+          "dropped_model_metrics": {
+            "mae": 0.3093,
+            "rmse": 0.4541,
+            "smape": 110.71,
+            "n_test": 24
+          },
+          "delta_mae": -0.0099,
+          "delta_rmse": -0.0078,
+          "interpretation": "penghapusan fitur hampir tidak mengubah error; kontribusi fitur cenderung marjinal"
         }
       ]
     },
@@ -132,9 +132,9 @@
         "FAO_FPI"
       ],
       "base_metrics": {
-        "mae": 20.4084,
-        "rmse": 59.4096,
-        "smape": 128.24,
+        "mae": 0.3264,
+        "rmse": 0.4823,
+        "smape": 113.39,
         "n_test": 24
       },
       "method": "drop-one walk-forward ablation",
@@ -149,70 +149,13 @@
           ],
           "status": "ok",
           "dropped_model_metrics": {
-            "mae": 167.2889,
-            "rmse": 472.2645,
-            "smape": 128.48,
+            "mae": 0.3947,
+            "rmse": 0.555,
+            "smape": 141.36,
             "n_test": 24
           },
-          "delta_mae": 146.8805,
-          "delta_rmse": 412.8549,
-          "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
-        },
-        {
-          "feature": "DXY",
-          "remaining_regressors": [
-            "USD_IDR",
-            "Brent_USD",
-            "BI_Rate",
-            "FAO_FPI"
-          ],
-          "status": "ok",
-          "dropped_model_metrics": {
-            "mae": 78.8993,
-            "rmse": 224.408,
-            "smape": 125.61,
-            "n_test": 24
-          },
-          "delta_mae": 58.4909,
-          "delta_rmse": 164.9985,
-          "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
-        },
-        {
-          "feature": "FAO_FPI",
-          "remaining_regressors": [
-            "USD_IDR",
-            "Brent_USD",
-            "BI_Rate",
-            "DXY"
-          ],
-          "status": "ok",
-          "dropped_model_metrics": {
-            "mae": 28.779,
-            "rmse": 82.0802,
-            "smape": 126.43,
-            "n_test": 24
-          },
-          "delta_mae": 8.3707,
-          "delta_rmse": 22.6706,
-          "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
-        },
-        {
-          "feature": "Brent_USD",
-          "remaining_regressors": [
-            "USD_IDR",
-            "BI_Rate",
-            "DXY",
-            "FAO_FPI"
-          ],
-          "status": "ok",
-          "dropped_model_metrics": {
-            "mae": 24.6161,
-            "rmse": 75.0646,
-            "smape": 128.95,
-            "n_test": 24
-          },
-          "delta_mae": 4.2077,
-          "delta_rmse": 15.655,
+          "delta_mae": 0.0684,
+          "delta_rmse": 0.0728,
           "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
         },
         {
@@ -230,8 +173,65 @@
             "smape": 104.05,
             "n_test": 24
           },
-          "delta_mae": -20.0716,
-          "delta_rmse": -58.937,
+          "delta_mae": 0.0104,
+          "delta_rmse": -0.0096,
+          "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
+        },
+        {
+          "feature": "DXY",
+          "remaining_regressors": [
+            "USD_IDR",
+            "Brent_USD",
+            "BI_Rate",
+            "FAO_FPI"
+          ],
+          "status": "ok",
+          "dropped_model_metrics": {
+            "mae": 0.3308,
+            "rmse": 0.4865,
+            "smape": 119.06,
+            "n_test": 24
+          },
+          "delta_mae": 0.0045,
+          "delta_rmse": 0.0042,
+          "interpretation": "penghapusan fitur hampir tidak mengubah error; kontribusi fitur cenderung marjinal"
+        },
+        {
+          "feature": "FAO_FPI",
+          "remaining_regressors": [
+            "USD_IDR",
+            "Brent_USD",
+            "BI_Rate",
+            "DXY"
+          ],
+          "status": "ok",
+          "dropped_model_metrics": {
+            "mae": 0.3256,
+            "rmse": 0.4811,
+            "smape": 113.31,
+            "n_test": 24
+          },
+          "delta_mae": -0.0008,
+          "delta_rmse": -0.0011,
+          "interpretation": "penghapusan fitur hampir tidak mengubah error; kontribusi fitur cenderung marjinal"
+        },
+        {
+          "feature": "Brent_USD",
+          "remaining_regressors": [
+            "USD_IDR",
+            "BI_Rate",
+            "DXY",
+            "FAO_FPI"
+          ],
+          "status": "ok",
+          "dropped_model_metrics": {
+            "mae": 0.316,
+            "rmse": 0.4741,
+            "smape": 109.98,
+            "n_test": 24
+          },
+          "delta_mae": -0.0104,
+          "delta_rmse": -0.0081,
           "interpretation": "penghapusan fitur justru menurunkan error; shortlist layak ditinjau ulang"
         }
       ]
@@ -247,9 +247,9 @@
         "FAO_FPI"
       ],
       "base_metrics": {
-        "mae": 38.7532,
-        "rmse": 86.8455,
-        "smape": 137.4,
+        "mae": 0.3308,
+        "rmse": 0.4824,
+        "smape": 117.6,
         "n_test": 24
       },
       "method": "drop-one walk-forward ablation",
@@ -264,70 +264,13 @@
           ],
           "status": "ok",
           "dropped_model_metrics": {
-            "mae": 318.0703,
-            "rmse": 642.6725,
-            "smape": 141.7,
+            "mae": 0.4091,
+            "rmse": 0.5602,
+            "smape": 145.54,
             "n_test": 24
           },
-          "delta_mae": 279.3171,
-          "delta_rmse": 555.827,
-          "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
-        },
-        {
-          "feature": "DXY",
-          "remaining_regressors": [
-            "USD_IDR",
-            "Brent_USD",
-            "BI_Rate",
-            "FAO_FPI"
-          ],
-          "status": "ok",
-          "dropped_model_metrics": {
-            "mae": 151.1651,
-            "rmse": 304.1635,
-            "smape": 136.09,
-            "n_test": 24
-          },
-          "delta_mae": 112.412,
-          "delta_rmse": 217.318,
-          "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
-        },
-        {
-          "feature": "FAO_FPI",
-          "remaining_regressors": [
-            "USD_IDR",
-            "Brent_USD",
-            "BI_Rate",
-            "DXY"
-          ],
-          "status": "ok",
-          "dropped_model_metrics": {
-            "mae": 74.6134,
-            "rmse": 158.2885,
-            "smape": 136.16,
-            "n_test": 24
-          },
-          "delta_mae": 35.8602,
-          "delta_rmse": 71.443,
-          "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
-        },
-        {
-          "feature": "Brent_USD",
-          "remaining_regressors": [
-            "USD_IDR",
-            "BI_Rate",
-            "DXY",
-            "FAO_FPI"
-          ],
-          "status": "ok",
-          "dropped_model_metrics": {
-            "mae": 49.9933,
-            "rmse": 110.2432,
-            "smape": 135.47,
-            "n_test": 24
-          },
-          "delta_mae": 11.2401,
-          "delta_rmse": 23.3976,
+          "delta_mae": 0.0783,
+          "delta_rmse": 0.0778,
           "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
         },
         {
@@ -345,9 +288,66 @@
             "smape": 104.43,
             "n_test": 24
           },
-          "delta_mae": -38.4107,
-          "delta_rmse": -86.3704,
-          "interpretation": "penghapusan fitur justru menurunkan error; shortlist layak ditinjau ulang"
+          "delta_mae": 0.0117,
+          "delta_rmse": -0.0072,
+          "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
+        },
+        {
+          "feature": "DXY",
+          "remaining_regressors": [
+            "USD_IDR",
+            "Brent_USD",
+            "BI_Rate",
+            "FAO_FPI"
+          ],
+          "status": "ok",
+          "dropped_model_metrics": {
+            "mae": 0.3353,
+            "rmse": 0.487,
+            "smape": 123.43,
+            "n_test": 24
+          },
+          "delta_mae": 0.0045,
+          "delta_rmse": 0.0046,
+          "interpretation": "penghapusan fitur hampir tidak mengubah error; kontribusi fitur cenderung marjinal"
+        },
+        {
+          "feature": "FAO_FPI",
+          "remaining_regressors": [
+            "USD_IDR",
+            "Brent_USD",
+            "BI_Rate",
+            "DXY"
+          ],
+          "status": "ok",
+          "dropped_model_metrics": {
+            "mae": 0.3295,
+            "rmse": 0.481,
+            "smape": 117.01,
+            "n_test": 24
+          },
+          "delta_mae": -0.0013,
+          "delta_rmse": -0.0013,
+          "interpretation": "penghapusan fitur hampir tidak mengubah error; kontribusi fitur cenderung marjinal"
+        },
+        {
+          "feature": "Brent_USD",
+          "remaining_regressors": [
+            "USD_IDR",
+            "BI_Rate",
+            "DXY",
+            "FAO_FPI"
+          ],
+          "status": "ok",
+          "dropped_model_metrics": {
+            "mae": 0.3213,
+            "rmse": 0.4742,
+            "smape": 114.24,
+            "n_test": 24
+          },
+          "delta_mae": -0.0095,
+          "delta_rmse": -0.0082,
+          "interpretation": "penghapusan fitur hampir tidak mengubah error; kontribusi fitur cenderung marjinal"
         }
       ]
     },
@@ -362,9 +362,9 @@
         "FAO_FPI"
       ],
       "base_metrics": {
-        "mae": 60.9263,
-        "rmse": 129.1091,
-        "smape": 133.65,
+        "mae": 0.3322,
+        "rmse": 0.4813,
+        "smape": 118.67,
         "n_test": 24
       },
       "method": "drop-one walk-forward ablation",
@@ -379,71 +379,14 @@
           ],
           "status": "ok",
           "dropped_model_metrics": {
-            "mae": 305.1732,
-            "rmse": 617.3024,
-            "smape": 143.38,
+            "mae": 0.4191,
+            "rmse": 0.5653,
+            "smape": 146.9,
             "n_test": 24
           },
-          "delta_mae": 244.2469,
-          "delta_rmse": 488.1933,
+          "delta_mae": 0.0869,
+          "delta_rmse": 0.084,
           "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
-        },
-        {
-          "feature": "DXY",
-          "remaining_regressors": [
-            "USD_IDR",
-            "Brent_USD",
-            "BI_Rate",
-            "FAO_FPI"
-          ],
-          "status": "ok",
-          "dropped_model_metrics": {
-            "mae": 152.0553,
-            "rmse": 304.0465,
-            "smape": 136.39,
-            "n_test": 24
-          },
-          "delta_mae": 91.129,
-          "delta_rmse": 174.9374,
-          "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
-        },
-        {
-          "feature": "FAO_FPI",
-          "remaining_regressors": [
-            "USD_IDR",
-            "Brent_USD",
-            "BI_Rate",
-            "DXY"
-          ],
-          "status": "ok",
-          "dropped_model_metrics": {
-            "mae": 103.4507,
-            "rmse": 209.8917,
-            "smape": 135.67,
-            "n_test": 24
-          },
-          "delta_mae": 42.5243,
-          "delta_rmse": 80.7826,
-          "interpretation": "penghapusan fitur memperburuk error; fitur memberi kontribusi positif"
-        },
-        {
-          "feature": "Brent_USD",
-          "remaining_regressors": [
-            "USD_IDR",
-            "BI_Rate",
-            "DXY",
-            "FAO_FPI"
-          ],
-          "status": "ok",
-          "dropped_model_metrics": {
-            "mae": 50.3968,
-            "rmse": 116.0596,
-            "smape": 134.64,
-            "n_test": 24
-          },
-          "delta_mae": -10.5296,
-          "delta_rmse": -13.0495,
-          "interpretation": "penghapusan fitur justru menurunkan error; shortlist layak ditinjau ulang"
         },
         {
           "feature": "USD_IDR",
@@ -460,9 +403,66 @@
             "smape": 103.73,
             "n_test": 24
           },
-          "delta_mae": -60.5844,
-          "delta_rmse": -128.6319,
-          "interpretation": "penghapusan fitur justru menurunkan error; shortlist layak ditinjau ulang"
+          "delta_mae": 0.0097,
+          "delta_rmse": -0.0041,
+          "interpretation": "penghapusan fitur hampir tidak mengubah error; kontribusi fitur cenderung marjinal"
+        },
+        {
+          "feature": "DXY",
+          "remaining_regressors": [
+            "USD_IDR",
+            "Brent_USD",
+            "BI_Rate",
+            "FAO_FPI"
+          ],
+          "status": "ok",
+          "dropped_model_metrics": {
+            "mae": 0.337,
+            "rmse": 0.4862,
+            "smape": 124.93,
+            "n_test": 24
+          },
+          "delta_mae": 0.0048,
+          "delta_rmse": 0.0049,
+          "interpretation": "penghapusan fitur hampir tidak mengubah error; kontribusi fitur cenderung marjinal"
+        },
+        {
+          "feature": "FAO_FPI",
+          "remaining_regressors": [
+            "USD_IDR",
+            "Brent_USD",
+            "BI_Rate",
+            "DXY"
+          ],
+          "status": "ok",
+          "dropped_model_metrics": {
+            "mae": 0.3307,
+            "rmse": 0.4802,
+            "smape": 117.7,
+            "n_test": 24
+          },
+          "delta_mae": -0.0015,
+          "delta_rmse": -0.0011,
+          "interpretation": "penghapusan fitur hampir tidak mengubah error; kontribusi fitur cenderung marjinal"
+        },
+        {
+          "feature": "Brent_USD",
+          "remaining_regressors": [
+            "USD_IDR",
+            "BI_Rate",
+            "DXY",
+            "FAO_FPI"
+          ],
+          "status": "ok",
+          "dropped_model_metrics": {
+            "mae": 0.3225,
+            "rmse": 0.4726,
+            "smape": 115.03,
+            "n_test": 24
+          },
+          "delta_mae": -0.0097,
+          "delta_rmse": -0.0087,
+          "interpretation": "penghapusan fitur hampir tidak mengubah error; kontribusi fitur cenderung marjinal"
         }
       ]
     }

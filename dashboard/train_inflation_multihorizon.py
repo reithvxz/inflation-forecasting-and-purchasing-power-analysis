@@ -32,6 +32,7 @@ from predictions.inflation_forecast import (
     SARIMAX_REGRESSOR_SHORTLIST,
     comparison_artifact_path,
     forecast_artifact_path,
+    inflation_dataset_path,
     sarimax_feature_audit_path,
     label_for_horizon,
     make_forecast_payload,
@@ -53,7 +54,7 @@ np.random.seed(42)
 torch.manual_seed(42)
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
-DATA_PATH = os.path.join(PROJECT_ROOT, "datasets", "processed", "clean_inflasi_ts.csv")
+DATA_PATH = inflation_dataset_path(PROJECT_ROOT)
 MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 
 ARIMA_ORDER = (3, 0, 3)

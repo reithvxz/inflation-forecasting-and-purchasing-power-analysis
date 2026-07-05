@@ -17,6 +17,7 @@ from predictions.daya_beli_model import (
 )
 from predictions.inflation_forecast import (
     SARIMAX_REGRESSOR_SHORTLIST,
+    inflation_dataset_path,
     load_saved_forecast_payload,
     load_saved_sarimax_feature_audit,
 )
@@ -731,7 +732,7 @@ def load_models(load_inflation=True):
     
     project_root = os.path.dirname(settings.BASE_DIR)
     models_dir = os.path.join(project_root, 'models')
-    data_path = os.path.join(project_root, 'datasets', 'processed', 'clean_inflasi_ts.csv')
+    data_path = inflation_dataset_path(project_root)
     
     ridge_path = os.path.join(models_dir, 'best_daya_beli_ridge.pkl')
     if os.path.exists(ridge_path) and RIDGE_MODEL is None:
@@ -1489,7 +1490,7 @@ def api_dataset_sample(request):
     elif dataset == 'daya_beli':
         path = os.path.join(datasets_root, 'processed', 'clean_daya_beli.csv')
     elif dataset == 'inflasi':
-        path = os.path.join(datasets_root, 'processed', 'clean_inflasi_ts.csv')
+        path = inflation_dataset_path(os.path.dirname(settings.BASE_DIR))
     else:
         return JsonResponse({'error': 'Unknown dataset. Provide ?file= or ?dataset='}, status=400)
 
@@ -1824,7 +1825,7 @@ def api_usd_idr_latest(request):
     from datetime import date, datetime, timedelta
     
     project_root = os.path.dirname(settings.BASE_DIR)
-    path = os.path.join(project_root, 'datasets', 'processed', 'clean_inflasi_ts.csv')
+    path = inflation_dataset_path(project_root)
     
     # Prefer the latest daily reference first, then enrich it with current-month history.
     daily_rate = None
@@ -2119,7 +2120,7 @@ def api_inflation_forecast(request):
 def api_inflasi_summary(request):
     """Return ringkasan inflasi: M-to-M, Y-o-Y, Y-to-D, dan histori 24 bulan."""
     project_root = os.path.dirname(settings.BASE_DIR)
-    data_path = os.path.join(project_root, 'datasets', 'processed', 'clean_inflasi_ts.csv')
+    data_path = inflation_dataset_path(project_root)
     
     if not os.path.exists(data_path):
         return _json_no_store({'error': 'Data file not found'}, status=404)
