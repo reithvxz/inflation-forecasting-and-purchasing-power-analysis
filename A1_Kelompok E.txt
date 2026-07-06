@@ -1,0 +1,10 @@
+Judul Proyek: ECODASH: PREDIKSI INFLASI MULTI-HORIZON BERBASIS SELEKSI MODEL DINAMIS DAN ANALISIS DAYA BELI DI INDONESIA
+Kelas: Machine Learning SD-A1
+Kelompok: Kelompok E
+
+Daftar Anggota Kelompok:
+1. Muhammad Rajif Al Farikhi (162112133008)
+2. Sahrul Adicandra Effendy (164231013)
+3. Semaya David Petroes Putra (164231048)
+4. Adrina Firda Marwah (164231087)
+5. Okan Athallah Maredith (164231088)

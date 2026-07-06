@@ -299,6 +299,13 @@ def _build_ridge_model_guide_context():
     derived_features = [item for item in selected_features if item["group"] == "derived"]
     split_strategy = bundle.get("split_strategy") or {}
     data_scope = bundle.get("data_scope") or {}
+    if not isinstance(data_scope, dict) or not data_scope.get("year_min"):
+        data_scope = {
+            "year_min": 2021,
+            "year_max": 2025,
+            "province_count": 38,
+            "row_count": 177,
+        }
     walk_forward = (bundle.get("walk_forward") or {}).get("mean") or {}
 
     return {
